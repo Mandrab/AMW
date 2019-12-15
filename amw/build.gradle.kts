@@ -89,7 +89,7 @@ task<JavaExec>( "config" ) {
 
 }
 
-task<JavaExec>( "run" ) {
+task<JavaExec>( "run_system" ) {
 
     //addLibraryClasspath( )                                        // add dependecies path to mas2j project file
 
@@ -108,6 +108,40 @@ task<JavaExec>( "run" ) {
     args( MAS2J_FILE_NAME )                                         // specify project file
 
 }
+
+task<JavaExec>( "run_terminal" ) {
+
+    //addLibraryClasspath(  )                                         // add dependecies classpath to mas2j project file
+
+    group = "jade-terminal"                                         // process (?) group name
+    sourceSets {                                                    // set cli path in which call the cmd
+        main {
+            classpath = runtimeClasspath
+        }
+    }
+    standardInput = System.`in`                                     // std input (terminal)
+
+    main = "Controller.Controller"                      // jason mas2j runner
+
+}
+
+task<org.gradle.api.internal.AbstractTask> ( "run" ) {
+    // runs system in detached mode
+    doFirst {
+        ProcessBuilder( )
+                .directory( projectDir )
+                .command( "." + File.separator + "gradlew", "run_system" )
+                .start( )
+
+        Thread.sleep( 8000 )                                        // wait the system to start
+    }
+
+    // after the system startup, run the terminal
+    if ( project.hasProperty( "all" ) )
+        finalizedBy("run_terminal")
+}
+
+tasks.findByName( "test" )!!.dependsOn( "run" )
 
 //**********************************************************************************************************************
 //  FUNCTIONS
