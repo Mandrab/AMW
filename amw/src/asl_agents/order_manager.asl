@@ -1,37 +1,34 @@
-
 /* Initial beliefs and rules */
 
-set( false ).
+set( false ).                                                       // at start is not yet set
+
+
 
 /* Initial goals */
 
-!setup.
+!setup.                                                             // setup
+
+
 
 /* Plans */
 
-+!setup : set( C ) & not C <-
-	.df_register( "management( orders )", "accept( order )" ); // register service as order acceptor
-	-+set( true );
-	.println("Order Manager set up").                          // set process ended
-/*
-+!kqml_received( Sender, cfp, Content, MsgId )
-    : .literal( Content ) & Content( Requirer, Address )[ Items ]
-    <-  !accomplish_order( Content );
-        .send( Sender, tell, "Order taken over", MsgId ).
++!setup
+	:   set( false )
+	<-  .df_register( "management( orders )", "accept( order )" );  // register service as order acceptor
+		-+set( true );
+		.println("Order Manager set up").                           // set process ended
+
+
 
 +!kqml_received( Sender, cfp, Content, MsgId )
-    : not ( .literal( Content ) & Content( Requirer, Address )[ Items ] )
-    <-  .println( "Wrong submission" );
-        .send( Sender, tell, "Wrong submission", MsgId ).
+    :   .literal( Content )
+    <-  asl_actions.order_specs( Content, Client, Address, Items ); // retrieve informations from the call content
+        .df_search( "management( items )", "find( item )", Providers );
+        if ( .empty( Providers ) ) {
+            .send( Sender, tell, "Error: no existing provider", MsgId );
+        }
+        .nth( 0, Providers, Provider );
+        .send( Providers, askOne, Items ).                          // ask the provider for the order's item position
 
--!kqml_received( Sender, cfp, Content, MsgId ) <- .send( Sender, tell, "No such action", MsgId ).
-/*
-+!kqml_received( Sender, cfp, Content, MsgId ) <-
-    new_input( true )[ L ];
-    .concat( L, Content, L );
-    -+new_input( true )[ L ];
-    .println( L );
-    .send( Sender, propose, Content, MsgId );
-    .println("send procedure started").*/
-
--!kqml_received <- .println("kqml failed").
++!kqml_received( Sender, tell, Content, MsgId )
+	<-  .println( Content ).                                        // TODO print the position returned by provider
