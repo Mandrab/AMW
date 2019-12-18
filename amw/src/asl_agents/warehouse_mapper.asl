@@ -2,8 +2,8 @@
 
 set( false ).                                                       // at start is not yet set
 
-item( "Item 1" )[ rack(5), shelf(3) ].                              // initial known items
-item( "Item 2" )[ rack(5), shelf(3) ].
+item( "Item 1" )[ rack(5), shelf(3), quantity(1) ].                 // initial known items
+item( "Item 2" )[ rack(5), shelf(1), quantity(2) ].
 
 
 
@@ -25,29 +25,37 @@ item( "Item 2" )[ rack(5), shelf(3) ].
 
 
 
-+!kqml_received( Sender, askOne, Content, MsgId )                   // retrieve position of an item
-    :   not .list( Content )
-    <-  !find( [ Content ], Result );
-        .send( Sender, tell, Result, MsgId ).
++!kqml_received( Sender, askOne, [ Unique | [ Operation | Item ] ], MsgId ) // find item(s) position
+    :   Operation == find
+    <-  if ( .list( Item ) ) { !find( Item, Result ); }             // retrieve position of an item
+        else { !find( [ Item ], Result ); }                         // retrieve position of a list of items
+        .send( Sender, tell, [ Unique | Result ] ).                 // send the item(s) infos
+
+-!kqml_received( Sender, askOne, [ Unique | [ Operation | Item ] ], MsgId )
+    :   Operation == find
+    <-  .send( Sender, tell,  ).
+
+
++!kqml_received( Sender, cfp, [ Operation | Item ], MsgId )         // store some item(s)
+	:   Operation == store
+	<-  if ( .list( Item ) ) { !store( Item, Position ); }          // store the element(s) and GET the position(s)
+		else { !add( [ Item ], Position ); }
+        .send( Sender, cfp, "Item(s) added", MsgId ).
 
 
 
-+!kqml_received( Sender, askOne, Content, MsgId )                   // retrieve position of a list of items
-    :   .list( Content )
-    <-  !find( Content, Result );
-		.send( Sender, tell, Result, MsgId ).
++!find( [ Name | Tail ], Result )                                   // Search for the elements position in the warehouse TODO make atomic
+	:   not .empty( Head )
+	<-  if ( not .empty( Tail ) ) { !find( Tail, Res ); }           // if isn't the last element, recursively find the others
+		else { Res = []; }
+		?item( Name )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN ) ];
+		Result = [ [ Name, RackN, ShelfN, QuantityN ] | Res ].
 
 
 
-+!find( [ Head, Tail ], Result )                                    // Search for the elements position in the warehouse
-	:   item( LastElem )
-	<-  !find( Tail, Res );
-		?item( LastElem )[ rack( RackN ), shelf( ShelfN ) ];
-		Result = [ item( Head )[ rack( RackN ), shelf( ShelfN ) ] | Res ].
-
-
-
-+!find( LastElem, Result )                                          // Search position of the last element in the list
-	:   item( LastElem )
-	<-  ?item( LastElem )[ rack( RackN ), shelf( ShelfN ) ]
-		Result = [ item( LastElem )[ rack( RackN ), shelf( ShelfN ) ] ].
++!store( [ Head | Tail ], Position )
+	<-  if ( not .empty( Tail ) ) { !find( Tail, Res ); }
+		?item( Head )[ rack( RackN ), shelf( ShelfN ), quantity( ActQuantityN ) ];
+		?Head( quantity( QuantityN ) );
+		-+item( Head )[ rack( RackN ), shelf( ShelfN ), quantity( ActQuantityN + QuantityN ) ];
+		Position = [ item( Head )[ rack( RackN ), shelf( ShelfN ) ] | Res ].
