@@ -25,10 +25,10 @@ item( "Item 2" )[ rack(5), shelf(3) ].
 
 
 
-+!kqml_received( Sender, askOne, Content, MsgId )                   // retrieve position of an item
-    :   not .list( Content )
-    <-  !find( [ Content ], Result );
-        .send( Sender, tell, Result, MsgId ).
++!kqml_received( Sender, cfp, Content, MsgId )
+	:   Content == retrieve("items")
+    <-  //.send( Sender, tell, error("no items") ).
+        .send( Sender, propose, ack("positions") ).
 
 
 

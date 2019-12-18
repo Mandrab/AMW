@@ -19,16 +19,28 @@ set( false ).                                                       // at start 
 		.println("Order Manager set up").                           // set process ended
 
 
-
 +!kqml_received( Sender, cfp, Content, MsgId )
-    :   .literal( Content )
-    <-  asl_actions.order_specs( Content, Client, Address, Items ); // retrieve informations from the call content
-        .df_search( "management( items )", "find( item )", Providers );
-        if ( .empty( Providers ) ) {
-            .send( Sender, tell, "Error: no existing provider", MsgId );
-        }
-        .nth( 0, Providers, Provider );
-        .send( Providers, askOne, Items ).                          // ask the provider for the order's item position
+	<-  .df_search( "management( items )", "retrieve( item )", Providers );
+		.nth( 0, Providers, Provider );
+        .send( Providers, cfp, retrieve("items") ).
+
++!kqml_received( Sender, propose, Content, MsgId )
+	:   Content == ack("positions")
+	<-  .df_search( "executor( item_picker )", "retrieve( item )", Providers );
+    	.nth( 0, Providers, Provider );
+    	.send( Provider, cfp, retrieve( itemX ) ).
 
 +!kqml_received( Sender, tell, Content, MsgId )
-	<-  .println( Content ).                                        // TODO print the position returned by provider
+	:   Content == error("no items")
+	<-  .println( Content );
+		/* TODO resend error */.
+
++!kqml_received( Sender, accept, Content, MsgId )
+	:   Content = retrieve( Item )
+	<-  //.println( Content );
+		.send( Sender, confirm, retrieve( Item ) ).
+
++!kqml_received( Sender, complete, Content, MsgId )
+	:   Content = retrieve( Item )
+	<-  .println( "Picking complete" );
+		/* TODO */.
