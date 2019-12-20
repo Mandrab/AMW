@@ -32,7 +32,7 @@ public class order_specs extends DefaultInternalAction {
 		literal.getAnnots( ).forEach( term -> stringBuilder.append( "\n\t\t" + term ) );
 		un.unifies( args[ 3 ], literal.getAnnots(  ) );
 
-		logger.info( stringBuilder.toString( ) );
+		//logger.info( stringBuilder.toString( ) );
 
 		return true;
 	}

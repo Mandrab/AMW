@@ -11,9 +11,8 @@ set( false ).                                                       // at start 
 +!setup
 	:   set( false )
 	<-  .df_register( "executor( item_picker )", "retrieve( item )" );  // register for pick items
-		-+set( true );
+		-+set( true );                                                  // set process ended
 		+activity( working );
-		.println("Robot Picker set up");                            // set process ended
 		!work.
 
 

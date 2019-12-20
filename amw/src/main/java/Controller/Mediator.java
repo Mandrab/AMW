@@ -5,8 +5,12 @@ import View.View;
 
 public class Mediator {
 
-	public enum CommunicationOntology {
+	public enum CommandOntology {
 		END, SEND, INPUT, ERROR
+	}
+
+	public enum RequireOntology {
+		WAREHOUSE_STATE
 	}
 
 	private View view;
@@ -27,16 +31,22 @@ public class Mediator {
 		this.agent = agent;
 	}
 
-	public void commandView( CommunicationOntology c, String... args ) {
+	public void commandView( Mediator.CommandOntology c, String... args ) {
 		if ( view != null )
 			view.command( c, args );
-		else throw new IllegalStateException( "View unitialized" );
+		else throw new IllegalStateException( "View uninitialized" );
 	}
 
-	public void commandAgent( CommunicationOntology c, String... args ) {
+	public void commandAgent( Mediator.CommandOntology c, String... args ) {
 		if ( agent != null )
 			agent.command( c, args );
-		else throw new IllegalStateException( "Agent unitialized" );
+		else throw new IllegalStateException( "Agent uninitialized" );
+	}
+
+	public <T> T askAgent( Mediator.RequireOntology c ) {
+		if ( agent != null )
+			return agent.ask( c );
+		throw new IllegalStateException( "Agent uninitialized" );
 	}
 
 }

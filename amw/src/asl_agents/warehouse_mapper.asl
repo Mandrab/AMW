@@ -2,8 +2,9 @@
 
 set( false ).                                                       // at start is not yet set
 
-item( "Item 1" )[ rack(5), shelf(3) ].                              // initial known items
-item( "Item 2" )[ rack(5), shelf(3) ].
+item( "Item 1" )[ rack(5), shelf(3), quantity(5) ].                 // initial known items
+item( "Item 2" )[ rack(2), shelf(4), quantity(1) ].
+item( "Item 3" )[ rack(2), shelf(5), quantity(1) ].
 
 
 
@@ -17,37 +18,43 @@ item( "Item 2" )[ rack(5), shelf(3) ].
 
 +!setup
 	:   set( false )
-	<-  .df_register( "management( items )", "store( item )" );     // register for acquire information about items
+	<-  .df_register( "management( items )", "info( warehouse )" ); // register as warehouse's infos dispatcher
+		.df_register( "management( items )", "store( item )" );     // register for acquire information about items
 		.df_register( "management( items )", "find( item )" );      // register for supply item's position infos
 		.df_register( "management( items )", "retrieve( item )" );  // register for remove infos at item removal
-		-+set( true );
-		.println("Warehouse Mapper set up").                        // set process ended
+		-+set( true ).                                              // set process ended
 
 
-
-+!kqml_received( Sender, cfp, Content, MsgId )
-	:   Content == retrieve("items")
-    <-  //.send( Sender, tell, error("no items") ).
-        .send( Sender, propose, ack("positions") ).
-
++!kqml_received( Sender, cfp, Content, MsgId )                      // receive the intention of pick item(s)
+	:   Content = info( warehouse )
+    <-  .findall( item( ItemName )[ rack( R ), shelf( S ), quantity( Q ) ], item( ItemName )[ rack( R ), shelf( S ), quantity( Q ) ], L);
+        .send( Sender, propose, L ).                                // TODO probably, ".send" from jason.stdlib send message using setContent instead setContentObject
 
 
-+!kqml_received( Sender, askOne, Content, MsgId )                   // retrieve position of a list of items
-    :   .list( Content )
-    <-  !find( Content, Result );
-		.send( Sender, tell, Result, MsgId ).
+// OPERATION #2 in purchase sequence schema
+@processOrder[atomic]
++!kqml_received( Sender, cfp, Content, MsgId )                      // receive the intention of pick item(s)
+	:   Content = retrieve( OrderId, Items )
+    <-  !search( Items, Result );                                   // search for items infos
+        if ( not Result = error( _ ) ) { !reserve( Result ); };     // if items have been found, then reserve them
+        .send( Sender, propose, ack("positions") ).                 // send the positions of the items
 
 
++!search( [ Item | Tail ], Result )                                 // Search for the elements position in the warehouse
+	<-  if ( not .empty( Tail ) ) { !search( Tail, Res ); }
+		else { Res = [ ]; }
+		?item( Item )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN ) ];
+		Result = [ item( Item )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN ) ] | Res ].
 
-+!find( [ Head, Tail ], Result )                                    // Search for the elements position in the warehouse
-	:   item( LastElem )
-	<-  !find( Tail, Res );
-		?item( LastElem )[ rack( RackN ), shelf( ShelfN ) ];
-		Result = [ item( Head )[ rack( RackN ), shelf( ShelfN ) ] | Res ].
++!reserve( [ Item, Tail] )
+	<-  if ( not .empty( Tail ) ) { !reserve( Tail ); }
+		!reserve( Item ).
 
-
-
-+!find( LastElem, Result )                                          // Search position of the last element in the list
-	:   item( LastElem )
-	<-  ?item( LastElem )[ rack( RackN ), shelf( ShelfN ) ]
-		Result = [ item( LastElem )[ rack( RackN ), shelf( ShelfN ) ] ].
++!reserve( Item )
+	<-  -item( ItemId )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN ) ];
+		if ( QuantityN -1 > 0 ) {
+            +item( ItemId )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN - 1 ) ]; }
+        if ( reserved_item( ItemId ) ) {
+            -+reserved_item( ItemId )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN +1 ) ]; }
+        else {
+            +reserved_item( ItemId )[ rack( RackN ), shelf( ShelfN ), quantity( 1 ) ]; }.

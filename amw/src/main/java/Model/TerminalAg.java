@@ -1,6 +1,7 @@
 package Model;
 
 import Controller.Mediator;
+import InterpackageDatas.Item;
 import jade.core.Agent;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
@@ -14,16 +15,20 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import jason.asSyntax.*;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import static Controller.Mediator.CommunicationOntology.*;
-import static Model.utils.ServiceType.ACCEPT_ORDER;
-import static Model.utils.ServiceType.MANAGEMENT_ORDERS;
+import static Controller.Mediator.CommandOntology.*;
+import static Controller.Mediator.RequireOntology.WAREHOUSE_STATE;
+import static Model.utils.ServiceType.*;
 
 public class TerminalAg extends Agent implements ModelAgent {
 
@@ -59,14 +64,18 @@ public class TerminalAg extends Agent implements ModelAgent {
 	}
 
 	// action of send a message TODO -> makeOrder
-	private void sendAction( String input ) {
+	private CompletableFuture<ACLMessage> sendAction( String serviceName, String serviceType, Serializable input ) {
 		DFAgentDescription template = new DFAgentDescription();                     // create a "service provider" template
 		ServiceDescription sd = new ServiceDescription();
-		sd.setName( MANAGEMENT_ORDERS.toString() );
-		sd.setType( ACCEPT_ORDER.toString() );
+		if ( ! serviceName.isEmpty( ) )
+			sd.setName( serviceName );
+		if ( ! serviceType.isEmpty( ) )
+			sd.setType( serviceType );
 		template.addServices( sd );
 
-		Executors.newCachedThreadPool().submit(() -> {
+		CompletableFuture<ACLMessage> returnValue = new CompletableFuture<>( );
+
+		Executors.newCachedThreadPool().submit( ( ) -> {
 			DFAgentDescription[] result = new DFAgentDescription[ 0 ];         // an array containing all the agents that matches the template
 			try {
 				result = DFService.search(this, template);
@@ -80,40 +89,104 @@ public class TerminalAg extends Agent implements ModelAgent {
 				for ( int i = 0; i < result.length; i++ )
 					cfp.addReceiver( result[i].getName(  ) );                             // add message's receiver
 
-				// TODO
-				Literal literal = new LiteralImpl( new Atom( "order" ) );
-
-				Map<String, String> clientDatas = new HashMap<>(  );
-				clientDatas.put( "client", "TODO Paolo" );
-				clientDatas.put( "address", "TODO Via XYZ" );
-				literal.addTerm( new ObjectTermImpl( clientDatas ) );
-
-				literal.addAnnots( Arrays.asList( new StringTermImpl( "Item 1" ), new StringTermImpl( "Item 2" ) ) );
-
-				cfp.setContentObject( literal );
-
-				//cfp.setContent( input );                                                 // the command
-
-				cfp.setConversationId( getAID() + "command forward" );                  // conversation's id TODO need to be unique?
-				cfp.setReplyWith( "cfp" + System.currentTimeMillis(  ) );                 // unique value (suggested practice: pag 19 -> https://jade.tilab.com/doc/tutorials/JADEProgramming-Tutorial-for-beginners.pdf)
+				if ( input instanceof String )
+					cfp.setContent( ( String ) input );
+				else
+					cfp.setContentObject( input );
 
 				send( cfp );                                                          // send the cfp to all ability sellers
 
-				ACLMessage msg = blockingReceive( 5000 );
+				returnValue.complete( blockingReceive( 5000 ) );
 
-				mediator.commandView( INPUT, msg.getSender().getName().replaceAll( "@(\n|.)*", "" ), msg.getContent(  ) );
 			} catch ( FIPAException | IOException e ) {
 				e.printStackTrace( );
 			}
 		});
+		return returnValue;
 	}
 
 	@Override
-	public void command ( Mediator.CommunicationOntology c, String... args ) {
+	public void command ( Mediator.CommandOntology c, String... args ) {
 		if ( c == END ) {
 			takeDown(  );
 		} else if ( c == SEND ) {
-			sendAction( args[ 0 ] );
+			List<String> l = new ArrayList<>( Arrays.asList( args ) );
+
+			Literal order = new LiteralImpl( new Atom( "order" ) );
+			Structure client = new Structure( "client" );
+			client.addTerm( new StringTermImpl( l.remove( 0 ) ) );
+			Structure address = new Structure( "address" );
+			address.addTerm( new StringTermImpl( l.remove( 0 ) ) );
+			order.addTerms( client, address );
+
+			order.addAnnots( l.stream( ).map( s -> new StringTermImpl( s ) ).collect( Collectors.toList( ) ) );
+			CompletableFuture<ACLMessage> msg = sendAction( MANAGEMENT_ORDERS.toString( ), ACCEPT_ORDER.toString( ), order );
+			msg.thenAccept( m -> mediator.commandView( INPUT, m.getSender( ).getName( ).replaceAll( "@(\n|.)*", "" ), m.getContent(  ) ) );
 		}
+	}
+
+	@Override @SuppressWarnings( "unchecked" )
+	public <T> T ask ( Mediator.RequireOntology c ) {
+
+		if ( c == WAREHOUSE_STATE ) {
+
+			// setup the message and send it
+			Structure info = new Structure( "info" );
+			info.addTerm( new Structure( "warehouse" ) );
+			CompletableFuture<ACLMessage> response = sendAction( MANAGEMENT_ITEMS.getName( ),
+					INFO_WAREHOUSE.getName( ), info );
+
+			// create the return obj
+			CompletableFuture<List<Item>> result = new CompletableFuture<>( );
+
+			// when a response came, complete the result
+			response.thenAccept( aclMessage -> result.complete( parseItems( aclMessage.getContent( ) ) ) );
+
+			// return the value
+			try {
+				return ( T ) result;
+			} catch( ClassCastException e ) {
+				throw new IllegalStateException( "Return and requested item types are different!" );
+			}
+		}
+
+		throw new NotImplementedException( "The return of the required element has not yet been implemented. Sorry for the discomfort" );
+	}
+
+	private List<Item> parseItems ( String content ) {
+		List<String> l = new ArrayList( Arrays.asList( content.substring( 1, content.length( ) -1 ) // remove initial and final []
+			.split( "," ) ) );
+
+		for( int i = 0; i < l.size( ); ) {
+			if ( l.get( i ).contains( "[" ) && ! l.get( i ).endsWith( "]" ) ) {
+				l.set( i, l.get( i ) + ',' + l.get( i +1 ) );
+				l.remove( i + 1 );
+			} else i++;
+		}
+
+		Pattern ITEMID_PATTERN = Pattern.compile("item\\(\"?([A-Z]|[a-z]|[0-9]| )*\"?\\)");
+		Pattern RACK_PATTERN = Pattern.compile("rack\\([0-9]+\\)");
+		Pattern SHELF_PATTERN = Pattern.compile("shelf\\([0-9]+\\)");
+		Pattern QUANTITY_PATTERN = Pattern.compile("quantity\\([0-9]+\\)");
+
+		return l.stream( ).map( s -> {
+			Matcher matcher = ITEMID_PATTERN.matcher( s );
+			String itemId = matcher.find( )
+					? matcher.group( ).substring( matcher.group( ).indexOf( "(" ) + 1,
+							matcher.group( ).length( ) -1 )	: "Error";
+			matcher = RACK_PATTERN.matcher( s );
+			int rackId = matcher.find( )
+					? Integer.parseInt( matcher.group( ).substring( matcher.group( ).indexOf( "(" ) + 1,
+							matcher.group( ).length( ) -1 ) ) : -1;
+			matcher = SHELF_PATTERN.matcher( s );
+			int shelfId = matcher.find( )
+					? Integer.parseInt( matcher.group( ).substring( matcher.group( ).indexOf( "(" ) + 1,
+							matcher.group( ).length( ) -1 ) ) : -1;
+			matcher = QUANTITY_PATTERN.matcher( s );
+			int quantity = matcher.find( )
+					? Integer.parseInt( matcher.group( ).substring( matcher.group( ).indexOf( "(" ) + 1,
+							matcher.group( ).length( ) -1 ) ) : -1;
+			return new Item( itemId, rackId, shelfId, quantity );
+		} ).collect( Collectors.toList( ) );
 	}
 }

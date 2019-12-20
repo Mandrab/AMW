@@ -4,5 +4,5 @@ import Controller.Mediator;
 
 public interface View {
 
-	void command ( Mediator.CommunicationOntology c, String... args );
+	void command ( Mediator.CommandOntology c, String... args );
 }
