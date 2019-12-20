@@ -2,7 +2,7 @@ package Model;
 
 import Controller.Mediator;
 
-public interface ModelAgent {
+public interface InterfaceAgent {
 
 	void command ( Mediator.CommandOntology c, String... args );
 

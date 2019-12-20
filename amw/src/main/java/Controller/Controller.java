@@ -1,25 +1,33 @@
 package Controller;
 
-import Model.TerminalAg;
+import Model.InterfaceAgentImpl;
 import View.ViewImpl;
 
-public class Controller {
+public class Controller implements Mediator {
 
 	private ViewImpl view;
-	private Mediator mediator;
+	private AgentMediator mediator;
+	private Updater updater;
 
 	public static void main ( String[] args ) {
 		new Controller(  );
 	}
 
 	private Controller(  ) {
-		//if ( args.length == 0 || Integer.parseInt( args[0] ) == 0 )
-		mediator = new Mediator(  );
-		TerminalAg.startAg( mediator );
-		view = new ViewImpl( mediator );
-		//else
-		//	new Controller.Sphinx4();
-		//System.out.println( "hello world!" );
+		mediator = new AgentMediator(  );
+		InterfaceAgentImpl.startAg( mediator );
+		view = new ViewImpl( this );
+		updater = new UpdaterImpl( view, mediator );
+		updater.start( );
 	}
 
+	@Override
+	public void exec ( CommandOntology command, String... args ) {
+		mediator.exec( command, args );
+	}
+
+	@Override
+	public <T> T ask ( RequireOntology request ) {
+		return mediator.ask( request );
+	}
 }

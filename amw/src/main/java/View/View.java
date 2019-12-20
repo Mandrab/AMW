@@ -1,8 +1,10 @@
 package View;
 
-import Controller.Mediator;
+import InterpackageDatas.Item;
+
+import java.util.List;
 
 public interface View {
 
-	void command ( Mediator.CommandOntology c, String... args );
+	void update( List<Item> items );
 }
