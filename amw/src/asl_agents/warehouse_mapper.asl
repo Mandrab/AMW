@@ -25,27 +25,31 @@ item( "Item 3" )[ rack(2), shelf(5), quantity(1) ].
 		-+set( true ).                                              // set process ended
 
 
+// OPERATION #2 in purchase sequence schema
+@processOrder[atomic]
++!kqml_received( Sender, cfp, Content, MsgId )                      // receive the intention of pick item(s)
+	:   Content = retrieve( order_id( OrderId ) )[ Items ]
+    <-  !search( Items, Result );                                   // search for items infos
+        if ( not Result = error( _ ) ) { !reserve( Result ); };     // if items have been found, then reserve them
+        .send( Sender, propose, ack("positions") ).                 // send the positions of the items
+
+// OPERATION #5 in purchase sequence schema
+-!kqml_received( Sender, cfp, Content, MsgId )
+	<-  .send( Sender, propose, error( "unable to find or reserve items" ) ).
+
 +!kqml_received( Sender, cfp, Content, MsgId )                      // receive the intention of pick item(s)
 	:   Content = info( warehouse )
     <-  .findall( item( ItemName )[ rack( R ), shelf( S ), quantity( Q ) ], item( ItemName )[ rack( R ), shelf( S ), quantity( Q ) ], L);
         .send( Sender, propose, L ).                                // TODO probably, ".send" from jason.stdlib send message using setContent instead setContentObject
 
-
-// OPERATION #2 in purchase sequence schema
-@processOrder[atomic]
-+!kqml_received( Sender, cfp, Content, MsgId )                      // receive the intention of pick item(s)
-	:   Content = retrieve( OrderId, Items )
-    <-  !search( Items, Result );                                   // search for items infos
-        if ( not Result = error( _ ) ) { !reserve( Result ); };     // if items have been found, then reserve them
-        .send( Sender, propose, ack("positions") ).                 // send the positions of the items
-
-
+// OPERATION #3 in purchase sequence schema
 +!search( [ Item | Tail ], Result )                                 // Search for the elements position in the warehouse
 	<-  if ( not .empty( Tail ) ) { !search( Tail, Res ); }
 		else { Res = [ ]; }
 		?item( Item )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN ) ];
 		Result = [ item( Item )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN ) ] | Res ].
 
+// OPERATION #4 in purchase sequence schema
 +!reserve( [ Item, Tail] )
 	<-  if ( not .empty( Tail ) ) { !reserve( Tail ); }
 		!reserve( Item ).

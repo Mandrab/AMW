@@ -2,13 +2,9 @@
 
 set( false ).                                                       // at start is not yet set
 
-
-
 /* Initial goals */
 
 !setup.                                                             // setup
-
-
 
 /* Plans */
 
@@ -24,24 +20,27 @@ set( false ).                                                       // at start 
 	<-  !order_id( Content, OrderId );
 		.df_search( "management( items )", "retrieve( item )", Providers );
 		.nth( 0, Providers, Provider );
-        .send( Providers, cfp, retrieve( OrderId, Items ) ).        // ask if there're all items of the order
+        .send( Providers, cfp, retrieve( order_id( OrderId ) )[ Items ] ).        // ask if there're all items of the order
 
+// OPERATION #5 in purchase sequence schema
 +!kqml_received( Sender, propose, Content, MsgId )
-	:   Content == ack("positions")
+	:   Content == error( "unable to find or reserve items" )
+	<-  .send( Sender, propose, error( "unable to find or reserve items" ) ).
+
+// OPERATION #7 in purchase sequence schema
++!kqml_received( Sender, propose, Content, MsgId )                  // TODO
+	:   Content == ack( ItemPositions )
 	<-  .df_search( "executor( item_picker )", "retrieve( item )", Providers );
     	.nth( 0, Providers, Provider );
     	.send( Provider, cfp, retrieve( itemX ) ).
 
-+!kqml_received( Sender, tell, Content, MsgId )
-	:   Content == error("no items")
-	<-  .println( Content );
-		/* TODO resend error */.
-
+// OPERATION #9 in purchase sequence schema
 +!kqml_received( Sender, accept, Content, MsgId )
 	:   Content = retrieve( Item )
 	<-  //.println( Content );
 		.send( Sender, confirm, retrieve( Item ) ).
 
+// OPERATION #12 in purchase sequence schema
 +!kqml_received( Sender, complete, Content, MsgId )
 	:   Content = retrieve( Item )
 	<-  .println( "Picking complete" );

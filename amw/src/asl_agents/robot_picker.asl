@@ -30,8 +30,7 @@ set( false ).                                                       // at start 
         -+activity( working );                                  // restart working
         !work.
 
-
-
+// OPERATION #8 in purchase sequence schema
 +!kqml_received( Sender, cfp, Content, MsgId )                  // receive request for item pick
 	:   Content = retrieve( Item ) & activity( working )
     <-  -+activity( waiting );
@@ -39,6 +38,7 @@ set( false ).                                                       // at start 
         .wait( 5000 );                                          // wait confirm
         if ( activity( waiting ) ) { -+activity( working ); }.  // if it takes too long, restart working
 
+// OPERATION #10 in purchase sequence schema
 +!kqml_received( Sender, confirm, Content, MsgId )              // receive confirm for pick work
 	:   Content = retrieve( Item ) & activity( waiting )
     <-  -+activity( picking )[ client( Sender ), item( Item ) ].// pick item for client
