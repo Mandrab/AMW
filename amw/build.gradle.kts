@@ -25,7 +25,7 @@ group = "dev.mandrab.uni.magistrale.sistemidistribuiti.amw"
 version = "1.0-SNAPSHOT"
 
 repositories {
-    mavenCentral()
+    mavenCentral( )
 }
 
 dependencies {
@@ -50,6 +50,7 @@ val junit: Configuration by configurations.creating
 val jason: Configuration by configurations.creating
 val guava: Configuration by configurations.creating
 val apacheCommonsIo: Configuration by configurations.creating
+val apacheCommonsLang : Configuration by configurations.creating
 
 val dependencies: List<Configuration> = Arrays.asList( junit, jason )
 
@@ -62,6 +63,8 @@ dependencies {
     implementation( guava )
     apacheCommonsIo( "commons-io", "commons-io", "2.6" )
     implementation( apacheCommonsIo )
+    apacheCommonsLang( "org.apache.commons", "commons-lang3", "3.9" )
+    implementation( apacheCommonsLang )
 }
 
 //**********************************************************************************************************************
@@ -111,7 +114,7 @@ task<JavaExec>( "run_system" ) {
 
 task<JavaExec>( "run_terminal" ) {
 
-    //addLibraryClasspath(  )                                         // add dependecies classpath to mas2j project file
+    //addLibraryClasspath(  )                                       // add dependecies classpath to mas2j project file
 
     group = "jade-terminal"                                         // process (?) group name
     sourceSets {                                                    // set cli path in which call the cmd
@@ -121,7 +124,7 @@ task<JavaExec>( "run_terminal" ) {
     }
     standardInput = System.`in`                                     // std input (terminal)
 
-    main = "Controller.Controller"                      // jason mas2j runner
+    main = "Controller.Main"                                        // jason mas2j runner
 
 }
 
@@ -149,7 +152,6 @@ tasks.findByName( "test" )!!.dependsOn( "run" )
 
 // add dependencies classpath to mas2j project file
 fun addLibraryClasspath( excluded: List<Regex>? = null ): String {
-
     // read the actual mas2j project file
     var fileStr = BufferedReader( FileReader( File( MAS2J_FILE_NAME ) ) as Reader ).readText( )
 
