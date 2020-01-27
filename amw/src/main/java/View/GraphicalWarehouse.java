@@ -1,6 +1,6 @@
 package View;
 
-import InterpackageDatas.Item;
+import Interpackage.Item;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;

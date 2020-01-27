@@ -1,11 +1,11 @@
-package InterpackageDatas;
+package Interpackage;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /*
-* This class represent an item in a specific position in the warehouse
-* */
+ * This class represent an item in a specific position in the warehouse
+ */
 public class Item {
 
 	private String itemId;

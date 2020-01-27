@@ -1,66 +1,67 @@
 package Controller;
 
-import InterpackageDatas.Item;
+import Interpackage.Item;
+import Model.Model;
 import View.View;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static Controller.Mediator.RequireOntology.WAREHOUSE_STATE;
+import static Interpackage.RequestHandler.Request.INFO_WAREHOUSE_STATE;
 
 class UpdaterImpl extends Thread implements Updater {
 
 	private static final int REFRESH_TIME = 100;
 	private View view;
-	private AgentMediator mediator;
+	private Model model;
 	private boolean suspended;
 	private boolean terminated;
 
-	public UpdaterImpl ( View view, AgentMediator mediator ) {
+	public UpdaterImpl ( View view, Model model ) {
 		this.view = view;
-		this.mediator = mediator;
+		this.model = model;
 	}
 
-	public void run() {
-		while (!terminated) {
+	public void run( ) {
+		while ( !terminated ) {
 			try {
-				exec();
-				synchronized (this) {
-					while (suspended) {
-						wait();
+				exec( );
+				synchronized ( this ) {
+					while ( suspended ) {
+						wait( );
 					}
 				}
-				Thread.sleep(REFRESH_TIME);
-			} catch (InterruptedException e) {
+				Thread.sleep( REFRESH_TIME );
+			} catch ( InterruptedException e ) {
 				e.printStackTrace();
 			}
 		}
 	}
 
 	protected void exec( ) {
-		mediator.<CompletableFuture<List<Item>>>ask( WAREHOUSE_STATE ).thenAccept( l -> view.update( l ) );
+		model.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE ).thenAccept( l -> view.update( l ) );
 	}
 
-	public synchronized void terminate() {
-		if (suspended) {
+	public synchronized void terminate( ) {
+		if ( suspended ) {
 			suspended = false;
-			notifyAll();
+			notifyAll( );
 		}
 		terminated = true;
 	}
 
-	public synchronized void setPause(final boolean val) {
+	public synchronized void setPause( final boolean val ) {
 		suspended = val;
-		if (!suspended) {
-			notifyAll();
+		if ( !suspended ) {
+			notifyAll( );
 		}
 	}
 
-	public boolean isRunning() {
+	public boolean isRunning( ) {
 		return !suspended;
 	}
 
-	public boolean isTerminated() {
+	public boolean isTerminated( ) {
 		return terminated;
 	}
 

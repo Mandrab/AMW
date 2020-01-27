@@ -2,14 +2,14 @@ package Controller;
 
 public interface Updater {
 
-	void start();
+	void start( );
 
-	void setPause(boolean val);
+	void setPause( boolean val );
 
-	void terminate();
+	void terminate( );
 
-	boolean isRunning();
+	boolean isRunning( );
 
-	boolean isTerminated();
+	boolean isTerminated( );
 
 }
