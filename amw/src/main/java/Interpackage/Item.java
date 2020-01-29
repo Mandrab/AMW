@@ -38,7 +38,13 @@ public class Item {
 
 	@Override
 	public String toString( ) {
-		return "itemId: " + itemId + " rack: " + rackId + " shelf: " + shelfId + " quantity: " + quantity;
+		return "itemId: " + itemId + ", rack: " + rackId + ", shelf: " + shelfId + ", quantity: " + quantity;
+	}
+
+	public int first( Item i ) {
+		if ( rackId - i.rackId != 0 )
+			return rackId - i.rackId;
+		return shelfId - i.shelfId;
 	}
 
 	static public Item parse ( String input ) {

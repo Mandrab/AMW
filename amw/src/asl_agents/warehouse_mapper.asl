@@ -32,16 +32,19 @@ item( "Item 3" )[ rack(2), shelf(5), quantity(1), reserved( 0 ) ].
 @processOrder[atomic]
 +!kqml_received( Sender, cfp, Content, MsgId )                      // receive the intention of pick item(s)
 	:   Content = retrieve( order_id( OrderId ) )[ Items ]
-    <-  !exist( Items, Result );                                    // check that all the elements exists
+    <-  !exist( [ Items ], Result );                                // check that all the elements exists
         if ( Result == error( _ ) ) {                               // if some don't not exist, then return an error
             .send( Sender, propose,
                     error( order_id( OrderId ), Result ) );
         } else {
-            !reserve( Items, Positions );                           // try to reserve the items
+            !reserve( [ Items ], Positions );                       // try to reserve the items
             if ( Positions == error_code( _ ) ) {                   // if i get a conflict error, send it back
-                .send( Sender, propose, error( order_id( OrderId ), Positions ) ); }
-            .send( Sender, propose, confirmation( order_id( OrderId ) )
-                    [ Positions ] );                                // send the positions of the items
+                .send( Sender, propose, error( order_id( OrderId ), Positions ) );
+            } else {
+                Positions = [ Head | Tail ];
+                .send( Sender, propose, confirmation( order_id( OrderId ) )
+                        [ Head | Positions ] );                     // send the positions of the items
+            }
         }.
 
 // OPERATION #4 in purchase sequence schema
@@ -53,10 +56,12 @@ item( "Item 3" )[ rack(2), shelf(5), quantity(1), reserved( 0 ) ].
 	<-  Result = error_code( "404, not found" ).
 
 // OPERATION #9 in purchase sequence schema
-+!reserve( [ Item | Tail ], Positions )                               // TODO 409 conflic
-	<-  -+item( ItemId )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN -1 ), reserved( ReservedN +1 ) ];
-		if ( not .empty( Tail ) ) { !reserve( Tail, Res ); };
-		Result = [ item( ItemId )[ rack( RackN ), shelf( ShelfN ) ] | Res ].
++!reserve( [ Item | Tail ], Positions )                             // TODO 409 conflic
+	<-  -item( Item )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN ), reserved( ReservedN ) ];
+		+item( Item )[ rack( RackN ), shelf( ShelfN ), quantity( QuantityN -1 ), reserved( ReservedN +1 ) ];
+		if ( not .empty( Tail ) ) { !reserve( Tail, Res ); }
+		else { Res = []; }
+		Positions = [ item( Item )[ rack( RackN ), shelf( ShelfN ) ] | Res ].
 
 +!kqml_received( Sender, cfp, Content, MsgId )                      // send the warehouse state (items info & position)
 	:   Content = info( warehouse )

@@ -23,19 +23,22 @@ set( false ).                                                       // at start 
 // OPERATION #1 in purchase sequence schema
 +!kqml_received( Sender, cfp, Content, MsgId )                      // try to accept an order
 	:   Content = order( client( Client ), address( Address ) )[ Items ]
-	<-  !order_id( Content, OrderId );                              // generate an id for the order
+	<-  .println( Content );
+		!order_id( Content, OrderId );                              // generate an id for the order
 		+order( id( OrderId ), client( Sender ),
 				status( checking ), info( Content ) ); // save the order info
 		.df_search( "management( items )", "retrieve( item )",
 				Providers );                                        // search for agents able to manage items retrieve
 		.nth( 0, Providers, Provider );                             // get the first agent
+		Items = [ Head | Tail ];
         .send( Provider, cfp,
-                retrieve( order_id( OrderId ) )[ Items ] ).         // ask if there're all items of the order
+                retrieve( order_id( OrderId ) ) [ Head | Items ] ).         // ask if there're all items of the order
 
 // OPERATION #6/11 in purchase sequence schema
 +!kqml_received( Sender, propose, Content, MsgId )
 	:   Content = error( order_id( OrderId ), error_code( ErrorCode ) )
-	<-	-order( id( OrderId ), client( Client ),
+	<-	.println( Content );
+        -order( id( OrderId ), client( Client ),
 				status( checking ), info( OrderInfo ) );            // retrieve order information and remove the value
 		.send( Client, propose, error( order_id( OrderId ),
 				error_code( ErrorCode ) ) ).                        // send the error message
@@ -43,7 +46,8 @@ set( false ).                                                       // at start 
 // OPERATION #14 in purchase sequence schema
 +!kqml_received( Sender, propose, Content, MsgId )
 	:   Content = confirmation( order_id( OrderId ) )[ Positions ]
-	<-  -order( id( OrderId ), client( Client ),
+	<-  .println( Content );
+        -order( id( OrderId ), client( Client ),
         		status( checking ), info( OrderInfo ) );            // remove old order status
 		+order( id( OrderId ), client( Client ),
 				status( pending ), info( OrderInfo ) );             // update order status and t
@@ -63,6 +67,11 @@ set( false ).                                                       // at start 
 	<-  .println( Content );
 		-+order( id( OrderId ), client( _ ), status( aborted ), info( _ ) ).
 
+// OPERATION #24 in purchase sequence schema
++!kqml_received( Sender, propose, Content, MsgId )
+	:   Content = confirm( order )                 // TODO order id
+	<-  .println( Content ).                            // TODO
+
 +order( id( OrderId ), client( Client ), status( aborted ), info( OrderInfo ) )
 	<-  -order( id( OrderId ), client( Client ), status( aborted ), info( OrderInfo ) );
 		.df_search( "management( items )", "retrieve( item )",
@@ -74,7 +83,8 @@ set( false ).                                                       // at start 
 +!kqml_received( Sender, propose, Content, MsgId )
 	:   Content = confirmation( OrderId, OrderInfo )
 			& order( id( OrderId ), client( Client ), status( pending ), info( OrderInfo ) )
-	<-  -order( id( OrderId ), client( _ ), status( pending ), info( _ ) );
+	<-  .println( Content );
+        -order( id( OrderId ), client( _ ), status( pending ), info( _ ) );
 		.println("TODO loop items").
 
 /***********************************************************************************************************************

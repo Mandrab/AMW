@@ -1,6 +1,6 @@
 package Model.Agent;
 
-import Interpackage.RequestHandler;
+import Interpackage.RequestDispatcher;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -11,7 +11,11 @@ import org.junit.runners.model.InitializationError;
 
 public class AgentInterfaceImpl implements AgentInterface {
 
-	private ClientAgent agent;                                              // the agent to mediate
+	private RequestDispatcher dispatcher;
+
+	public AgentInterfaceImpl( RequestDispatcher dispatcher ) {
+		this.dispatcher = dispatcher;
+	}
 
 	// start the jade agent
 	@Override
@@ -26,24 +30,12 @@ public class AgentInterfaceImpl implements AgentInterface {
 			AgentController agent =                                             // Create a new agent
 					cc.createNewAgent( "interface-ag",
 							ClientAgentImpl.class.getCanonicalName( ),
-							new Object[]{ this } );
+							new Object[]{ dispatcher } );
 
 			agent.start(  );                                                    // fire up the agent
 		} catch ( StaleProxyException e ) {
 			throw new InitializationError( "Failed to initialize the agent" );
 		}
-	}
-
-	@Override
-	public void setAgent ( ClientAgent agent ) {
-		this.agent = agent;
-	}
-
-	@Override
-	public <T> T askFor ( RequestHandler.Request request, String... args ) {
-		if ( agent != null )
-			return agent.askFor( request, args );
-		else throw new IllegalStateException( "Agent uninitialized!" );
 	}
 
 }

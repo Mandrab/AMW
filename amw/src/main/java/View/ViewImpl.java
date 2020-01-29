@@ -9,26 +9,39 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import Interpackage.Item;
-import Interpackage.RequestHandler;
+import Interpackage.RequestDispatcher;
 
 import static Interpackage.RequestHandler.Request.*;
 
 public class ViewImpl extends JFrame implements View {
 
-	private RequestHandler supplier;
+	private RequestDispatcher dispatcher;
 	private JPanel orderTabPanel;
 	private GraphicalWarehouse graphicalWarehouseTab;
 
 	// setup window
-	public ViewImpl ( RequestHandler supplier ) {
+	public ViewImpl ( RequestDispatcher dispatcher ) {
 
-		this.supplier = supplier;
+		this.dispatcher = dispatcher;
+		dispatcher.register( this );
 
-		graphicalWarehouseTab = new GraphicalWarehouse( this, 10 );
+		graphicalWarehouseTab = new GraphicalWarehouse( 10 );
 
 		setupTheme(  );
 
 		setupView(  );
+	}
+
+	@Override
+	public <T> T askFor ( Request request, String... args ) {
+		if ( request == CONFIRMATION ) {
+			if ( JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog( this, "Would you like to confirm the order?",
+					"Order Confirmation", JOptionPane.YES_NO_OPTION ) ) {
+				return ( T ) ( Boolean ) true;
+			}
+			return ( T ) ( Boolean ) false;
+		}
+		return null;
 	}
 
 	private void setupTheme(  ) {
@@ -79,7 +92,7 @@ public class ViewImpl extends JFrame implements View {
 						"Are you sure you want to close this window?", "Close Window?",
 						JOptionPane.YES_NO_OPTION,
 						JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION ){
-					supplier.askFor( END );
+					dispatcher.askFor( END );
 					System.exit( 0 );
 				}
 			}
@@ -124,7 +137,7 @@ public class ViewImpl extends JFrame implements View {
 			l.add( clientInput.getText( ) );
 			l.add( addressInput.getText( ) );
 			l.addAll( Collections.list( selectedItems.elements( ) ) );
-			supplier.askFor( ORDER, l.toArray( new String[0] ) );
+			dispatcher.askFor( ORDER, l.toArray( new String[0] ) );
 		} );
 		new PanelAdder().setPosition( 2, 25 )
 				.addToPanel( orderTabPanel, submitButton );
@@ -161,7 +174,7 @@ public class ViewImpl extends JFrame implements View {
 		new PanelAdder().setPosition( 0, 25 )
 				.addToPanel( orderTabPanel, addButton );
 
-		supplier.<CompletableFuture<List<String>>>askFor( INFO_ITEMS_LIST ).thenAccept( newItems -> {
+		dispatcher.<CompletableFuture<List<String>>>askFor( INFO_ITEMS_LIST ).thenAccept( newItems -> {
 			items.clear( );
 			items.addAll( newItems );
 			itemsList.setListData( items );

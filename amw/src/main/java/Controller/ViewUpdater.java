@@ -1,6 +1,6 @@
 package Controller;
 
-public interface Updater {
+public interface ViewUpdater {
 
 	void start( );
 

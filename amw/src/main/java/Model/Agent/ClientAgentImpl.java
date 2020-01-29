@@ -1,6 +1,7 @@
 package Model.Agent;
 
 import Interpackage.Item;
+import Interpackage.RequestDispatcher;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -27,12 +28,12 @@ import static Model.utils.ServiceType.ACCEPT_ORDER;
 
 public class ClientAgentImpl extends Agent implements ClientAgent {
 
-	private AgentInterface mediator;
+	private RequestDispatcher dispatcher;
 
 	@Override
 	protected void setup( ) {
-		mediator = ( AgentInterface ) getArguments( )[ 0 ];
-		mediator.setAgent( this );
+		dispatcher = ( RequestDispatcher ) getArguments( )[ 0 ];
+		dispatcher.register( this );
 	}
 
 	@Override
@@ -92,13 +93,16 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		order.addTerms( client, address );
 
 		ListTerm terms = new ListTermImpl( );
-		terms.addAll( l.stream( ).map( StringTermImpl::new ).collect( Collectors.toList( ) ) );
+		terms.addAll( l.stream( ).map( Atom::new ).collect( Collectors.toList( ) ) );
 		order.addAnnot( terms );
 		sendCFP( MANAGEMENT_ORDERS.toString( ), ACCEPT_ORDER.toString( ), order, false ).thenAccept( response -> {
 			if ( response.getContent( ).startsWith( "error" ) ) {
 				System.out.println( "error" );
 			} else if ( response.getContent( ).startsWith( "confirmation" ) ) {
-				mediator.askFor( CONFIRMATION );
+				dispatcher.askFor( CONFIRMATION );
+				ACLMessage reply = response.createReply( );
+				reply.setContent( "confirm( order )" );
+				send( reply );
 			}
 		} );
 	}

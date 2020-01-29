@@ -1,7 +1,7 @@
 package Controller;
 
 import Interpackage.Item;
-import Model.Model;
+import Interpackage.RequestDispatcher;
 import View.View;
 
 import java.util.List;
@@ -9,17 +9,17 @@ import java.util.concurrent.CompletableFuture;
 
 import static Interpackage.RequestHandler.Request.INFO_WAREHOUSE_STATE;
 
-class UpdaterImpl extends Thread implements Updater {
+class ViewUpdaterImpl extends Thread implements ViewUpdater {
 
 	private static final int REFRESH_TIME = 100;
 	private View view;
-	private Model model;
+	private RequestDispatcher dispatcher;
 	private boolean suspended;
 	private boolean terminated;
 
-	public UpdaterImpl ( View view, Model model ) {
+	public ViewUpdaterImpl ( View view, RequestDispatcher dispatcher ) {
 		this.view = view;
-		this.model = model;
+		this.dispatcher = dispatcher;
 	}
 
 	public void run( ) {
@@ -39,7 +39,7 @@ class UpdaterImpl extends Thread implements Updater {
 	}
 
 	protected void exec( ) {
-		model.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE ).thenAccept( l -> view.update( l ) );
+		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE ).thenAccept( l -> view.update( l ) );
 	}
 
 	public synchronized void terminate( ) {

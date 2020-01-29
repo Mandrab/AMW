@@ -1,5 +1,8 @@
+import Interpackage.RequestDispatcher;
+import Interpackage.RequestHandler;
 import Model.Agent.AgentInterface;
 import Model.Agent.AgentInterfaceImpl;
+import Model.Agent.ClientAgent;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 
@@ -9,13 +12,13 @@ import static org.junit.Assert.*;
 
 public class TestOrders {
 
-	private AgentInterface agent;
-
 	@Test
 	public void itemOfOrderNotFound( ) throws InterruptedException {
+		RequestDispatcherImpl dispatcher = new RequestDispatcherImpl( );
+
 		new Thread( ( ) -> {
 			try {
-				AgentInterface agent = new AgentInterfaceImpl( );
+				AgentInterface agent = new AgentInterfaceImpl( dispatcher );
 				agent.start( );
 			} catch ( InitializationError initializationError ) {
 				fail( "Error in agent initialization" );
@@ -24,10 +27,10 @@ public class TestOrders {
 
 		try {
 			Thread.sleep( 1000 );
-			assertTrue( agent != null );
-			agent.askFor( ORDER, "Paolo", "Via XYZ 123", "Item 0", "Item 2" );
+			assertTrue( dispatcher.agent != null );
+			dispatcher.agent.askFor( ORDER, "Paolo", "Via XYZ 123", "Item 0", "Item 2" );
 			Thread.sleep( 1000 );
-			agent.askFor( END );
+			dispatcher.agent.askFor( END );
 			Thread.sleep( 20000 );
 		} catch ( IllegalStateException e ) {
 			fail( "Agent uninitialized" );
@@ -36,9 +39,11 @@ public class TestOrders {
 
 	@Test
 	public void submitOrder( ) throws InterruptedException {
+		RequestDispatcherImpl dispatcher = new RequestDispatcherImpl( );
+
 		new Thread( ( ) -> {
 			try {
-				AgentInterface agent = new AgentInterfaceImpl( );
+				AgentInterface agent = new AgentInterfaceImpl( dispatcher );
 				agent.start( );
 			} catch ( InitializationError initializationError ) {
 				fail( "Error in agent initialization" );
@@ -47,14 +52,32 @@ public class TestOrders {
 
 		try {
 			Thread.sleep( 1000 );
-			assertTrue( agent != null );
-			agent.askFor( ORDER, "Paolo", "Via XYZ 123", "Item 1", "Item 2" );
+			assertTrue( dispatcher.agent != null );
+			dispatcher.agent.askFor( ORDER, "Paolo", "Via XYZ 123", "Item 1", "Item 2" );
 			Thread.sleep( 1000 );
-			agent.askFor( END );
+			dispatcher.agent.askFor( END );
 			Thread.sleep( 20000 );
 		} catch ( IllegalStateException e ) {
 			fail( "Agent uninitialized" );
 		}
+	}
+
+	public class RequestDispatcherImpl implements RequestDispatcher {
+
+		public ClientAgent agent;
+
+		@Override
+		public void register ( RequestHandler handler ) {
+			if ( handler instanceof ClientAgent )
+				agent = ( ClientAgent ) handler;
+		}
+
+		@Override
+		public void unregister ( RequestHandler handler ) { }
+
+		@Override
+		public <T> T askFor ( Request request, String... args ) { return null; }
+
 	}
 
 }

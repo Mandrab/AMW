@@ -1,8 +1,7 @@
 package Interpackage;
 
-/*
- * Chain Of Responsibility (pattern) of a request
- */
+import org.apache.commons.lang3.NotImplementedException;
+
 public interface RequestHandler {
 
 	enum Request {
@@ -13,6 +12,6 @@ public interface RequestHandler {
 		ORDER                                           // ask for make an order
 	}
 
-	<T> T askFor ( Request request, String... args );
+	<T> T askFor ( Request request, String... args ) throws NotImplementedException;
 
 }

@@ -1,4 +1,5 @@
-import Controller.Controller;
+import Interpackage.RequestDispatcher;
+import Interpackage.RequestHandler;
 import View.ViewImpl;
 import org.junit.Test;
 
@@ -10,7 +11,13 @@ public class TestView {
 
 	@Test @SuppressWarnings( "unchecked" )
 	public void submitOrder( ) throws InterruptedException {
-		new ViewImpl( new Controller( ) {
+		new ViewImpl( new RequestDispatcher( ) {
+			@Override
+			public void register ( RequestHandler handler ) { }
+
+			@Override
+			public void unregister ( RequestHandler handler ) { }
+
 			@Override
 			public <T> T askFor ( Request request, String... args ) {
 				return ( T ) new Vector<>( IntStream.range( 0, 100 )
