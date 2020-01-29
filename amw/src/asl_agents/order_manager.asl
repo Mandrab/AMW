@@ -62,15 +62,9 @@ set( false ).                                                       // at start 
 
 // OPERATION #17 in purchase sequence schema
 +!kqml_received( Sender, propose, Content, MsgId )
-	:   Content = abort( OrderId, OrderInfo )
-			& order( id( OrderId ), client( Client ), status( pending ), info( OrderInfo ) )
+	:   Content = abort( OrderId, OrderInfo )[ Items ]
 	<-  .println( Content );
 		-+order( id( OrderId ), client( _ ), status( aborted ), info( _ ) ).
-
-// OPERATION #24 in purchase sequence schema
-+!kqml_received( Sender, propose, Content, MsgId )
-	:   Content = confirm( order )                 // TODO order id
-	<-  .println( Content ).                            // TODO
 
 +order( id( OrderId ), client( Client ), status( aborted ), info( OrderInfo ) )
 	<-  -order( id( OrderId ), client( Client ), status( aborted ), info( OrderInfo ) );
@@ -81,8 +75,7 @@ set( false ).                                                       // at start 
 
 // OPERATION #18 in purchase sequence schema
 +!kqml_received( Sender, propose, Content, MsgId )
-	:   Content = confirmation( OrderId, OrderInfo )
-			& order( id( OrderId ), client( Client ), status( pending ), info( OrderInfo ) )
+	:   Content = confirm( OrderId, OrderInfo )[ Items ]
 	<-  .println( Content );
         -order( id( OrderId ), client( _ ), status( pending ), info( _ ) );
 		.println("TODO loop items").

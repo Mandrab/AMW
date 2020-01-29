@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -99,9 +101,23 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 			if ( response.getContent( ).startsWith( "error" ) ) {
 				System.out.println( "error" );
 			} else if ( response.getContent( ).startsWith( "confirmation" ) ) {
-				dispatcher.askFor( CONFIRMATION );
 				ACLMessage reply = response.createReply( );
-				reply.setContent( "confirm( order )" );
+
+				Pattern pattern = Pattern.compile( "order_id([^,]*)" );
+				Matcher matcher = pattern.matcher( response.getContent( ) );
+				String orderId = matcher.find( ) ? matcher.group( 1 ) : "";
+				orderId = orderId.substring( 1, orderId.length( ) -1 );
+
+				pattern = Pattern.compile( "info(.*)" );
+				matcher = pattern.matcher( response.getContent( ) );
+				String orderInfo = matcher.find( ) ? matcher.group( 1 ) : "";
+				orderInfo = orderInfo.substring( 1, orderInfo.length( ) -1 );
+
+				if ( dispatcher.askFor( CONFIRMATION ) )
+					reply.setContent( "confirm( " + orderId + ", " + orderInfo );
+				else
+					reply.setContent( "abort( " + orderId + ", " + orderInfo );
+
 				send( reply );
 			}
 		} );
