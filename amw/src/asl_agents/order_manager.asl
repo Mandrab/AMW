@@ -23,16 +23,14 @@ set( false ).                                                       // at start 
 // OPERATION #1 in purchase sequence schema
 +!kqml_received( Sender, cfp, Content, MsgId )                      // try to accept an order
 	:   Content = order( client( Client ), address( Address ) )[ Items ]
-	<-  .println( Content );
-		!order_id( Content, OrderId );                              // generate an id for the order
+	<-  !order_id( Content, OrderId );                              // generate an id for the order
 		+order( id( OrderId ), client( Sender ),
 				status( checking ), info( Content ) ); // save the order info
 		.df_search( "management( items )", "retrieve( item )",
 				Providers );                                        // search for agents able to manage items retrieve
 		.nth( 0, Providers, Provider );                             // get the first agent
-		Items = [ Head | Tail ];
         .send( Provider, cfp,
-                retrieve( order_id( OrderId ) ) [ Head | Items ] ).         // ask if there're all items of the order
+                retrieve( order_id( OrderId ) )[ Items ] ).         // ask if there're all items of the order
 
 // OPERATION #6/11 in purchase sequence schema
 +!kqml_received( Sender, propose, Content, MsgId )
@@ -71,7 +69,9 @@ set( false ).                                                       // at start 
 		.df_search( "management( items )", "retrieve( item )",
                 Providers );                                        // search for agents able to manage items retrieve
         .nth( 0, Providers, Provider );                             // get the first agent
-        .send( Provider, cfp, release[ Items ] ).                   // release items reservation
+        .concat( release, Items, Msg );
+        .term2string( TermMessage, Msg );
+        .send( Provider, cfp, TermMessage ).                        // release items reservation
 
 // OPERATION #18 in purchase sequence schema
 +!kqml_received( Sender, propose, Content, MsgId )
