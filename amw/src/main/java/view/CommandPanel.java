@@ -91,6 +91,8 @@ public class CommandPanel extends JPanel {
 	}
 
 	public void update( List<Command> commands ) {
+		if ( commands.equals( availableCommands ) ) return;
+
 		availableCommands.clear( );
 		availableCommands.addAll( commands );
 		commandsIdList.setListData( ( Vector<String> ) availableCommands.stream( )

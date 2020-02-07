@@ -4,41 +4,30 @@ import interpackage.Command;
 import interpackage.Item;
 import interpackage.RequestDispatcher;
 import jade.lang.acl.MessageTemplate;
-import jason.NoValueException;
-import model.utils.LiteralUtils;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
-import jason.asSyntax.Atom;
 import jason.asSyntax.Literal;
-import jason.asSyntax.LiteralImpl;
 import jason.asSyntax.Structure;
 import model.utils.ServiceType;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static interpackage.RequestHandler.Request.*;
-import static model.utils.LiteralUtils.getValue;
-import static model.utils.LiteralUtils.split;
+import static model.utils.LiteralUtils.*;
 
 public class ClientAgentImpl extends Agent implements ClientAgent {
 
@@ -115,13 +104,8 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		// create the return obj
 		CompletableFuture<List<?>> result = new CompletableFuture<>( );
 
-		// when a response came, complete the result in an appropriate way
-		response.thenAccept( aclMessage -> {
-			if ( includePositions )
-				result.complete( parseItems( aclMessage.getContent( ) ) );
-			else
-				result.complete( parseItems( aclMessage.getContent( ) ).stream( ).flatMap( item -> IntStream.range( 0, item.getQuantity( ) ).mapToObj( i -> item.getItemId( ) ) ).collect( Collectors.toList( ) ) );
-		} );
+		// when a response came, complete the result
+		response.thenAccept( aclMessage -> result.complete( parseItems( aclMessage.getContent( ) ) ) );
 
 		// return the value
 		return result;
@@ -130,14 +114,14 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 	private void placeOrder( String... args ) {
 		List<String> l = new ArrayList<>( Arrays.asList( args ) );
 
-		Literal order = buildLiteral( "order", new SimpleEntry[] {
-					new SimpleEntry<>( "client", l.remove( 0 ) ),
-					new SimpleEntry<>( "address", l.remove( 0 ) )
+		Literal order = buildLiteral( "order", new SimpleStructure[] {
+					new SimpleStructure( "client", l.remove( 0 ) ),
+					new SimpleStructure( "address", l.remove( 0 ) )
 				},
-				( (List<Literal>) l.stream( ).collect( Collectors.groupingBy( e -> e, Collectors.counting( ) ) )
-				.entrySet( ).stream( ).map( e -> buildLiteral( "item", new SimpleEntry[] {
-						new SimpleEntry<>( "id", e.getKey( ) ),
-						new SimpleEntry<>( "quantity", "" + e.getValue( ) )
+				( l.stream( ).collect( Collectors.groupingBy( e -> e, Collectors.counting( ) ) )
+				.entrySet( ).stream( ).map( e -> buildLiteral( "item", new SimpleStructure[] {
+						new SimpleStructure( "id", e.getKey( ) ),
+						new SimpleStructure( "quantity", "" + e.getValue( ) )
 				}, new Literal[]{} ) ).collect( Collectors.toList( ) ) ).toArray( new Literal[]{} )
 		);
 
@@ -208,45 +192,11 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		return returnValue;
 	}
 
-	private Literal buildLiteral( String name, SimpleEntry<String, String>[] structures, Literal[] list ) {
-		Literal literal = new LiteralImpl( new Atom( name ) );
-
-		Arrays.asList( structures ).forEach( entry -> {
-			Structure struct = new Structure( entry.getKey( ) );
-			struct.addTerm( new Atom( entry.getValue( ) ) );
-			literal.addTerm( struct );
-		} );
-
-		literal.addAnnots( list );
-
-		return literal;
-	}
-
 	private List<Item> parseItems ( String content ) {
-		List<String> l = new ArrayList<>( Arrays.asList( content.substring( 1, content.length( ) -1 ) // remove initial and final []
-				.split( "," ) ) );
-
-		for( int i = 0; i < l.size( ); ) {
-			if ( l.get( i ).contains( "[" ) && ! l.get( i ).endsWith( "]" ) ) {
-				l.set( i, l.get( i ) + ',' + l.get( i +1 ) );
-				l.remove( i + 1 );
-			} else i++;
-		}
-
-		return l.stream( ).map( Item::parse ).collect( Collectors.toList( ) );
+		return split( content ).stream( ).map( Item::parse ).collect( Collectors.toList( ) );
 	}
 
 	private List<Command> parseCommands ( String content ) {
-		return split( content ).stream( ).map( LiteralUtils::splitStructAndList )
-				.map( pair -> new Command( getValue( pair.getKey( ), "id" ),
-							getValue( pair.getKey( ), "name" ),
-							getValue( pair.getKey( ), "description" ),
-							split( pair.getValue( ) ).stream( )
-									.map( s -> new ImmutableTriple<>(
-														getValue( s, "v_id" ),
-														split( Objects.requireNonNull( getValue( s, "requirements" ) ) ),
-														getValue( s, "script" ) )
-									).collect( Collectors.toList( ) ) )
-				).collect( Collectors.toList( ) );
+		return split( content ).stream( ).map( Command::parse ).collect( Collectors.toList( ) );
 	}
 }

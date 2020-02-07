@@ -1,5 +1,6 @@
 package view;
 
+import interpackage.Item;
 import interpackage.RequestDispatcher;
 import view.utils.GridBagPanelAdder;
 import view.utils.ComponentsBuilder;
@@ -9,19 +10,23 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static interpackage.RequestHandler.Request.INFO_ITEMS_LIST;
 import static interpackage.RequestHandler.Request.ORDER;
 
 public class OrderPanel extends JPanel {
 
+	private Vector<String> items = new Vector<>( );                         // store items
+	private JList<String> itemsList;
+
 	public OrderPanel ( RequestDispatcher dispatcher ) {
 
 		// window panel setup
 		setLayout( new GridBagLayout( ) );
 
-		// store items and selected items lists
-		Vector<String> items = new Vector<>( );
+		// selected items lists
 		Vector<String> selectedItems = new Vector<>( );
 
 		// client name
@@ -82,7 +87,7 @@ public class OrderPanel extends JPanel {
 				.addToPanel( this, removeButton );
 
 		// store list
-		JList<String> itemsList = ComponentsBuilder.createList( items, Math.min( items.size( ), 25 ), 225 );
+		itemsList = ComponentsBuilder.createList( items, Math.min( items.size( ), 25 ), 225 );
 		itemsList.setMinimumSize( new Dimension( 50, 50 ) );
 		new GridBagPanelAdder( ).setPosition( 0, 0 )
 				.setWideness( 1, 4 )
@@ -100,10 +105,16 @@ public class OrderPanel extends JPanel {
 				.setFill( GridBagConstraints.HORIZONTAL )
 				.addToPanel( this, addButton );
 
-		dispatcher.<CompletableFuture<List<String>>>askFor( INFO_ITEMS_LIST ).thenAccept( newItems -> {
-			items.clear( );
-			items.addAll( newItems );
-			itemsList.setListData( items );
-		} );
+		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_ITEMS_LIST ).thenAccept( this::update );
+	}
+
+	public void update( List<Item> items ) {
+		Vector<String> input = items.stream( ).flatMap( item -> IntStream.range( 0, item.getQuantity( ) )
+				.mapToObj( i -> item.getItemId( ) ) ).collect( Collectors.toCollection( Vector::new ) );
+		if ( this.items.equals( input ) ) return;
+
+		this.items.clear( );
+		this.items.addAll( input );
+		itemsList.setListData( input.toArray( new String[] {} ) );
 	}
 }

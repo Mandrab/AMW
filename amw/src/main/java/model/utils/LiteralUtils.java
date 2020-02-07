@@ -1,6 +1,9 @@
 package model.utils;
 
-import jason.NoValueException;
+import jason.asSyntax.Atom;
+import jason.asSyntax.Literal;
+import jason.asSyntax.LiteralImpl;
+import jason.asSyntax.Structure;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -9,6 +12,20 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class LiteralUtils {
+
+	public static Literal buildLiteral( String name, SimpleStructure[] structures, Literal[] list ) {
+		Literal literal = new LiteralImpl( new Atom( name ) );
+
+		Arrays.asList( structures ).forEach( entry -> {
+			Structure struct = new Structure( entry.getName( ) );
+			struct.addTerm( new Atom( entry.getValue( ) ) );
+			literal.addTerm( struct );
+		} );
+
+		literal.addAnnots( list );
+
+		return literal;
+	}
 
 	public static String getValue( String structure, String valueOf ) {
 		Pair<String, String> parts = splitStructAndList( structure );
@@ -85,27 +102,47 @@ public class LiteralUtils {
 		Vector<Character> chars = list.chars( ).mapToObj( i -> ( char ) i )
 				.collect( Collectors.toCollection( Vector::new ) );
 		List<String> output = new LinkedList<>(  );
-		int startingIndex = 0;
+		int startingIdx = 0;
+		int lastLiteralIdx = 0;
 		int openedParenthesis = 0;
-
 
 		for ( int i = 0; i < chars.size( ); i ++ ) {
 			if ( chars.get( i ).equals( ',' ) && openedParenthesis == 0 ) {
-				final StringBuilder sb = new StringBuilder( i - startingIndex );
-				IntStream.range( startingIndex, i ).forEach( idx -> sb.append( chars.get( idx ) ) );
+				final StringBuilder sb = new StringBuilder( i - startingIdx );
+				IntStream.range( startingIdx, i ).forEach( idx -> sb.append( chars.get( idx ) ) );
 				output.add( sb.toString( ).replaceAll( " ", "" ) );
-				startingIndex = i + 1;
-			} else if ( chars.get( i ).equals( '(' ) )
+				lastLiteralIdx = i;
+				startingIdx = i + 1;
+			} else if ( chars.get( i ).equals( '(' ) || chars.get( i ).equals( '[' ) )
 				openedParenthesis++;
-			else if ( chars.get( i ).equals( ')' ) )
+			else if ( chars.get( i ).equals( ')' ) || chars.get( i ).equals( ']' ) )
 				openedParenthesis--;
 		}
 
 		if ( ! output.isEmpty( ) && list.contains( "," ) )
-			output.add( list.substring( list.lastIndexOf( "," ) + 1 ).replaceAll( " ", "" ) );
+			output.add( list.substring( lastLiteralIdx + 1 ).replaceAll( " ", "" ) );
 		else
 			output.add( list.replaceAll( " ", "" ) );
 
 		return output;
+	}
+
+	public static class SimpleStructure {
+
+		private String name;
+		private String value;
+
+		public SimpleStructure( String name, String value ) {
+			this.name = name;
+			this.value = value;
+		}
+
+		public String getName ( ) {
+			return name;
+		}
+
+		public String getValue ( ) {
+			return value;
+		}
 	}
 }

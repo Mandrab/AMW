@@ -31,7 +31,9 @@ public class TestLiteralUtils {
 						new String[]{ "str1(str2(ciao2),str3(ciao3))" } ),
 				new ImmutablePair<>( "[str1(ciao1), str2(ciao2)]", new String[]{ "str1(ciao1)", "str2(ciao2)" } ),
 				new ImmutablePair<>( "[str1(ciao1), str2(ciao2),str3(ciao3)]",
-						new String[]{ "str1(ciao1)", "str2(ciao2)", "str3(ciao3)" } )
+						new String[]{ "str1(ciao1)", "str2(ciao2)", "str3(ciao3)" } ),
+				new ImmutablePair<>( "[lit(1)[lit(2),lit(3)], lit(2)[lit(3),lit(4)]]",
+						new String[]{ "lit(1)[lit(2),lit(3)]", "lit(2)[lit(3),lit(4)]" } )
 		} );
 
 		inOut.forEach( couple -> assertArrayEquals( couple.getValue( ),
