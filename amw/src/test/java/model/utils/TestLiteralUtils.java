@@ -3,7 +3,6 @@ package model.utils;
 import static model.utils.LiteralUtils.*;
 import static org.junit.Assert.*;
 
-import jason.NoValueException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
@@ -68,7 +67,7 @@ public class TestLiteralUtils {
 
 		try {
 			getValue( "" );
-		} catch ( NoValueException ignored ) { }
+		} catch ( RuntimeException ignored ) { }
 		catch ( Exception e ) {
 			fail( "should have thrown a NoValueException" );
 		}
@@ -112,12 +111,6 @@ public class TestLiteralUtils {
 				new ImmutableTriple<>( "[str1(ciao), str2(ciao2), str3(ciao3)]", "str2", "ciao2" ),
 		} );
 
-		inOut.forEach( triple -> {
-			try {
-				assertEquals( triple.getRight( ), getValue( triple.getLeft( ), triple.getMiddle( ) ) );
-			} catch ( NoValueException e ) {
-				fail( "shouldn't throw Exception" );
-			}
-		} );
+		inOut.forEach( triple -> assertEquals( triple.getRight( ), getValue( triple.getLeft( ), triple.getMiddle( ) ) ) );
 	}
 }

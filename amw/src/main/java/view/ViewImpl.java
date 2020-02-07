@@ -5,7 +5,9 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+import interpackage.Command;
 import interpackage.Item;
 import interpackage.RequestDispatcher;
 
@@ -13,26 +15,31 @@ import static interpackage.RequestHandler.Request.*;
 
 public class ViewImpl extends JFrame implements View {
 
+	private RequestDispatcher dispatcher;
+	private OrderPanel orderPanel;
 	private WarehousePanel graphicalWarehousePanel;
+	private CommandPanel commandPanel;
 
 	// setup window
 	public ViewImpl ( RequestDispatcher dispatcher ) {
+		this.dispatcher = dispatcher;
 		dispatcher.register( this );
 
-		graphicalWarehousePanel = new WarehousePanel( 10 );
-
 		setupTheme(  );
+
+		orderPanel = new OrderPanel( dispatcher );
+		graphicalWarehousePanel = new WarehousePanel( 10 );
+		commandPanel = new CommandPanel( dispatcher );
 
 		setupView( dispatcher );
 	}
 
-	@Override
+	@Override @SuppressWarnings("unchecked")
 	public <T> T askFor ( Request request, String... args ) {
 		if ( request == CONFIRMATION ) {
 			if ( JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog( this, "Would you like to confirm the order?",
-					"Order Confirmation", JOptionPane.YES_NO_OPTION ) ) {
+					"Order Confirmation", JOptionPane.YES_NO_OPTION ) )
 				return ( T ) ( Boolean ) true;
-			}
 			return ( T ) ( Boolean ) false;
 		}
 		return null;
@@ -71,11 +78,11 @@ public class ViewImpl extends JFrame implements View {
 
 		JTabbedPane tabbedPane = new JTabbedPane( );
 
-		tabbedPane.add( "Order", new OrderPanel( dispatcher ) );
+		tabbedPane.add( "Order", orderPanel );
 
 		tabbedPane.add( "Graphic", graphicalWarehousePanel );
 
-		tabbedPane.add( "Command", new CommandPanel( dispatcher ) );
+		tabbedPane.add( "Command", commandPanel );
 
 		add( tabbedPane );                                                  // add the panel to this frame
 
@@ -98,8 +105,11 @@ public class ViewImpl extends JFrame implements View {
 		setLocationRelativeTo( null );
 	}
 
-	public void update( List<Item> items ) {
-		 graphicalWarehousePanel.update( items );
+	public void update( ) {
+		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE )
+				.thenAccept( state -> graphicalWarehousePanel.update( state ) );
+		dispatcher.<CompletableFuture<List<Command>>>askFor( INFO_COMMANDS )
+				.thenAccept( commands -> commandPanel.update( commands ) );
 	}
 
 }

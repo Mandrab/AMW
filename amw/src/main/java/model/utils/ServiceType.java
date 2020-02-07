@@ -7,9 +7,8 @@ public enum ServiceType {
 	MANAGEMENT_ITEMS( "management( items )" ),
 	INFO_WAREHOUSE( "info( warehouse )" ),
 	MANAGEMENT_COMMANDS( "management( commands )"),
-	//ADD_COMMANDS( "add( commands )" ),
-	INFO_COMMANDS( "info( commands )" );
-	//ABILITY_STORE( "ability store" );
+	INFO_COMMANDS( "info( commands )" ),
+	REQUEST_COMMAND( "request( command )" );
 
 	private String name;
 

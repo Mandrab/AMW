@@ -39,7 +39,7 @@ class ViewUpdaterImpl extends Thread implements ViewUpdater {
 	}
 
 	protected void exec( ) {
-		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE ).thenAccept( l -> view.update( l ) );
+		view.update( );
 	}
 
 	public synchronized void terminate( ) {

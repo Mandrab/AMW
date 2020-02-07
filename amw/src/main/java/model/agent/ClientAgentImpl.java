@@ -19,6 +19,8 @@ import jason.asSyntax.Structure;
 import model.utils.ServiceType;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -27,13 +29,14 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static interpackage.RequestHandler.Request.CONFIRMATION;
-import static interpackage.RequestHandler.Request.INFO_WAREHOUSE_STATE;
+import static interpackage.RequestHandler.Request.*;
 import static model.utils.LiteralUtils.getValue;
 import static model.utils.LiteralUtils.split;
 
@@ -57,6 +60,10 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 			case INFO_COMMANDS:
 				return ( T ) getCommandsInfo( );
 
+			case EXEC_COMMAND:
+				execCommand( args[ 0 ], args[ 1 ] );
+				break;
+
 			case END:
 				takeDown( );
 				break;
@@ -69,6 +76,18 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 				throw new NotImplementedException( "The return of the required element has not yet been implemented. Sorry for the discomfort" );
 		}
 		return null;
+	}
+
+	private void execCommand( String scriptId, String versionId ) {
+		// setup the message and send it
+		Structure info = new Structure( "request" );
+		Structure cId = new Structure( "command_id" );
+		cId.addTerm( new Structure( scriptId ) );
+		Structure vId = new Structure( "version_id" );
+		vId.addTerm( new Structure( versionId ) );
+		info.addTerms( cId, vId );
+
+		sendCFP( ServiceType.MANAGEMENT_COMMANDS.getName( ), ServiceType.REQUEST_COMMAND.getName( ), info, false );
 	}
 
 	private CompletableFuture<List<Command>> getCommandsInfo( ) {
@@ -181,7 +200,6 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 
 				returnValue.complete( s );
 
-
 			} catch ( FIPAException | IOException e ) {
 				e.printStackTrace( );
 			}
@@ -220,25 +238,15 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 
 	private List<Command> parseCommands ( String content ) {
 		return split( content ).stream( ).map( LiteralUtils::splitStructAndList )
-				.map( pair -> { try {
-						return new Command( getValue( pair.getKey( ), "id" ),
-								getValue( pair.getKey( ), "name" ),
-								getValue( pair.getKey( ), "description" ),
-								split( pair.getValue( ) ).stream( )
-										.map( s -> { try {
-												return new ImmutablePair<>(
-														split( Objects.requireNonNull( getValue( s, "variant" ) ) ),
-														getValue( s, "script" ) );
-											} catch ( NoValueException e ) {
-												e.printStackTrace( );
-											} return null;
-										} ).collect( Collectors.toList( ) ) );
-					} catch ( NoValueException e ) {
-						e.printStackTrace( );
-					} return null;
-				} ).collect( Collectors.toList( ) );
+				.map( pair -> new Command( getValue( pair.getKey( ), "id" ),
+							getValue( pair.getKey( ), "name" ),
+							getValue( pair.getKey( ), "description" ),
+							split( pair.getValue( ) ).stream( )
+									.map( s -> new ImmutableTriple<>(
+														getValue( s, "v_id" ),
+														split( Objects.requireNonNull( getValue( s, "requirements" ) ) ),
+														getValue( s, "script" ) )
+									).collect( Collectors.toList( ) ) )
+				).collect( Collectors.toList( ) );
 	}
-
-
-
 }

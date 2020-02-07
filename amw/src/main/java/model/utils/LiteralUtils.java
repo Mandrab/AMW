@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 
 public class LiteralUtils {
 
-	public static String getValue( String structure, String valueOf ) throws NoValueException {
+	public static String getValue( String structure, String valueOf ) {
 		Pair<String, String> parts = splitStructAndList( structure );
 		List<String> structures = split( parts.getKey( ) );
 		List<String> lists = split( parts.getValue( ) );
@@ -22,7 +22,7 @@ public class LiteralUtils {
 				try {
 					String s = getValue( getValue( struct ), valueOf );
 					if ( s != null ) return s;
-				} catch( NoValueException ignored ) { }
+				} catch( RuntimeException ignored ) { }
 			}
 		}
 
@@ -33,16 +33,16 @@ public class LiteralUtils {
 				try {
 					String s = getValue( getValue( struct ), valueOf );
 					if ( s != null ) return s;
-				} catch( NoValueException ignored ) { }
+				} catch( RuntimeException ignored ) { }
 			}
 		}
 
 		return null;
 	}
 
-	public static String getValue( String structure ) throws NoValueException {
+	public static String getValue( String structure ) throws RuntimeException {
 		if ( ! structure.contains( "(" ) )
-			throw new NoValueException( "the passed structure has no parenthesis value" );
+			throw new RuntimeException( "the passed structure has no parenthesis value" );
 		if ( ! structure.contains( ")" ) )
 			throw new IllegalStateException( "no ')' is present" );
 		if ( structure.startsWith( "[" ) )

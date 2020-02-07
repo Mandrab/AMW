@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 public class TestView {
 
-	/*@Test @SuppressWarnings( "unchecked" )
+	@Test @SuppressWarnings( "unchecked" )
 	public void listView( ) throws InterruptedException {
 		new ViewImpl( new RequestDispatcher( ) {
 			@Override
@@ -32,7 +32,7 @@ public class TestView {
 			}
 		} );
 		Thread.sleep( 20000 );
-	}*/
+	}
 
 	@Test @SuppressWarnings( "unchecked" )
 	public void submitOrder( ) throws InterruptedException {
@@ -60,7 +60,7 @@ public class TestView {
 				return ( T ) ret;
 			}
 		} );
-		v.update( items );
+		v.update( );
 		Thread.sleep( 20000 );
 	}
 }
