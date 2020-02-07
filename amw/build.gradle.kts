@@ -124,7 +124,7 @@ task<JavaExec>( "run_terminal" ) {
     }
     standardInput = System.`in`                                     // std input (terminal)
 
-    main = "Controller.Main"                                        // jason mas2j runner
+    main = "controller.Main"                                        // jason mas2j runner
 
 }
 
