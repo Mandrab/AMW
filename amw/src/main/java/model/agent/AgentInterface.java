@@ -4,6 +4,6 @@ import org.junit.runners.model.InitializationError;
 
 public interface AgentInterface {
 
-	void start ( ) throws InitializationError;
+	void start ( boolean retryConnection ) throws InitializationError;
 
 }

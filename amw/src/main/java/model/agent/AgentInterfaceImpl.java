@@ -9,6 +9,8 @@ import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import org.junit.runners.model.InitializationError;
 
+import static interpackage.utils.Utils.sleep;
+
 public class AgentInterfaceImpl implements AgentInterface {
 
 	private RequestDispatcher dispatcher;
@@ -19,23 +21,32 @@ public class AgentInterfaceImpl implements AgentInterface {
 
 	// start the jade agent
 	@Override
-	public void start ( ) throws InitializationError {
-		try {
-			Runtime rt = Runtime.instance(  );                                  // get a hold on JADE runtime
+	public void start ( boolean retryConnection ) throws InitializationError {
 
-			Profile p = new ProfileImpl(  );                                    // create a default profile
+		AgentController agent = null;
 
-			ContainerController cc = rt.createAgentContainer( p );              // create a new non-main container
+		do {
+			try {
 
-			AgentController agent =                                             // Create a new agent
-					cc.createNewAgent( "interface-ag",
-							ClientAgentImpl.class.getCanonicalName( ),
-							new Object[]{ dispatcher } );
+				Runtime rt = Runtime.instance(  );                                  // get a hold on JADE runtime
 
-			agent.start(  );                                                    // fire up the agent
-		} catch ( StaleProxyException e ) {
-			throw new InitializationError( "Failed to initialize the agent" );
-		}
+				Profile p = new ProfileImpl(  );                                    // create a default profile
+
+				ContainerController cc = rt.createAgentContainer( p );              // create a new non-main container
+
+				agent = cc.createNewAgent( "interface-ag",                          // Create a new agent
+						ClientAgentImpl.class.getCanonicalName( ), new Object[]{ dispatcher } );
+
+				agent.start( );                                                     // fire up the agent
+
+			} catch ( StaleProxyException se ) {
+				throw new InitializationError( "Failed to initialize the agent" );
+			} catch ( NullPointerException npe ) {                                  // when the system is not running
+				sleep( 1000 );
+				if ( ! retryConnection )
+					npe.printStackTrace( );
+			}
+		} while ( agent == null && retryConnection );
 	}
 
 }

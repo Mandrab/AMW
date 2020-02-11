@@ -126,6 +126,7 @@ task<JavaExec>( "run_terminal" ) {
 
     main = "controller.Main"                                        // jason mas2j runner
 
+    args( "retry" )                                                 // keep retry connection if fails
 }
 
 task<org.gradle.api.internal.AbstractTask> ( "run" ) {
@@ -135,8 +136,6 @@ task<org.gradle.api.internal.AbstractTask> ( "run" ) {
                 .directory( projectDir )
                 .command( "." + File.separator + "gradlew", "run_system" )
                 .start( )
-
-        Thread.sleep( 8000 )                                        // wait the system to start
     }
 
     // after the system startup, run the terminal

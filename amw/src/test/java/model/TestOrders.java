@@ -21,7 +21,7 @@ public class TestOrders {
 		new Thread( ( ) -> {
 			try {
 				AgentInterface agent = new AgentInterfaceImpl( dispatcher );
-				agent.start( );
+				agent.start( true );
 			} catch ( InitializationError initializationError ) {
 				fail( "Error in agent initialization" );
 			}
@@ -46,7 +46,7 @@ public class TestOrders {
 		new Thread( ( ) -> {
 			try {
 				AgentInterface agent = new AgentInterfaceImpl( dispatcher );
-				agent.start( );
+				agent.start( true );
 			} catch ( InitializationError initializationError ) {
 				fail( "Error in agent initialization" );
 			}

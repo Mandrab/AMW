@@ -7,9 +7,9 @@ import view.ViewImpl;
 
 public class ControllerImpl implements Controller {
 
-	ControllerImpl ( ) {
+	ControllerImpl ( boolean retryConnection ) {
 		RequestDispatcher dispatcher = new RequestDispatcherImpl( );
-		new ModelImpl( dispatcher );
+		new ModelImpl( dispatcher, retryConnection );
 		new ViewUpdaterImpl( new ViewImpl( dispatcher ),
 				dispatcher )
 				.start( );

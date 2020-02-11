@@ -9,10 +9,10 @@ public class ModelImpl implements Model {
 
 	private AgentInterface agent;
 
-	public ModelImpl( RequestDispatcher dispatcher ) {
+	public ModelImpl( RequestDispatcher dispatcher, boolean retryConnection ) {
 		try {
 			agent = new AgentInterfaceImpl( dispatcher );
-			agent.start( );
+			agent.start( retryConnection );
 		} catch ( InitializationError initializationError ) {
 			initializationError.printStackTrace( );
 		}
