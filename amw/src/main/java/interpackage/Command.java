@@ -1,5 +1,6 @@
 package interpackage;
 
+import model.utils.LiteralUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -92,7 +93,9 @@ public class Command {
 
 		static public Version parse ( String input ) {
 			return new Version( getValue( input, "v_id" ),
-					split( Objects.requireNonNull( getValue( input, "requirements" ) ) ), getValue( input, "script" ) );
+					split( split( getValue( input ) ).stream( ).filter( lit -> lit.startsWith( "requirements" ) )
+							.findFirst( ).map( LiteralUtils::splitStructAndList ).get( ).getValue( ) ),
+					getValue( input, "script" ) );
 		}
 
 		@Override
