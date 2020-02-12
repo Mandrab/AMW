@@ -3,6 +3,9 @@ package model.agent;
 import interpackage.Command;
 import interpackage.Item;
 import interpackage.RequestDispatcher;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.MessageTemplate;
 import jade.core.Agent;
 import jade.domain.DFService;
@@ -21,22 +24,112 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static interpackage.RequestHandler.Request.*;
 import static model.utils.LiteralUtils.*;
 
 public class ClientAgentImpl extends Agent implements ClientAgent {
 
+	private static final String NOT_IMPLEMENTED_REQUEST_MSG = "The return of the required element has not yet been " +
+			"implemented. Sorry for the discomfort";
+	private static final int UPDATE_TIME = 5000;// TODO
+	private static final int RESPONSE_TIME = 50000;
+
 	private RequestDispatcher dispatcher;
+	private List<String> messages;
+	private List<Item> warehouseItems;
+	private List<Command> repositoryCommands;
+	private long lastUpdate;
 
 	@Override
 	protected void setup( ) {
 		dispatcher = ( RequestDispatcher ) getArguments( )[ 0 ];
 		dispatcher.register( this );
+
+		messages = new LinkedList<>(  );
+		warehouseItems = new LinkedList<>(  );
+		repositoryCommands = new LinkedList<>(  );
+
+		addBehaviour( listenMessage( ) );
+		addBehaviour( updateInfos( ) );
+	}
+
+	protected Behaviour listenMessage( ) {
+		return new CyclicBehaviour( ) {
+			@Override
+			public void action ( ) {
+				final ACLMessage message = receive( MessageTemplate.MatchInReplyTo( null ) );
+
+				if ( message != null ) {
+					final String content = receive( MessageTemplate.MatchInReplyTo( null ) ).getContent( );
+					String struct1 = split( getValue( content ) ).get( 0 );
+					String struct2 = split( getValue( content ) ).get( 1 );
+
+					if ( content.startsWith( "error" ) ) {
+						dispatcher.askFor( MANAGE_ERROR, struct1, struct2 );
+					} else if ( content.startsWith( "confirmation" ) ) {
+						ACLMessage reply = message.createReply( );
+
+						String orderId = struct1.startsWith( "order_id" ) ? getValue( struct1 ) : getValue( struct2 );
+						String orderInfo = struct1.startsWith( "info" ) ? getValue( struct1 ) : getValue( struct2 );
+
+						dispatcher.<CompletableFuture<Boolean>>askFor( CONFIRMATION, orderId, orderInfo )
+								.thenAccept( ack -> {
+									reply.setContent( ( ack ? "confirm( " : "abort( " ) + orderId + ", " + orderInfo );
+									send( reply );
+								} );
+					} else {
+						System.out.println( "Received message: " + message.getContent( ) );     // TODO remove
+						messages.add( message.getContent( ) );
+					}
+				} else block( );
+			}
+		};
+	}
+
+	protected Behaviour updateInfos( ) {
+		return new CyclicBehaviour( ) {
+			@Override
+			public void action ( ) {
+				if ( new Date( ).getTime( ) - lastUpdate > UPDATE_TIME ) {
+					updateItems( );                                                 // update warehouse (items) info
+					updateCommands( );                                              // update repository (commands) info
+					lastUpdate = new Date( ).getTime( );
+				}
+				block( UPDATE_TIME );                                               // wait specified time
+			}
+		};
+	}
+
+	private void updateItems( ) {
+		// setup the message and send it
+		Structure info = new Structure( "info" );
+		info.addTerm( new Structure( "warehouse" ) );
+		sendCFP( ServiceType.MANAGEMENT_ITEMS.getName( ), ServiceType.INFO_WAREHOUSE.getName( ),
+				buildACL( ACLMessage.CFP, info ), false ).thenAccept( message -> {
+					synchronized ( this ) {
+						warehouseItems = split( message.getContent( ) ).stream( ).map( Item::parse )
+								.collect( Collectors.toList( ) );                   // update warehouse infos
+					}
+				} );
+	}
+
+	private void updateCommands( ) {
+		// setup the message and send it
+		Structure info = new Structure( "info" );
+		info.addTerm( new Structure( "commands" ) );
+		sendCFP( ServiceType.MANAGEMENT_COMMANDS.getName( ), ServiceType.INFO_COMMANDS.getName( ),
+				buildACL( ACLMessage.CFP, info ), false ).thenAccept( message -> {
+					synchronized ( this ) {
+						repositoryCommands = split( message.getContent( ) ).stream( ).map( Command::parse )
+								.collect( Collectors.toList( ) );                   // update repository info
+					}
+				} );
 	}
 
 	@Override
@@ -44,70 +137,47 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		switch ( request ) {
 			case INFO_ITEMS_LIST:
 			case INFO_WAREHOUSE_STATE:
-				return ( T ) getItemsInfo( request == INFO_WAREHOUSE_STATE );
+				return ( T ) completableResultOf( ( ) -> warehouseItems, true );
 
 			case INFO_COMMANDS:
-				return ( T ) getCommandsInfo( );
+				return ( T ) completableResultOf( ( ) -> repositoryCommands, true );
 
 			case EXEC_COMMAND:
-				execCommand( args[ 0 ], args[ 1 ] );
-				break;
+				Literal info = buildLiteral( "request", new SimpleStructure[] {
+						new SimpleStructure( "command_id", args[ 0 ] ),
+						new SimpleStructure( "version_id", args[ 1 ] )
+				}, new Literal[] {} );
+
+				sendMSG( ServiceType.MANAGEMENT_COMMANDS.getName( ), ServiceType.REQUEST_COMMAND.getName( ),
+						buildACL( ACLMessage.REQUEST, info ), false );
+				return null;
 
 			case END:
-				takeDown( );
-				break;
+				takeDown( );                                                        // terminate
+				return null;
 
 			case ORDER:
 				placeOrder( args );
-				break;
+				return null;
 
 			default:
-				throw new NotImplementedException( "The return of the required element has not yet been implemented. Sorry for the discomfort" );
+				throw new NotImplementedException( NOT_IMPLEMENTED_REQUEST_MSG );
 		}
-		return null;
 	}
 
-	private void execCommand( String scriptId, String versionId ) {
-		// setup the message and send it
-		Structure info = new Structure( "request" );
-		Structure cId = new Structure( "command_id" );
-		cId.addTerm( new Structure( scriptId ) );
-		Structure vId = new Structure( "version_id" );
-		vId.addTerm( new Structure( versionId ) );
-		info.addTerms( cId, vId );
+	private <T> CompletableFuture<T> completableResultOf( Supplier<T> resultSupplier, boolean synchronizedOnThis ) {
+		CompletableFuture<T> result = new CompletableFuture<>( );
 
-		sendCFP( ServiceType.MANAGEMENT_COMMANDS.getName( ), ServiceType.REQUEST_COMMAND.getName( ), info, false );
-	}
-
-	private CompletableFuture<List<Command>> getCommandsInfo( ) {
-		// setup the message and send it
-		Structure info = new Structure( "info" );
-		info.addTerm( new Structure( "commands" ) );
-		CompletableFuture<ACLMessage> response = sendCFP( ServiceType.MANAGEMENT_COMMANDS.getName( ), ServiceType.INFO_COMMANDS.getName( ), info, false );
-
-		// create the return obj
-		CompletableFuture<List<Command>> result = new CompletableFuture<>( );
-
-		// when a response came, complete the result in an appropriate way
-		response.thenAccept( aclMessage -> result.complete( parseCommands( aclMessage.getContent( ) ) ) );
-
-		// return the value
-		return result;
-	}
-
-	private CompletableFuture<List<?>> getItemsInfo( boolean includePositions ) {
-		// setup the message and send it
-		Structure info = new Structure( "info" );
-		info.addTerm( new Structure( "warehouse" ) );
-		CompletableFuture<ACLMessage> response = sendCFP( ServiceType.MANAGEMENT_ITEMS.getName( ), ServiceType.INFO_WAREHOUSE.getName( ), info, false );
-
-		// create the return obj
-		CompletableFuture<List<?>> result = new CompletableFuture<>( );
-
-		// when a response came, complete the result
-		response.thenAccept( aclMessage -> result.complete( parseItems( aclMessage.getContent( ) ) ) );
-
-		// return the value
+		addBehaviour( new OneShotBehaviour( ) {
+			@Override
+			public void action ( ) {
+				if ( synchronizedOnThis ) {
+					synchronized ( this ) {
+						result.complete( resultSupplier.get( ) );
+					}
+				} else result.complete( resultSupplier.get( ) );
+			}
+		} );
 		return result;
 	}
 
@@ -125,78 +195,63 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 				}, new Literal[]{} ) ).collect( Collectors.toList( ) ) ).toArray( new Literal[]{} )
 		);
 
-		sendCFP( ServiceType.MANAGEMENT_ORDERS.toString( ), ServiceType.ACCEPT_ORDER.toString( ), order, false ).thenAccept( response -> {
-			if ( response.getContent( ).startsWith( "error" ) ) {
-				System.out.println( "error" );
-			} else if ( response.getContent( ).startsWith( "confirmation" ) ) {
-				ACLMessage reply = response.createReply( );
-
-				Pattern pattern = Pattern.compile( "order_id([^,]*)" );
-				Matcher matcher = pattern.matcher( response.getContent( ) );
-				String orderId = matcher.find( ) ? matcher.group( 1 ) : "";
-				orderId = orderId.substring( 1, orderId.length( ) -1 );
-
-				pattern = Pattern.compile( "info(.*)" );
-				matcher = pattern.matcher( response.getContent( ) );
-				String orderInfo = matcher.find( ) ? matcher.group( 1 ) : "";
-				orderInfo = orderInfo.substring( 1, orderInfo.length( ) -1 );
-
-				if ( dispatcher.askFor( CONFIRMATION ) )
-					reply.setContent( "confirm( " + orderId + ", " + orderInfo );
-				else
-					reply.setContent( "abort( " + orderId + ", " + orderInfo );
-
-				send( reply );
-			}
-		} );
+		sendMSG( ServiceType.MANAGEMENT_ORDERS.toString( ), ServiceType.ACCEPT_ORDER.toString( ),
+				buildACL( ACLMessage.REQUEST, order ), false );
 	}
 
-	// action of send a message TODO -> makeOrder
-	private CompletableFuture<ACLMessage> sendCFP( String serviceName, String serviceType, Serializable input, boolean askAll ) {
+	private ACLMessage buildACL( int performative, Serializable content ) {
+		ACLMessage acl = new ACLMessage( performative );          // create a "call for propose" message
+
+		try {
+			if ( content instanceof String ) acl.setContent( ( String ) content );
+			else acl.setContentObject( content );
+		} catch ( IOException e ) {
+			e.printStackTrace( );
+		}
+
+		return acl;
+	}
+
+	private void sendMSG( String serviceName, String serviceType, ACLMessage message, boolean toAll ) {
 		DFAgentDescription template = new DFAgentDescription( );            // create a "service provider" template
 		ServiceDescription sd = new ServiceDescription( );
 		sd.setName( serviceName );
 		sd.setType( serviceType );
 		template.addServices( sd );
 
-		CompletableFuture<ACLMessage> returnValue = new CompletableFuture<>( );
-
-		Executors.newCachedThreadPool().submit( ( ) -> {
+		Executors.newCachedThreadPool( ).submit( ( ) -> {
 			try {
-				DFAgentDescription[] result = DFService.search(this, template); // an array containing all the agents that matches the template
+				DFAgentDescription[] result = DFService.search( this, template ); // an array containing all the agents that matches the template
 
 				if ( result.length == 0 ) return;
 
-				ACLMessage cfp = new ACLMessage( ACLMessage.CFP );          // create a "call for propose" message
-				for ( int i = 0; ( i == 0 || askAll ) && i < result.length; i++ )
-					cfp.addReceiver( result[i].getName( ) );                // add message's receiver
+				for ( int i = 0; ( i == 0 || toAll ) && i < result.length; i++ )
+					message.addReceiver( result[i].getName( ) );                // add message's receiver
 
-				// set the content
-				if ( input instanceof String ) cfp.setContent( ( String ) input );
-				else cfp.setContentObject( input );
-
-				String msgId = java.time.LocalDateTime.now( ).toString( ) + Math.random( );
-				cfp.setReplyWith( msgId );
-
-				send( cfp );                                                // send the cfp to all ability sellers
-
-				ACLMessage s = blockingReceive( MessageTemplate.MatchInReplyTo( msgId ), 50000 );
-
-				returnValue.complete( s );
-
-			} catch ( FIPAException | IOException e ) {
+				send( message );                                                // send the cfp to all ability sellers
+			} catch ( FIPAException e ) {
 				e.printStackTrace( );
 			}
 		} );
+	}
+
+	// action of send a message
+	private CompletableFuture<ACLMessage> sendCFP( String serviceName, String serviceType, ACLMessage message, boolean askAll ) {
+		CompletableFuture<ACLMessage> returnValue = new CompletableFuture<>( );
+
+		String msgId = java.time.LocalDateTime.now( ).toString( ) + Math.random( );
+
+		message.setPerformative( ACLMessage.CFP );
+		message.setReplyWith( msgId );
+
+		sendMSG( serviceName, serviceType, message, askAll );
+
+		Executors.newCachedThreadPool( ).submit( ( ) -> {
+			ACLMessage s = blockingReceive( MessageTemplate.MatchInReplyTo( msgId ), RESPONSE_TIME );
+
+			returnValue.complete( s );
+		} );
 
 		return returnValue;
-	}
-
-	private List<Item> parseItems ( String content ) {
-		return split( content ).stream( ).map( Item::parse ).collect( Collectors.toList( ) );
-	}
-
-	private List<Command> parseCommands ( String content ) {
-		return split( content ).stream( ).map( Command::parse ).collect( Collectors.toList( ) );
 	}
 }
