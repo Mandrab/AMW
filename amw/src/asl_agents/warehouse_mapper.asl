@@ -66,7 +66,7 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) )[
 	&   RequiredQ <= StoredQ - ReservedQ
 	<-  -item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ ) )[ Positions ];
 		+item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ + RequiredQ ) )[ Positions ];
-		Result = item( id( ItemId ) )[ Positions ].
+		Result = [ item( id( ItemId ) )[ Positions ] ].
 
 +!reserve( [ Item | [] ], Result )
 	:   Item = item( id( ItemId ), quantity( RequiredQ ) )

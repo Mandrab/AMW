@@ -57,7 +57,7 @@ set( false ).                                                       // at start 
 		}.
 
 // OPERATION #17 in purchase sequence schema
-+!kqml_received( Sender, propose, Content, MsgId )
++!kqml_received( Sender, refuse, Content, MsgId )
 	:   Content = abort( OrderId, OrderInfo )[ [] | Items ]
 	<-  -+order( id( OrderId ), client( _ ), status( aborted ), info( _ ) ).
 
@@ -71,7 +71,7 @@ set( false ).                                                       // at start 
         .send( Provider, cfp, TermMessage ).                        // release items reservation
 
 // OPERATION #18 in purchase sequence schema
-+!kqml_received( Sender, propose, Content, MsgId )
++!kqml_received( Sender, confirm, Content, MsgId )
 	:   Content = confirm( OrderId, OrderInfo )[ [] | Items ]
 	<-  -order( id( OrderId ), client( _ ), status( pending ), info( _ ) );
 		.println("TODO loop items").

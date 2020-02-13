@@ -77,8 +77,14 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 
 						dispatcher.<CompletableFuture<Boolean>>askFor( CONFIRMATION, orderId, orderInfo )
 								.thenAccept( ack -> {
-									reply.setContent( ( ack ? "confirm( " : "abort( " ) + orderId + ", " + orderInfo );
-									send( reply );
+									SimpleStructure[] details =  new SimpleStructure[] {
+											new SimpleStructure( "order_id", orderId ),
+											new SimpleStructure( "info", orderInfo ) };
+									try {
+										reply.setContentObject( buildLiteral( ack ? "confirm" : "abort", details, new Literal[]{ } ) );
+										reply.setPerformative( ack ? ACLMessage.CONFIRM : ACLMessage.REFUSE );
+										send( reply );
+									} catch( IOException e ) { e.printStackTrace( ); }
 								} );
 					} else {
 						System.out.println( "Received message: " + message.getContent( ) );     // TODO

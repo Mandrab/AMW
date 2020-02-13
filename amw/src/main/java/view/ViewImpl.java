@@ -37,10 +37,16 @@ public class ViewImpl extends JFrame implements View {
 	@Override @SuppressWarnings("unchecked")
 	public <T> T askFor ( Request request, String... args ) {
 		if ( request == CONFIRMATION ) {
-			if ( JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog( this, "Would you like to confirm the order?",
-					"Order Confirmation", JOptionPane.YES_NO_OPTION ) )
-				return ( T ) ( Boolean ) true;
-			return ( T ) ( Boolean ) false;
+			CompletableFuture<Boolean> response = new CompletableFuture<>( );
+
+			new Thread( () -> {
+				if ( JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog( this, "Would you like to confirm the order?",
+						"Order Confirmation", JOptionPane.YES_NO_OPTION ) )
+					response.complete( true );
+				else response.complete( false );
+			} ).start( );
+
+			return ( T ) response;
 		}
 		return null;
 	}
