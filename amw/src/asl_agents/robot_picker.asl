@@ -17,6 +17,7 @@ set( false ).                                                       // at start 
 +!setup
 	:   set( false )
 	<-  .df_register( "executor( item_picker )", "retrieve( item )" );  // register for pick items
+		.df_register( "executor( command )", "exec( command )" );       // register for pick items
 		-+set( true );                                                  // set process ended
 		+activity( working );
 		!work.
@@ -25,7 +26,7 @@ set( false ).                                                       // at start 
 
 +!work
 	:   activity( working )
-	<-  .println( "Working hard!!!" );
+	<-  //.println( "Working hard!!!" );
 		.wait( 5000 );
 		!work.
 
@@ -53,3 +54,8 @@ set( false ).                                                       // at start 
 	:   Content = retrieve( Item ) & not activity( waiting )
     <-  .send( Sender, tell, error( "confirm took too long" ) );// send error
         -+activity( working ).
+
+
++!kqml_received( Sender, confirm, Content, MsgId )
+	:   Content = command[ Requirements ]
+    <-  .println(ciao).

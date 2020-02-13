@@ -28,6 +28,7 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) )[
 		.df_register( "management( items )", "store( item )" );     // register for acquire information about items
 		.df_register( "management( items )", "find( item )" );      // register for supply item's position infos
 		.df_register( "management( items )", "retrieve( item )" );  // register for remove infos at item removal
+		.include( "utils.asl" );                                    // include utils
 		-+set( true ).                                              // set process ended
 
 // OPERATION #3 in purchase sequence schema
@@ -39,7 +40,6 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) )[
             .send( Sender, propose, error( order_id( OrderId ), error_code( "404, not found" ) ) );
         } else {
             !reserve( Items, RResult );                         // try to reserve the items
-            .println( RResult );
             if ( RResult = failed ) {                               // if i get a conflict error, send it back
                 .send( Sender, propose, error( order_id( OrderId ), error_code( "409, conflict" ) ) );
             } else {
@@ -49,7 +49,7 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) )[
         }.
 
 // OPERATION #4 in purchase sequence schema
-+!sufficient( [ Item ], Result )                                    // check if there's a sufficient quantity of product
++!sufficient( [ Item | [] ], Result )                                    // check if there's a sufficient quantity of product
 	:   Item = item( id( ItemId ), quantity( RequiredQ ) )
 	<-  .eval( Result, item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ ) )
 			& RequiredQ < StoredQ - ReservedQ ).                    // return result
@@ -60,23 +60,24 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) )[
 		.eval( Result, HeadRes == false | TailRes == false ).       // return result
 
 // OPERATION #9 in purchase sequence schema
-+!reserve( [ Item ], Positions )
++!reserve( [ Item | [] ], Result )
 	:   Item = item( id( ItemId ), quantity( RequiredQ ) )
 	&   item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ ) )
-	&   RequiredQ < StoredQ - ReservedQ
+	&   RequiredQ <= StoredQ - ReservedQ
 	<-  -item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ ) )[ Positions ];
-		+item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ + RequiredQ ) )[ Positions ].
+		+item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ + RequiredQ ) )[ Positions ];
+		Result = item( id( ItemId ) )[ Positions ].
 
-+!reserve( [ Item ], Result )
++!reserve( [ Item | [] ], Result )
 	:   Item = item( id( ItemId ), quantity( RequiredQ ) )
     &   ( not item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ ) ) | StoredQ - ReservedQ < RequiredQ )
 	<-  Result = failed.
 
-+!reserve( [ Item | Tail ], Positions )
++!reserve( [ Item | Tail ], Result )
 	<-  !reserve( [ Item ], HeadRes );
 		!reserve( Tail, TailRes );
 		if( HeadRes = failed | TailRes = failed ) { Result = failed; }
-		else { Result = [ HeadRes | TailRes ]; }.
+		else { Result = [ HeadRes, TailRes ]; }.
 
 /*/ OPERATION #9 in purchase sequence schema
 +!reserve( [ Item | Tail ], Positions )                             // TODO 409 conflic

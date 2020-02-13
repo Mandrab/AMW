@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static interpackage.RequestHandler.Request.*;
+import static jade.lang.acl.MessageTemplate.or;
 import static model.utils.LiteralUtils.*;
 
 public class ClientAgentImpl extends Agent implements ClientAgent {
@@ -38,7 +39,6 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 	private static final int RESPONSE_TIME = 50000;
 
 	private RequestDispatcher dispatcher;
-	private List<String> messages;
 	private List<Item> warehouseItems;
 	private List<Command> repositoryCommands;
 	private long lastUpdate;
@@ -48,19 +48,19 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		dispatcher = ( RequestDispatcher ) getArguments( )[ 0 ];
 		dispatcher.register( this );
 
-		messages = new LinkedList<>(  );
 		warehouseItems = new LinkedList<>(  );
 		repositoryCommands = new LinkedList<>(  );
 
 		addBehaviour( listenMessage( ) );
-		//addBehaviour( updateInfos( ) );
+		addBehaviour( updateInfos( ) );
 	}
 
 	protected Behaviour listenMessage( ) {
 		return new CyclicBehaviour( ) {
 			@Override
 			public void action ( ) {
-				final ACLMessage message = receive( MessageTemplate.MatchPerformative( ACLMessage.INFORM ) );
+				final ACLMessage message = receive( or( MessageTemplate.MatchPerformative( ACLMessage.FAILURE ),
+						MessageTemplate.MatchPerformative( ACLMessage.REQUEST ) ) );
 
 				if ( message != null ) {
 					final String content = message.getContent( );
@@ -81,8 +81,7 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 									send( reply );
 								} );
 					} else {
-						System.out.println( "Received message: " + message.getContent( ) );     // TODO remove
-						messages.add( message.getContent( ) );
+						System.out.println( "Received message: " + message.getContent( ) );     // TODO
 					}
 				} else block( );
 			}
@@ -234,7 +233,7 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 	private CompletableFuture<ACLMessage> sendCFP( String serviceName, String serviceType, ACLMessage message, boolean askAll ) {
 		CompletableFuture<ACLMessage> returnValue = new CompletableFuture<>( );
 
-		String msgId = java.time.LocalDateTime.now( ).toString( ) + Math.random( );
+		String msgId = java.time.LocalDateTime.now( ).toString( ) + String.format( "%.10f", Math.random( ) );
 
 		message.setPerformative( ACLMessage.CFP );
 		message.setReplyWith( msgId );
