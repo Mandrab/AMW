@@ -34,7 +34,7 @@ public class AgentInterfaceImpl implements AgentInterface {
 
 				ContainerController cc = rt.createAgentContainer( p );              // create a new non-main container
 
-				agent = cc.createNewAgent( "interface-ag",                          // Create a new agent
+				agent = cc.createNewAgent( "interface-ag" + Math.random( ),         // Create a new agent
 						ClientAgentImpl.class.getCanonicalName( ), new Object[]{ dispatcher } );
 
 				agent.start( );                                                     // fire up the agent

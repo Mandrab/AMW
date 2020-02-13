@@ -12,6 +12,7 @@ public interface RequestHandler {
 		CONFIRMATION,                                   // ask for order confirm
 		EXEC_COMMAND,
 		END,                                            // ask for system shutdown
+		MANAGE_ERROR,
 		ORDER                                           // ask for make an order
 	}
 

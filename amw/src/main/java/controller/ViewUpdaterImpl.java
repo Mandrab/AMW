@@ -1,17 +1,11 @@
 package controller;
 
-import interpackage.Item;
 import interpackage.RequestDispatcher;
 import view.View;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-import static interpackage.RequestHandler.Request.INFO_WAREHOUSE_STATE;
-
 class ViewUpdaterImpl extends Thread implements ViewUpdater {
 
-	private static final int REFRESH_TIME = 100;
+	private static final int REFRESH_TIME = 1000;
 	private View view;
 	private RequestDispatcher dispatcher;
 	private boolean suspended;

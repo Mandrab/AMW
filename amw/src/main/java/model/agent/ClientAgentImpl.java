@@ -24,10 +24,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static interpackage.RequestHandler.Request.*;
@@ -56,17 +53,17 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		repositoryCommands = new LinkedList<>(  );
 
 		addBehaviour( listenMessage( ) );
-		addBehaviour( updateInfos( ) );
+		//addBehaviour( updateInfos( ) );
 	}
 
 	protected Behaviour listenMessage( ) {
 		return new CyclicBehaviour( ) {
 			@Override
 			public void action ( ) {
-				final ACLMessage message = receive( MessageTemplate.MatchInReplyTo( null ) );
+				final ACLMessage message = receive( MessageTemplate.MatchPerformative( ACLMessage.INFORM ) );
 
 				if ( message != null ) {
-					final String content = receive( MessageTemplate.MatchInReplyTo( null ) ).getContent( );
+					final String content = message.getContent( );
 					String struct1 = split( getValue( content ) ).get( 0 );
 					String struct2 = split( getValue( content ) ).get( 1 );
 
@@ -137,10 +134,10 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		switch ( request ) {
 			case INFO_ITEMS_LIST:
 			case INFO_WAREHOUSE_STATE:
-				return ( T ) completableResultOf( ( ) -> warehouseItems, true );
+				return ( T ) completeSynchronizedResultOf( ( ) -> warehouseItems );     // TODO pass clone
 
 			case INFO_COMMANDS:
-				return ( T ) completableResultOf( ( ) -> repositoryCommands, true );
+				return ( T ) completeSynchronizedResultOf( ( ) -> repositoryCommands ); // TODO pass clone
 
 			case EXEC_COMMAND:
 				Literal info = buildLiteral( "request", new SimpleStructure[] {
@@ -149,7 +146,7 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 				}, new Literal[] {} );
 
 				sendMSG( ServiceType.MANAGEMENT_COMMANDS.getName( ), ServiceType.REQUEST_COMMAND.getName( ),
-						buildACL( ACLMessage.REQUEST, info ), false );
+						buildACL( ACLMessage.CFP, info ), false );
 				return null;
 
 			case END:
@@ -165,17 +162,15 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		}
 	}
 
-	private <T> CompletableFuture<T> completableResultOf( Supplier<T> resultSupplier, boolean synchronizedOnThis ) {
+	private <T> CompletableFuture<T> completeSynchronizedResultOf ( Supplier<T> resultSupplier ) {
 		CompletableFuture<T> result = new CompletableFuture<>( );
 
 		addBehaviour( new OneShotBehaviour( ) {
 			@Override
 			public void action ( ) {
-				if ( synchronizedOnThis ) {
-					synchronized ( this ) {
-						result.complete( resultSupplier.get( ) );
-					}
-				} else result.complete( resultSupplier.get( ) );
+				synchronized ( this ) {
+					result.complete( resultSupplier.get( ) );
+				}
 			}
 		} );
 		return result;
@@ -196,7 +191,7 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		);
 
 		sendMSG( ServiceType.MANAGEMENT_ORDERS.toString( ), ServiceType.ACCEPT_ORDER.toString( ),
-				buildACL( ACLMessage.REQUEST, order ), false );
+				buildACL( ACLMessage.CFP, order ), false );
 	}
 
 	private ACLMessage buildACL( int performative, Serializable content ) {

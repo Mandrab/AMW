@@ -106,10 +106,9 @@ public class ViewImpl extends JFrame implements View {
 	}
 
 	public void update( ) {
-		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE )
-				.thenAccept( state -> graphicalWarehousePanel.update( state ) );
-		dispatcher.<CompletableFuture<List<Command>>>askFor( INFO_COMMANDS )
-				.thenAccept( commands -> commandPanel.update( commands ) );
+		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_ITEMS_LIST ).thenAccept( state -> orderPanel.update( state ) );
+		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE ).thenAccept( state -> graphicalWarehousePanel.update( state ) );
+		dispatcher.<CompletableFuture<List<Command>>>askFor( INFO_COMMANDS ).thenAccept( commands -> commandPanel.update( commands ) );
 	}
 
 }

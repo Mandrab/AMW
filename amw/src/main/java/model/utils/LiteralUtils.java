@@ -105,12 +105,13 @@ public class LiteralUtils {
 		int startingIdx = 0;
 		int lastLiteralIdx = 0;
 		int openedParenthesis = 0;
+		boolean openedApice = false;
 
 		for ( int i = 0; i < chars.size( ); i ++ ) {
 			if ( chars.get( i ).equals( ',' ) && openedParenthesis == 0 ) {
 				final StringBuilder sb = new StringBuilder( i - startingIdx );
 				IntStream.range( startingIdx, i ).forEach( idx -> sb.append( chars.get( idx ) ) );
-				output.add( sb.toString( ).replaceAll( " ", "" ) );
+				output.add( sb.toString( ) );//.replaceAll( " ", "" ) );
 				lastLiteralIdx = i;
 				startingIdx = i + 1;
 			} else if ( chars.get( i ).equals( '(' ) || chars.get( i ).equals( '[' ) )
@@ -120,9 +121,21 @@ public class LiteralUtils {
 		}
 
 		if ( ! output.isEmpty( ) && list.contains( "," ) )
-			output.add( list.substring( lastLiteralIdx + 1 ).replaceAll( " ", "" ) );
+			output.add( list.substring( lastLiteralIdx + 1 ) );//.replaceAll( " ", "" ) );
 		else
-			output.add( list.replaceAll( " ", "" ) );
+			output.add( list );//.replaceAll( " ", "" ) );
+
+		for ( int i = 0; i < output.size(); i++ ) {
+			String s = output.get( i );
+			if ( s.startsWith( " " ) || s.endsWith( " " ) ) {
+				if ( s.startsWith( " " ) ) s = s.replaceFirst( " ", "" );
+				else s = new StringBuilder( new StringBuilder( s ).reverse( ).toString( ).replaceFirst( " ", "" ) )
+						.reverse( ).toString( );
+
+				output.remove( i );
+				output.add( i, s );
+			}
+		}
 
 		return output;
 	}
