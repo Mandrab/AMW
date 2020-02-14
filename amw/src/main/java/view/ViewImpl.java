@@ -4,9 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import com.google.common.collect.ImmutableList;
 import interpackage.Command;
 import interpackage.Item;
 import interpackage.RequestDispatcher;
@@ -115,7 +118,8 @@ public class ViewImpl extends JFrame implements View {
 	}
 
 	public void update( ) {
-		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_ITEMS_LIST ).thenAccept( state -> orderPanel.update( state ) );
+		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_ITEMS_LIST )
+				.thenAccept( state -> orderPanel.update( state ) );
 		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE ).thenAccept( state -> graphicalWarehousePanel.update( state ) );
 		dispatcher.<CompletableFuture<List<Command>>>askFor( INFO_COMMANDS ).thenAccept( commands -> commandPanel.update( commands ) );
 	}

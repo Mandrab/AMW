@@ -50,13 +50,13 @@ public class TestOrders {
 
 	@Test
 	public void orderConfirm( ) {
-		Item[] items = new Item[] { new Item( "\"Item 1\"", 5, 3, 2 ), new Item( "\"Item 3\"", 2, 5, 1 ) };
+		String[] items = new String[] { "\"Item 1\"", "\"Item 3\"" };
 
 		RequestDispatcherImpl dispatcher = new RequestDispatcherImpl( );
 
 		startAgent( dispatcher );
 
-		pushItems( items );
+		//pushItems( items );TODO
 
 		AtomicBoolean consumed = new AtomicBoolean( false );
 
@@ -67,8 +67,7 @@ public class TestOrders {
 			consumed.set( true );
 		} );
 
-		dispatcher.agent.askFor( ORDER, "User", "Street xyz, 123", items[ 0 ].getItemId( ), items[ 0 ].getItemId( ),
-				items[ 1 ].getItemId( ) );
+		dispatcher.agent.askFor( ORDER, "User", "Street xyz, 123", items[ 0 ], items[ 0 ], items[ 1 ] );
 
 		sleep( TICK_TIME );
 

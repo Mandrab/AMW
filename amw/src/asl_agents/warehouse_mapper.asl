@@ -112,4 +112,4 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) )[
 	:   Head = item( id( ItemId ), quantity( Quantity ), reserved( ReservedNumber ) )[ Pos ]
 	<-  if ( not .empty( Tail ) ) { !reshape( Tail, Res ); }
 		else { Res = []; }
-		Result = [ item( id( ItemId ) )[ Pos ] | Res ].
+		Result = [ item( id( ItemId ), reserved( ReservedNumber ) )[ Pos ] | Res ].

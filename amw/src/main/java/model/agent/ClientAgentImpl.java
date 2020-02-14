@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -116,6 +117,10 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 				buildACL( ACLMessage.CFP, info ), false ).thenAccept( message -> {
 					synchronized ( this ) {
 						warehouseItems = split( message.getContent( ) ).stream( ).map( Item::parse )
+								.collect( Collectors.groupingBy( Item::getItemId ) ).entrySet( ).stream( )
+								.map( p -> new Item( p.getKey( ), p.getValue( ).get( 0 ).getReserved( ), p.getValue( )
+										.stream( ).flatMap( i -> i.getPositions( ).stream( ) )
+										.collect( Collectors.toList( ) ) ) )
 								.collect( Collectors.toList( ) );                   // update warehouse infos
 					}
 				} );
@@ -139,10 +144,12 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 		switch ( request ) {
 			case INFO_ITEMS_LIST:
 			case INFO_WAREHOUSE_STATE:
-				return ( T ) completeSynchronizedResultOf( ( ) -> warehouseItems );     // TODO pass clone
+				return ( T ) completeSynchronizedResultOf( ( ) -> warehouseItems.stream( ).map( i -> i.clone( ) )
+						.collect( Collectors.toList( ) ) );     // TODO pass clone
 
 			case INFO_COMMANDS:
-				return ( T ) completeSynchronizedResultOf( ( ) -> repositoryCommands ); // TODO pass clone
+				return ( T ) completeSynchronizedResultOf( ( ) -> repositoryCommands.stream( ).map( c -> c.clone( ) )
+						.collect( Collectors.toList( ) )  ); // TODO pass clone
 
 			case EXEC_COMMAND:
 				Literal info = buildLiteral( "request", new SimpleStructure[] {

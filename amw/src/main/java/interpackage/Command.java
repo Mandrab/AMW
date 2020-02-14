@@ -40,6 +40,22 @@ public class Command {
 		return versions;
 	}
 
+	static public Command parse ( String input ) {
+		Pair<String, String> pair = splitStructAndList( input );
+		String id = getValue( pair.getKey( ), "id" );
+		String name = getValue( pair.getKey( ), "name" );
+		String description = getValue( pair.getKey( ), "description" );
+		List<Version> versions = split( pair.getValue( ) ).stream( ).map( Version::parse )
+				.collect( Collectors.toList( ) );
+		return new Command( id, name, description, versions );
+	}
+
+	@Override
+	public Command clone( ) {
+		return new Command( id, name, description, versions.stream( ).map( Version::clone )
+				.collect( Collectors.toList( ) ) );
+	}
+
 	@Override
 	public boolean equals( Object obj ) {
 		if ( ! ( obj instanceof Command ) ) return false;
@@ -55,16 +71,6 @@ public class Command {
 				.map( p -> "\t" + p.getLeft( ) + "\n"
 						+ "\t\t" + String.join( "", p.getMiddle( ) ) + "\n"
 						+ "\t\t" + p.getRight( ) );
-	}
-
-	static public Command parse ( String input ) {
-		Pair<String, String> pair = splitStructAndList( input );
-		String id = getValue( pair.getKey( ), "id" );
-		String name = getValue( pair.getKey( ), "name" );
-		String description = getValue( pair.getKey( ), "description" );
-		List<Version> versions = split( pair.getValue( ) ).stream( ).map( Version::parse )
-				.collect( Collectors.toList( ) );
-		return new Command( id, name, description, versions );
 	}
 
 	public static class Version extends Triple<String, List<String>, String> {
@@ -111,6 +117,11 @@ public class Command {
 		@Override
 		public String getRight ( ) {
 			return getScript( );
+		}
+
+		@Override
+		public Version clone( ) {
+			return new Version( id, requirements.stream( ).map( String::new ).collect( Collectors.toList( ) ), script );
 		}
 
 		@Override

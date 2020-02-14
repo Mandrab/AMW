@@ -1,11 +1,13 @@
 package view;
 
 import interpackage.Item;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import view.utils.GridBagPanelAdder;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -52,20 +54,19 @@ public class WarehousePanel extends JPanel {
 				rackPanel.add( title );
 			}
 		} );
-		items.stream( ).sorted( Item::first ).forEach ( item -> {
-			JPanel rackPanel = ( JPanel ) graphicPanel.getComponent( item.getRackId( ) );
-			JTextArea shelfN = new JTextArea( "Shelf number: " + item.getShelfId( ) );
-			shelfN.setBackground( new Color( 60, 80, 245 ) );
-			rackPanel.add( shelfN );
-			JTextArea itemInfo = new JTextArea( item.getItemId( ) + ", " + item.getQuantity( ) );
-			itemInfo.setBackground( new Color( 60, 125, 245 ) );
-			rackPanel.add( itemInfo );
-		} );
+		//System.out.println( items );
+		//System.out.println(  );
+		items.forEach( item -> item.getPositions( ).forEach( pos -> {
+				JPanel rackPanel = ( JPanel ) graphicPanel.getComponent( pos.getLeft( ) );
+				JTextArea shelfN = new JTextArea( "Shelf number: " + pos.getMiddle( ) );
+				shelfN.setBackground( new Color( 60, 80, 245 ) );
+				rackPanel.add( shelfN );
+				JTextArea itemInfo = new JTextArea( item.getItemId( ) + ", " + pos.getRight( ) );
+				itemInfo.setBackground( new Color( 60, 125, 245 ) );
+				rackPanel.add( itemInfo );
+			} ) );
 
-		textualArea.setText( items.stream( ).sorted( ( i1, i2 ) -> i1.getRackId( ) != i2.getRackId( )
-					? i1.getRackId( ) - i2.getRackId( )
-					: i1.getShelfId( ) - i2.getShelfId( ) )
-				.map( i -> i.toString( ) + "\n" )
+		textualArea.setText( items.stream( ).map( i -> i.toString( ) + "\n" )
 				.collect( Collectors.joining( ) ) );
 	}
 }

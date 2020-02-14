@@ -3,6 +3,7 @@ package view;
 import interpackage.Item;
 import interpackage.RequestDispatcher;
 import interpackage.RequestHandler;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.junit.Test;
 
 import java.util.List;
@@ -36,14 +37,11 @@ public class TestView {
 
 	@Test @SuppressWarnings( "unchecked" )
 	public void submitOrder( ) throws InterruptedException {
-		List<Item> items = IntStream.range( 0, 25 )
-				.mapToObj( i -> new Item( "Item" + i / 3,
-						( int ) ( Math.random( ) * 10 ),
-						( int ) ( Math.random( ) * 10 ),
-						( int ) ( Math.random( ) * 100 ) ) )
+		List<Item> items = IntStream.range( 0, 5 ).mapToObj( i -> new Item( "Item" + i, ( int ) ( Math.random( ) * 10 ),
+				IntStream.range( 0, 25 ).mapToObj( idx -> new ImmutableTriple<>( ( int ) ( Math.random( ) * 10 ),
+				( int ) ( Math.random( ) * 10 ),
+				( int ) ( Math.random( ) * 100 ) ) ).collect( Collectors.toList( ) ) ) )
 				.collect( Collectors.toList( ) );
-
-
 
 		View v = new ViewImpl( new RequestDispatcher( ) {
 			@Override

@@ -2,6 +2,8 @@ package view;
 
 import interpackage.Item;
 import interpackage.RequestDispatcher;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import view.utils.GridBagPanelAdder;
 import view.utils.ComponentsBuilder;
 
@@ -109,7 +111,10 @@ public class OrderPanel extends JPanel {
 	}
 
 	public void update( List<Item> items ) {
-		Vector<String> input = items.stream( ).flatMap( item -> IntStream.range( 0, item.getQuantity( ) )
+		Vector<String> input = items.stream( ).peek( i -> i.getPositions( )
+				.add( new ImmutableTriple<>( -1, -1, -i.getReserved( ) ) ) )
+				.flatMap( item -> IntStream.range( 0, item.getPositions( )
+				.stream( ).map( Triple::getRight ).reduce( 0, Integer::sum ) )
 				.mapToObj( i -> item.getItemId( ) ) ).collect( Collectors.toCollection( Vector::new ) );
 		if ( this.items.equals( input ) ) return;
 
