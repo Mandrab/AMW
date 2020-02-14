@@ -35,7 +35,7 @@ public class TestOrders {
 
 		dispatcher.setConsumer( ( request, args ) -> {
 			assertEquals( MANAGE_ERROR, request );
-			assertEquals( "\"404, not found\"", getValue( args[ 1 ] ) );
+			assertEquals( "\"404, not found\"", args[ 1 ] );
 			consumed.set( true );
 		} );
 

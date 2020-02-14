@@ -98,8 +98,9 @@ public class OrderPanel extends JPanel {
 		JButton addButton = new JButton( "->" );
 		addButton.addActionListener( actionEvent -> {
 			if ( ! itemsList.isSelectionEmpty( )
-					&& Arrays.stream( items.toArray( ) ).filter( i -> i.equals( itemsList.getSelectedValue( ) ) ).count( ) >
-					Arrays.stream( selectedItems.toArray( ) ).filter( i -> i.equals( itemsList.getSelectedValue( ) ) ).count( ) ) {
+					&& Arrays.stream( items.toArray( ) ).filter( i -> i.equals( itemsList.getSelectedValue( ) ) )
+					.count( ) > Arrays.stream( selectedItems.toArray( ) )
+					.filter( i -> i.equals( itemsList.getSelectedValue( ) ) ).count( ) ) {
 				selectedItems.add( itemsList.getSelectedValue( ) );
 				selectedItemsList.setListData( selectedItems );
 			} } );
