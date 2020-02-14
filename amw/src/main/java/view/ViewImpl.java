@@ -36,7 +36,10 @@ public class ViewImpl extends JFrame implements View {
 
 	@Override @SuppressWarnings("unchecked")
 	public <T> T askFor ( Request request, String... args ) {
-		if ( request == CONFIRMATION ) {
+		if ( request == MANAGE_ERROR ) {
+			JOptionPane.showMessageDialog( this, "Order ID: " + args[ 0 ] + "\n" + "Error code: " + args[ 1 ],
+					"Error", JOptionPane.ERROR_MESSAGE );
+		} else if ( request == CONFIRMATION ) {
 			CompletableFuture<Boolean> response = new CompletableFuture<>( );
 
 			new Thread( () -> {

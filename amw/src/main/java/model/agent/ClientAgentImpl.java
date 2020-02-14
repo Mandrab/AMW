@@ -68,7 +68,7 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 					String struct2 = split( getValue( content ) ).get( 1 );
 
 					if ( content.startsWith( "error" ) ) {
-						dispatcher.askFor( MANAGE_ERROR, struct1, struct2 );
+						dispatcher.askFor( MANAGE_ERROR, getValue( struct1 ), getValue( struct2 ) );
 					} else if ( content.startsWith( "confirmation" ) ) {
 						ACLMessage reply = message.createReply( );
 
