@@ -13,6 +13,10 @@ import java.util.stream.IntStream;
 
 public class LiteralUtils {
 
+	public static Literal buildLiteral( String name, SimpleStructure... structures ) {
+		return buildLiteral( name, structures, new Literal[] {} );
+	}
+
 	public static Literal buildLiteral( String name, SimpleStructure[] structures, Literal[] list ) {
 		Literal literal = new LiteralImpl( new Atom( name ) );
 
