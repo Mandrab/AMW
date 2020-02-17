@@ -51,6 +51,7 @@ val jason: Configuration by configurations.creating
 val guava: Configuration by configurations.creating
 val apacheCommonsIo: Configuration by configurations.creating
 val apacheCommonsLang : Configuration by configurations.creating
+val javaMailApi : Configuration by configurations.creating
 
 val dependencies: List<Configuration> = Arrays.asList( junit, jason )
 
@@ -65,6 +66,8 @@ dependencies {
     implementation( apacheCommonsIo )
     apacheCommonsLang( "org.apache.commons", "commons-lang3", "3.9" )
     implementation( apacheCommonsLang )
+    javaMailApi( "com.sun.mail", "javax.mail", "1.6.2" )
+    implementation( javaMailApi )
 }
 
 //**********************************************************************************************************************
