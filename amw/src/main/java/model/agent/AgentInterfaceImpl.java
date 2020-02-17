@@ -1,13 +1,18 @@
 package model.agent;
 
 import interpackage.RequestDispatcher;
+import jade.core.AgentContainer;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
+import jade.util.Logger;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import org.junit.runners.model.InitializationError;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 import static interpackage.utils.Utils.sleep;
 
@@ -27,7 +32,6 @@ public class AgentInterfaceImpl implements AgentInterface {
 
 		do {
 			try {
-
 				Runtime rt = Runtime.instance(  );                                  // get a hold on JADE runtime
 
 				Profile p = new ProfileImpl(  );                                    // create a default profile

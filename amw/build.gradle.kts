@@ -52,6 +52,7 @@ val guava: Configuration by configurations.creating
 val apacheCommonsIo: Configuration by configurations.creating
 val apacheCommonsLang : Configuration by configurations.creating
 val javaMailApi : Configuration by configurations.creating
+val activation : Configuration by configurations.creating
 
 val dependencies: List<Configuration> = Arrays.asList( junit, jason )
 
@@ -68,6 +69,8 @@ dependencies {
     implementation( apacheCommonsLang )
     javaMailApi( "com.sun.mail", "javax.mail", "1.6.2" )
     implementation( javaMailApi )
+    activation( "javax.activation", "activation", "1.1.1" )
+    implementation( activation )
 }
 
 //**********************************************************************************************************************

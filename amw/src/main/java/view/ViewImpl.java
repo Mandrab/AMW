@@ -4,12 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import com.google.common.collect.ImmutableList;
 import interpackage.Command;
 import interpackage.Item;
 import interpackage.RequestDispatcher;
@@ -39,20 +36,9 @@ public class ViewImpl extends JFrame implements View {
 
 	@Override @SuppressWarnings("unchecked")
 	public <T> T askFor ( Request request, String... args ) {
-		if ( request == MANAGE_ERROR ) {
-			JOptionPane.showMessageDialog( this, "Order ID: " + args[ 0 ] + "\n" + "Error code: " + args[ 1 ],
-					"Error", JOptionPane.ERROR_MESSAGE );
-		} else if ( request == CONFIRMATION ) {
-			CompletableFuture<Boolean> response = new CompletableFuture<>( );
-
-			new Thread( () -> {
-				if ( JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog( this, "Would you like to confirm the order?",
-						"Order Confirmation", JOptionPane.YES_NO_OPTION ) )
-					response.complete( true );
-				else response.complete( false );
-			} ).start( );
-
-			return ( T ) response;
+		if ( request == ORDER_STATUS ) {
+			JOptionPane.showMessageDialog( this, "Order ID: " + args[ 0 ] + "\n" + "Status: " + args[ 1 ],
+					"Order status", JOptionPane.INFORMATION_MESSAGE );
 		}
 		return null;
 	}

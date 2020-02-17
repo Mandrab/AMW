@@ -9,10 +9,9 @@ public interface RequestHandler {
 		INFO_ITEMS_LIST,                                // require items and quantity
 		INFO_WAREHOUSE_STATE,                           // require id, position and quantity of the items in the warehouse
 		ADD_COMMAND,
-		CONFIRMATION,                                   // ask for order confirm
+		ORDER_STATUS,
 		EXEC_COMMAND,
 		END,                                            // ask for system shutdown
-		MANAGE_ERROR,
 		ORDER                                           // ask for make an order
 	}
 

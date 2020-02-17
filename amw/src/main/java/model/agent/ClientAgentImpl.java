@@ -24,7 +24,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -36,7 +35,7 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 
 	private static final String NOT_IMPLEMENTED_REQUEST_MSG = "The return of the required element has not yet been " +
 			"implemented. Sorry for the discomfort";
-	private static final int UPDATE_TIME = 5000;// TODO
+	private static final int UPDATE_TIME = 1000;// TODO
 	private static final int RESPONSE_TIME = 50000;
 
 	private RequestDispatcher dispatcher;
@@ -68,25 +67,9 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 					String struct1 = split( getValue( content ) ).get( 0 );
 					String struct2 = split( getValue( content ) ).get( 1 );
 
-					if ( content.startsWith( "error" ) ) {
-						dispatcher.askFor( MANAGE_ERROR, getValue( struct1 ), getValue( struct2 ) );
-					} else if ( content.startsWith( "confirmation" ) ) {
-						ACLMessage reply = message.createReply( );
-
-						String orderId = struct1.startsWith( "order_id" ) ? getValue( struct1 ) : getValue( struct2 );
-						String orderInfo = struct1.startsWith( "info" ) ? getValue( struct1 ) : getValue( struct2 );
-
-						dispatcher.<CompletableFuture<Boolean>>askFor( CONFIRMATION, orderId, orderInfo )
-								.thenAccept( ack -> {
-									SimpleStructure[] details =  new SimpleStructure[] {
-											new SimpleStructure( "order_id", orderId ),
-											new SimpleStructure( "info", orderInfo ) };
-									try {
-										reply.setContentObject( buildLiteral( ack ? "confirm" : "abort", details, new Literal[]{ } ) );
-										reply.setPerformative( ack ? ACLMessage.CONFIRM : ACLMessage.REFUSE );
-										send( reply );
-									} catch( IOException e ) { e.printStackTrace( ); }
-								} );
+					if ( message.getPerformative( ) == ACLMessage.CONFIRM &&
+							content.startsWith( "confirmation" ) ) {
+						dispatcher.askFor( ORDER_STATUS, getValue( struct1 ), getValue( struct2 ) );
 					} else {
 						System.out.println( "Received message: " + message.getContent( ) );     // TODO
 					}
@@ -193,17 +176,17 @@ public class ClientAgentImpl extends Agent implements ClientAgent {
 
 		Literal order = buildLiteral( "order", new SimpleStructure[] {
 					new SimpleStructure( "client", l.remove( 0 ) ),
+					new SimpleStructure( "email", l.remove( 0 ) ),
 					new SimpleStructure( "address", l.remove( 0 ) )
 				},
 				( l.stream( ).collect( Collectors.groupingBy( e -> e, Collectors.counting( ) ) )
-				.entrySet( ).stream( ).map( e -> buildLiteral( "item", new SimpleStructure[] {
-						new SimpleStructure( "id", e.getKey( ) ),
-						new SimpleStructure( "quantity", "" + e.getValue( ) )
-				}, new Literal[]{} ) ).collect( Collectors.toList( ) ) ).toArray( new Literal[]{} )
+				.entrySet( ).stream( ).map( e -> buildLiteral( "item", new SimpleStructure( "id", e.getKey( ) ),
+						new SimpleStructure( "quantity", "" + e.getValue( ) ) ) ).collect( Collectors.toList( ) ) )
+						.toArray( new Literal[]{} )
 		);
 
 		sendMSG( ServiceType.MANAGEMENT_ORDERS.toString( ), ServiceType.ACCEPT_ORDER.toString( ),
-				buildACL( ACLMessage.CFP, order ), false );
+				buildACL( ACLMessage.REQUEST, order ), false );
 	}
 
 	private ACLMessage buildACL( int performative, Serializable content ) {

@@ -14,13 +14,18 @@ import java.util.function.BiConsumer;
 
 import static interpackage.RequestHandler.Request.*;
 import static interpackage.utils.Utils.sleep;
-import static model.utils.LiteralUtils.getValue;
 import static org.junit.Assert.*;
 
 public class TestOrders {
 
 	private static final long MAX_WAIT = 10000;
 	private static final int TICK_TIME = 500;
+
+	private enum MailResult {
+		CONFIRM,
+		ERROR_NOT_FOUND,
+		ERROR_CONFLICT
+	}
 
 	private boolean started;
 
@@ -31,19 +36,11 @@ public class TestOrders {
 
 		startAgent( dispatcher );
 
-		AtomicBoolean consumed = new AtomicBoolean( false );
-
-		dispatcher.setConsumer( ( request, args ) -> {
-			assertEquals( MANAGE_ERROR, request );
-			assertEquals( "\"404, not found\"", args[ 1 ] );
-			consumed.set( true );
-		} );
-
-		dispatcher.agent.askFor( ORDER, "User", "Street xyz, 123", "\"Item " + Math.random( ) + "\"" );
+		dispatcher.agent.askFor( ORDER, "User", "mail@mail.com", "Street xyz, 123", "\"Item " + Math.random( ) + "\"" );
 
 		sleep( TICK_TIME );
 
-		if ( ! consumed.get( ) ) fail( "An error was expected" );
+		if ( ! checkMail( MailResult.ERROR_NOT_FOUND ) ) fail( "An error was expected" );
 
 		dispatcher.agent.askFor( END );
 	}
@@ -60,18 +57,11 @@ public class TestOrders {
 
 		AtomicBoolean consumed = new AtomicBoolean( false );
 
-		dispatcher.setConsumer( ( request, args ) -> {
-			assertEquals( CONFIRMATION, request );
-			assertTrue( args[ 0 ].contains( "UserStreet xyz, 123" ) );
-			assertTrue( args[ 1 ].contains( "order" ) );
-			consumed.set( true );
-		} );
-
-		dispatcher.agent.askFor( ORDER, "User", "Street xyz, 123", items[ 0 ], items[ 0 ], items[ 1 ] );
+		dispatcher.agent.askFor( ORDER, "User", "mail@mail.com", "Street xyz, 123", items[ 0 ], items[ 0 ], items[ 1 ] );
 
 		sleep( TICK_TIME );
 
-		if ( ! consumed.get( ) ) fail( "A confirm was expected" );
+		if ( ! checkMail( MailResult.CONFIRM ) ) fail( "A confirm was expected" );
 
 		dispatcher.agent.askFor( END );
 	}
@@ -99,6 +89,11 @@ public class TestOrders {
 
 	private void pushItems( Item... items ) {
 		// TODO push items to test
+	}
+
+	private boolean checkMail( MailResult expectedResult ) {
+		// TODO
+		return false;
 	}
 
 	private static class RequestDispatcherImpl implements RequestDispatcher {

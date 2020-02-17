@@ -42,14 +42,25 @@ public class OrderPanel extends JPanel {
 				.setFill( GridBagConstraints.HORIZONTAL )
 				.addToPanel( this, clientInput );
 
-		// client address
+		// client mail
 		new GridBagPanelAdder( ).setPosition( 1, 1 )
+				.setPadding( 0, 0, 0, 10 )
+				.setWeight( 0.33, 0 )
+				.setFill( GridBagConstraints.HORIZONTAL )
+				.addToPanel( this, new JTextArea( "Email" ) );
+		JTextField mailInput = new JTextField( "mail@mail.com", 20 );
+		new GridBagPanelAdder( ).setPosition( 2, 1 )
+				.setFill( GridBagConstraints.HORIZONTAL )
+				.addToPanel( this, mailInput );
+
+		// client address
+		new GridBagPanelAdder( ).setPosition( 1, 2 )
 				.setPadding( 0, 0, 0, 10 )
 				.setWeight( 0.33, 0 )
 				.setFill( GridBagConstraints.HORIZONTAL )
 				.addToPanel( this, new JTextArea( "Address" ) );
 		JTextField addressInput = new JTextField( "address", 20 );
-		new GridBagPanelAdder( ).setPosition( 2, 1 )
+		new GridBagPanelAdder( ).setPosition( 2, 2 )
 				.setFill( GridBagConstraints.HORIZONTAL )
 				.addToPanel( this, addressInput );
 
@@ -59,22 +70,23 @@ public class OrderPanel extends JPanel {
 			if ( selectedItems.size( ) > 0 ) {
 				List<String> l = new ArrayList<>( );
 				l.add( clientInput.getText( ) );
+				l.add( mailInput.getText( ) );
 				l.add( addressInput.getText( ) );
 				l.addAll( Collections.list( selectedItems.elements( ) ) );
 				dispatcher.askFor( ORDER, l.toArray( new String[ 0 ] ) );
 			}
 		} );
-		new GridBagPanelAdder( ).setPosition( 2, 6 )
+		new GridBagPanelAdder( ).setPosition( 2, 7 )
 				.setFill( GridBagConstraints.HORIZONTAL )
 				.addToPanel( this, submitButton );
 
 		// selected items list
-		new GridBagPanelAdder( ).setPosition( 1, 2 )
+		new GridBagPanelAdder( ).setPosition( 1, 3 )
 				.setPadding( 0, 0, 0, 10 )
 				.setFill( GridBagConstraints.HORIZONTAL )
 				.addToPanel( this, new JTextArea( "Items" ) );
 		JList<String> selectedItemsList = ComponentsBuilder.createList( selectedItems, 10, 225 );
-		new GridBagPanelAdder( ).setPosition( 2, 2 )
+		new GridBagPanelAdder( ).setPosition( 2, 3 )
 				.setWeight( 0.33, 1 )
 				.addToPanel( this, new JScrollPane( selectedItemsList ) );
 		JButton removeButton = new JButton( "<-" );
@@ -84,7 +96,7 @@ public class OrderPanel extends JPanel {
 				selectedItems.removeElement( selectedItemsList.getSelectedValue( ) );
 				selectedItemsList.setListData( selectedItems );
 			} } );
-		new GridBagPanelAdder( ).setPosition( 2, 5 )
+		new GridBagPanelAdder( ).setPosition( 2, 6 )
 				.setFill( GridBagConstraints.HORIZONTAL )
 				.addToPanel( this, removeButton );
 
@@ -104,7 +116,7 @@ public class OrderPanel extends JPanel {
 				selectedItems.add( itemsList.getSelectedValue( ) );
 				selectedItemsList.setListData( selectedItems );
 			} } );
-		new GridBagPanelAdder( ).setPosition( 0, 5 )
+		new GridBagPanelAdder( ).setPosition( 0, 6 )
 				.setFill( GridBagConstraints.HORIZONTAL )
 				.addToPanel( this, addButton );
 
