@@ -37,13 +37,19 @@ set( false ).                                                       // at start 
         -+activity( working );                                  // restart working
         !work.
 
+-!work.
+
 // OPERATION #8 in purchase sequence schema
-+!kqml_received( Sender, cfp, Content, MsgId )                  // receive request for item pick
-	:   Content = retrieve( Item ) & activity( working )
++!kqml_received( Sender, achieve, Content, MsgId )              // receive request for item pick
+	:   Content = retrieve( item( Item )[ [] | Positions ] )
+	&   activity( working )
     <-  -+activity( waiting );
         .send( Sender, accept, retrieve( Item ) );              // accept the work
         .wait( 5000 );                                          // wait confirm
-        if ( activity( waiting ) ) { -+activity( working ); }.  // if it takes too long, restart working
+        if ( activity( waiting ) ) {
+            .send( Sender, accept, request_timeout( Item ) );   // accept the work TODO
+            -+activity( working );                              // if it takes too long, restart working
+        }.
 
 // OPERATION #10 in purchase sequence schema
 +!kqml_received( Sender, confirm, Content, MsgId )              // receive confirm for pick work

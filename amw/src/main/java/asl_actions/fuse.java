@@ -26,7 +26,7 @@ public class fuse extends DefaultInternalAction {
 		ListTerm result = new ListTermImpl( );
 		result.addAll( items.stream( ).map( i -> LiteralUtils.buildLiteral( "item", new SimpleStructure[] {
 				new SimpleStructure( "id", getValue( i, "id" ) ),
-				new SimpleStructure( "quantity", getValue( i, "quantity" ) ),
+				new SimpleStructure( "quantity", Integer.parseInt( getValue( i, "quantity" ) ) ),
 		}, split( splitStructAndList( positions.stream( )
 				.filter( p -> Objects.equals( getValue( i, "id" ), getValue( p, "id" ) ) )
 				.findFirst( ).orElseThrow( ( ) -> new NoSuchElementException( ITEM_POS_MISSING ) ) ).getValue( ) ).stream( )

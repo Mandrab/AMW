@@ -47,10 +47,8 @@ set( false ).                                                       // at start 
 	:   Content = confirmation( order_id( OrderId ) )[ [] | Positions ]
 	&   order( id( OrderId ), status( checking ), client( Client ), email( Email ), address( Address ), items( Items ) )
 	<-  .println( "Op 14" );
-		.println( Items );
-		.println( Positions );
 		asl_actions.fuse( Items, Positions, Fused );
-		asl_actions.send_feedback( Email, 200, OrderId, Items );
+		//asl_actions.send_feedback( Email, 200, OrderId, Items );TODO non voglio intasare di mail
 		!retrieve( Fused ).                                         // retrieve all the items
 
 /***********************************************************************************************************************
@@ -63,12 +61,20 @@ set( false ).                                                       // at start 
 		.time( H, Min, S );
 		!str_concat( Client, [ Email, Address, Y, M, D, H, Min, S ], ResultId ).// concat order infos
 
-+!retrieve( [ Head | [] ] )
-	:   Head = item( id( ItemId ), quantity( Quantity ) )[ [] | Positions ]
-	<-  .df_search( "executor( item_picker )", "retrieve( item )",
++!retrieve( [ Item | [] ] )
+	:   Item = item( id( ItemId ), quantity( Quantity ) )[ [] | Positions ]
+	&   Quantity == 1
+	<-  .println(Item);
+		.df_search( "executor( item_picker )", "retrieve( item )",
                 Providers );                                                    // search the robot agent(s)
         .nth( 0, Providers, Provider );                                         // get the first ( agent )
-        .send( Provider, cfp, retrieve( item( ItemId ) )[ Positions ] ).        // ask item retrieve
+        !concat( item( ItemId ), Positions, ReshapedItem );
+        .send( Provider, achieve, retrieve( ReshapedItem ) ).                   // ask item retrieve
+
++!retrieve( [ Item | [] ] )
+	:   Item = item( id( ItemId ), quantity( Quantity ) )[ [] | Positions ]
+	&   Quantity > 1
+	<-  !retrieve( [ item( id( ItemId ), quantity( Quantity -1 ) )[ [] | Positions ] ] ).
 
 +!retrieve( [ Head | Tail ] )
 	<-  !retrieve( [ Head ] );

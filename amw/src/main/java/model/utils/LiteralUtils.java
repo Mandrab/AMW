@@ -1,9 +1,6 @@
 package model.utils;
 
-import jason.asSyntax.Atom;
-import jason.asSyntax.Literal;
-import jason.asSyntax.LiteralImpl;
-import jason.asSyntax.Structure;
+import jason.asSyntax.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -22,7 +19,7 @@ public class LiteralUtils {
 
 		Arrays.asList( structures ).forEach( entry -> {
 			Structure struct = new Structure( entry.getName( ) );
-			struct.addTerm( new Atom( entry.getValue( ) ) );
+			struct.addTerm( entry.getValue( ) );
 			literal.addTerm( struct );
 		} );
 
@@ -147,18 +144,28 @@ public class LiteralUtils {
 	public static class SimpleStructure {
 
 		private String name;
-		private String value;
+		private Term value;
+
+		public SimpleStructure( String name, Atom value ) {
+			this.name = name;
+			this.value = value;
+		}
 
 		public SimpleStructure( String name, String value ) {
 			this.name = name;
-			this.value = value;
+			this.value = new Atom( value );
+		}
+
+		public SimpleStructure( String name, Integer value ) {
+			this.name = name;
+			this.value = new NumberTermImpl( value );
 		}
 
 		public String getName ( ) {
 			return name;
 		}
 
-		public String getValue ( ) {
+		public Term getValue ( ) {
 			return value;
 		}
 	}
