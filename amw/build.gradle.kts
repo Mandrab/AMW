@@ -4,13 +4,14 @@
 
 import java.io.*
 import java.util.Arrays
+import java.util.LinkedList
 
 //**********************************************************************************************************************
 //  CONSTANT
 //**********************************************************************************************************************
 
 val MAS2J_FILE_NAME = "AMW" + ".mas2j"
-val JASON_CLASSPATH_BODY = ";(\n|\t| )*classpath:(.|\n)*aslSourcePath:"
+val JASON_CLASSPATH_BODY = "classpath:(\\n|\\t| )*\"(.|\\n|\\t| )*aslSourcePath:"//";(\n|\t| )*classpath:(.|\n)*aslSourcePath:"
 val CONFS_PATH = System.getProperty( "user.home" ) + File.separator + ".jason"
 
 //**********************************************************************************************************************
@@ -54,7 +55,7 @@ val apacheCommonsLang : Configuration by configurations.creating
 val javaMailApi : Configuration by configurations.creating
 val activation : Configuration by configurations.creating
 
-val dependencies: List<Configuration> = Arrays.asList( junit, jason )
+val dependencies: List<Configuration> = Arrays.asList( junit, jason, guava, apacheCommonsIo, apacheCommonsLang, javaMailApi, activation )
 
 dependencies {
     junit( "junit", "junit", "4.12" )
@@ -95,12 +96,16 @@ task<JavaExec>( "config" ) {
     args( antPath.orEmpty( ) )
     args( jadePath.orEmpty( ) )
     args( CONFS_PATH )
+}
 
+tasks.register<Task>( "reset_mas2j" ) {
+
+    setupLibraryClasspath( cleanClasspath = true )                  // reset all the dependencies path in mas2j file
 }
 
 task<JavaExec>( "run_system" ) {
 
-    //addLibraryClasspath( )                                        // add dependecies path to mas2j project file
+    setupLibraryClasspath( )                                        // add dependencies path to mas2j project file
 
     group = "jason"                                                 // process (TODO ?) group name
     sourceSets {                                                    // set cli path in which call the cmd
@@ -115,12 +120,9 @@ task<JavaExec>( "run_system" ) {
 
     main = "jason.runtime.RunJasonProject"                          // jason mas2j runner
     args( MAS2J_FILE_NAME )                                         // specify project file
-
 }
 
 task<JavaExec>( "run_terminal" ) {
-
-    //addLibraryClasspath(  )                                       // add dependecies classpath to mas2j project file
 
     group = "jade-terminal"                                         // process (?) group name
     sourceSets {                                                    // set cli path in which call the cmd
@@ -156,7 +158,7 @@ tasks.findByName( "test" )!!.dependsOn( "run" )
 //**********************************************************************************************************************
 
 // add dependencies classpath to mas2j project file
-fun addLibraryClasspath( excluded: List<Regex>? = null ): String {
+fun setupLibraryClasspath( cleanClasspath: Boolean = false, excluded: List<Regex>? = null ) {
     // read the actual mas2j project file
     var fileStr = BufferedReader( FileReader( File( MAS2J_FILE_NAME ) ) as Reader ).readText( )
 
@@ -166,26 +168,37 @@ fun addLibraryClasspath( excluded: List<Regex>? = null ): String {
     dependencies.forEach { conf -> conf.asPath                      // get all the path to the libraries
             .split ( ":" )
             .filter { path -> excluded == null                      // if there isn't excluded paths, then do nothing
-                    || excluded.stream()                            // else, check if i should exclude the path
+                    || excluded.stream( )                           // else, check if i should exclude the path
                     .filter { e -> path.contains( e )  }
                     .findAny( )
                     .isPresent }
             .forEach { path ->
-                strBuilder.append( "\n\t\t\"$path\";" ) }           // add the path to classpath
+                strBuilder.append( "\"$path\";\n" ) }           // add the path to classpath
     }
 
-    // replace the previous classpath
-    if ( ! strBuilder.isEmpty() )
-        fileStr = fileStr.replace( JASON_CLASSPATH_BODY.toRegex(), ";\n\n\tclasspath:$strBuilder\n\n\taslSourcePath:" )
+    val output = LinkedList<String>( )
+    val newLineIterator = strBuilder.lineSequence( ).iterator( )
+    var delete = false
+
+    for ( line in fileStr.lines( ) ) {
+        if ( Regex( "(\t|\n| )*classpath:(\t| |\n)*" ).matches( line ) ) {
+            output.add( line )
+            delete = true
+        } else if ( Regex( "(\t| )*aslSourcePath:(\t| |\n)*" ).matches( line ) ) {
+            while ( ! cleanClasspath && newLineIterator.hasNext( ) )
+                output.add( "\t\t" + newLineIterator.next( ) )
+            if ( cleanClasspath || strBuilder.isEmpty( ) )
+                output.add( "" )
+            delete = false
+        }
+
+        if ( ! delete )
+            output.add( line )
+    }
 
     // re-write the updated mas2j project file
     val out = BufferedWriter( FileWriter( MAS2J_FILE_NAME ) )
-    out.write( fileStr )
+    out.write( output.joinToString( "\n" ) )
     out.flush( )
     out.close( )
-
-    val str = strBuilder.replace("(\"|\t)*".toRegex(), "").replace(";(\n)*".toRegex(), ":")
-    if ( str.isNotEmpty(  ) )
-        return str.substring(0, str.length- 1)
-    return ""
 }
