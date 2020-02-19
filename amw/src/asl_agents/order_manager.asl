@@ -51,6 +51,18 @@ set( false ).                                                       // at start 
 		//asl_actions.send_feedback( Email, 200, OrderId, Items );TODO non voglio intasare di mail
 		!retrieve( Fused ).                                         // retrieve all the items
 
++!kqml_received( Sender, propose, Content, MsgId )
+	:   Content = retrieve( Item ) //& .term2string( Item, ItemId )
+	&   retrieve( ItemId )
+	<-  -retrieve( ItemId );
+		.send( Sender, accept_proposal, Content ).
+
++!kqml_received( Sender, propose, Content, MsgId )
+	:   Content = retrieve( Item ) //& .term2string( Item, ItemId )
+	&   not retrieve( ItemId )
+	<-  -retrieve( ItemId );
+		.send( Sender, reject_proposal, Content ).
+
 /***********************************************************************************************************************
  Utils
  **********************************************************************************************************************/
@@ -64,12 +76,12 @@ set( false ).                                                       // at start 
 +!retrieve( [ Item | [] ] )
 	:   Item = item( id( ItemId ), quantity( Quantity ) )[ [] | Positions ]
 	&   Quantity == 1
-	<-  .println(Item);
-		.df_search( "executor( item_picker )", "retrieve( item )",
+	<-  .df_search( "executor( item_picker )", "retrieve( item )",
                 Providers );                                                    // search the robot agent(s)
         .nth( 0, Providers, Provider );                                         // get the first ( agent )
         !concat( item( ItemId ), Positions, ReshapedItem );
-        .send( Provider, achieve, retrieve( ReshapedItem ) ).                   // ask item retrieve
+        +retrieve( ItemId );
+        .send( Provider, cfp, retrieve( ReshapedItem ) ).                       // ask item retrieve
 
 +!retrieve( [ Item | [] ] )
 	:   Item = item( id( ItemId ), quantity( Quantity ) )[ [] | Positions ]
