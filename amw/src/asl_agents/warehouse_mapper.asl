@@ -28,7 +28,7 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) ) [
 	<-  .df_register( "management( items )", "info( warehouse )" ); // register as warehouse's infos dispatcher
 		.df_register( "management( items )", "store( item )" );     // register for acquire information about items
 		.df_register( "management( items )", "retrieve( item )" );  // register for remove infos at item removal
-		.include( "utils/literal_utils.asl" );                      // include literal utils plans
+		.include( "utils/literal.asl" );                            // include literal utils plans
 		-+set( true ).                                              // set process ended
 
 // OPERATION #3 in purchase sequence schema

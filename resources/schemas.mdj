@@ -210,7 +210,7 @@
 											"subViews": [
 												{
 													"_type": "UMLInteractionOperandView",
-													"_id": "AAAAAAFvFLJYDgLFhN0=",
+													"_id": "AAAAAAFwZ8jv8nanPgs=",
 													"_parent": {
 														"$ref": "AAAAAAFvFLJX/AK53BI="
 													},
@@ -220,9 +220,9 @@
 													"subViews": [
 														{
 															"_type": "LabelView",
-															"_id": "AAAAAAFvFLJYDwLGY6E=",
+															"_id": "AAAAAAFwZ8jv83aoYT0=",
 															"_parent": {
-																"$ref": "AAAAAAFvFLJYDgLFhN0="
+																"$ref": "AAAAAAFwZ8jv8nanPgs="
 															},
 															"font": "Arial;13;0",
 															"left": 348,
@@ -236,9 +236,9 @@
 													"left": 328,
 													"top": 639,
 													"width": 1153,
-													"height": 170,
+													"height": 43,
 													"guardLabel": {
-														"$ref": "AAAAAAFvFLJYDwLGY6E="
+														"$ref": "AAAAAAFwZ8jv83aoYT0="
 													}
 												},
 												{
@@ -259,7 +259,7 @@
 															},
 															"font": "Arial;13;0",
 															"left": 348,
-															"top": 824,
+															"top": 697,
 															"width": 59.97265625,
 															"height": 13,
 															"text": "[Positions]"
@@ -267,7 +267,7 @@
 													],
 													"font": "Arial;13;0",
 													"left": 328,
-													"top": 809,
+													"top": 682,
 													"width": 1153,
 													"height": 43,
 													"guardLabel": {
@@ -279,7 +279,7 @@
 											"left": 328,
 											"top": 639,
 											"width": 1153,
-											"height": 213
+											"height": 86
 										}
 									],
 									"font": "Arial;13;0",
@@ -3989,9 +3989,9 @@
 												"$ref": "AAAAAAFwWRdOgxiNkFA="
 											},
 											"font": "Arial;13;0",
-											"left": 975,
+											"left": 965,
 											"top": 1480,
-											"width": 216.70263671875,
+											"width": 236.9453125,
 											"height": 13,
 											"alpha": 3.195304380010849,
 											"distance": 186.26862323000083,
@@ -3999,7 +3999,7 @@
 												"$ref": "AAAAAAFwWRdOhBiO7go="
 											},
 											"edgePosition": 1,
-											"text": "26 : INFORM, retrieve - Confirm, Item"
+											"text": "26 : COMPLETE, retrieve - Confirm, Item"
 										},
 										{
 											"_type": "EdgeLabelView",
@@ -4510,7 +4510,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFvFKbTiwGa2fI="
 							},
-							"name": "INFORM, retrieve - Confirm, Item",
+							"name": "COMPLETE, retrieve - Confirm, Item",
 							"source": {
 								"$ref": "AAAAAAFwWLL3WxXaTIc="
 							},
@@ -4732,7 +4732,8 @@
 					"_parent": {
 						"$ref": "AAAAAAFvFKbTiwGZ8MQ="
 					},
-					"name": "Role5"
+					"name": "Role5",
+					"type": ""
 				}
 			]
 		},
