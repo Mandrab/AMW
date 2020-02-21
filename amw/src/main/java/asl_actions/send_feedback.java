@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class send_feedback extends DefaultInternalAction {
 
 	private static final String ORDER_CONFIRM = "Order confirm";
+	private static final String ORDER_READY = "Order ready";
 	private static final String ORDER_FAIL = "Order fail";
 	private static final String ITEM_NOT_FOUND = "At least an item of your order has not been found";
 	private static final String ITEM_RESERVED = "Due to another buy, at least one item of your order is not present in sufficient quantity";
@@ -32,6 +33,16 @@ public class send_feedback extends DefaultInternalAction {
 		String mailTo = args[ 0 ].toString( );
 		String mailSubject, mailMsg;
 		switch ( ( int ) ( ( NumberTerm ) args[ 1 ] ).solve( ) ) {
+			case 200:
+				mailSubject = ORDER_READY;
+				mailMsg = ORDER_INFO.apply( args[ 2 ].toString( ), ( ( ListTerm ) args[ 3 ] ).stream( )
+						.map( Term::toString ).collect( Collectors.toList( ) ) );
+				break;
+			case 202:
+				mailSubject = ORDER_CONFIRM;
+				mailMsg = ORDER_INFO.apply( args[ 2 ].toString( ), ( ( ListTerm ) args[ 3 ] ).stream( )
+						.map( Term::toString ).collect( Collectors.toList( ) ) );
+				break;
 			case 404:
 				mailSubject = ORDER_FAIL;
 				mailMsg = ITEM_NOT_FOUND;
@@ -41,9 +52,8 @@ public class send_feedback extends DefaultInternalAction {
 				mailMsg = ITEM_RESERVED;
 				break;
 			default:
-				mailSubject = ORDER_CONFIRM;
-				mailMsg = ORDER_INFO.apply( args[ 2 ].toString( ), ( ( ListTerm ) args[ 3 ] ).stream( )
-						.map( Term::toString ).collect( Collectors.toList( ) ) );
+				mailSubject = "";
+				mailMsg = "";
 		}
 
 		BufferedReader reader = new BufferedReader( new FileReader( "testmaillogin" ) );
@@ -88,7 +98,7 @@ public class send_feedback extends DefaultInternalAction {
 			return false;
 		}
 
-		return null;
+		return true;
 	}
 
 }

@@ -27,33 +27,30 @@ set( false ).                                                       // at start 
 
 +!kqml_received( Sender, achieve, Content, MsgId )                  // receive an order                                 // KQML achieve = ACL request: http://jason.sourceforge.net/doc/faq.html TODO remove
 	:   Content = order( client( Client ), email( Email ), address( Address ) )[ [] | Items ]
-	<-  .println( "Op 1" );
-		!new_order_id( OrderId );                                   // generate an id for the order
+	<-  !new_order_id( OrderId );                                   // generate an id for the order
 		+order( id( OrderId ), status( checking ), client( Client ), email( Email ), address( Address ),
 				items( Items ) );                                   // save order's info (status=checking for validity)
 		.df_search( "management( items )", "retrieve( item )",
 				Providers );                                        // search the agent(s) that manages the warehouse
 		.nth( 0, Providers, Provider );                             // get the first ( agent )
-		!concat( retrieve( order_id( 1 ) ), Items, Res );
+		!concat( retrieve( order_id( OrderId ) ), Items, Res );
         .send( Provider, achieve, Res ).                            // ask for items reservation and positions
 
 ///////////////////////////// ERROR FROM WAREHOUSE: OP #6/11 in purchase sequence schema
 
 +!kqml_received( Sender, failure, Content, MsgId )                  // manage error from items retrieve
 	:   Content = error( order_id( OrderId ), error_code( ErrorCode ) )
-	<-	.println( "Op 6/11" );
-		-order( id( OrderId ), status( checking ), client( _ ), email( Email ), address( _ ),
+	<-	-order( id( OrderId ), status( checking ), client( _ ), email( Email ), address( _ ),
                 items( _ ) );                                       // retrieve order information and remove the value
-		.//asl_actions.send_feedback( Email, ErrorCode ).              // send failure mail
+		asl_actions.send_feedback( Email, ErrorCode ).              // send failure mail TODO commentato
 
 ///////////////////////////// CONFIRM RETRIEVE:     OP #14 in purchase sequence schema
 
 +!kqml_received( Sender, confirm, Content, MsgId )                  // receive items position and reservation confirm
 	:   Content = confirmation( order_id( OrderId ) )[ [] | Positions ]
 	&   order( id( OrderId ), status( checking ), client( Client ), email( Email ), address( Address ), items( Items ) )
-	<-  .println( "Op 14" );
-		asl_actions.fuse( Items, Positions, Fused );
-		//asl_actions.send_feedback( Email, 200, OrderId, Items );TODO non voglio intasare di mail
+	<-  asl_actions.fuse( Items, Positions, Fused );
+		asl_actions.send_feedback( Email, 202, OrderId, Items );    //TODO non voglio intasare di mail
 		!retrieve( OrderId, Fused ).                                // retrieve all the items
 
 ///////////////////////////// RECEIVE PROPOSAL:     OP #17 in purchase sequence schema
@@ -94,12 +91,13 @@ set( false ).                                                       // at start 
                 Provider );                                                     // get a random agent to contact
         .send( Provider, cfp, retrieve( id( Id ), item( ReshapedItem ) ) ).
 
-///////////////////////////// COMPLETED RETRIEVE:   OP #14 in purchase sequence schema
+///////////////////////////// COMPLETED RETRIEVE:   OP #26 in purchase sequence schema
 
 +!kqml_received( Sender, complete, Content, MsgId )
 	:   Content = retrieve( Item )
-	<-  -+retrieve( ItemId )[ order( OrderId ), state( completed ), flat( ReshapedItem ) ]
-		.println("TODO complete").
+	<-  -retrieve( Item )[ order( OrderId ), state( _ ), flat( ReshapedItem ) ];
+		+retrieve( Item )[ order( OrderId ), state( completed ), flat( ReshapedItem ) ];
+		!check_missing( OrderId ).
 
 /***********************************************************************************************************************
  Utils
@@ -108,22 +106,26 @@ set( false ).                                                       // at start 
 ///////////////////////////// GENERATE ( SIMPLE ) ORDER ID
 
 @next_order_id[atom]
-+!new_order_id( 0 )                                                             // generate an order ID
++!new_order_id( "o0" )                                                          // generate an order ID
 	:   not last_order_id( N ) <- +last_order_id( 0 ).
 
 @first_order_id[atom]
-+!new_order_id( N + 1 )                                                         // generate an order ID
-	:   last_order_id( N ) <- -+last_order_id( N + 1 ).
++!new_order_id( S )                                                             // generate an order ID
+	:   last_order_id( N )
+	<-  -+last_order_id( N + 1 );
+		.concat( o, N + 1, S ).
 
 ///////////////////////////// GENERATE ( SIMPLE ) ITEM ID
 
 @next_item_id[atom]
-+!new_item_id( 0 )                                                              // generate an ID for a item retrieve
++!new_item_id( "i0" )                                                           // generate an ID for a item retrieve
 	:   not last_item_id( N ) <- +last_item_id( 0 ).
 
 @first_item_id[atom]
-+!new_item_id( N + 1 )                                                          // generate an ID for a item retrieve
-	:   last_item_id( N ) <- -+last_item_id( N +1 ).
++!new_item_id( S )                                                              // generate an ID for a item retrieve
+	:   last_item_id( N )
+	<-  -+last_item_id( N +1 );
+		.concat( i, N + 1, S ).
 
 ///////////////////////////// RETRIEVE
 
@@ -169,3 +171,16 @@ set( false ).                                                       // at start 
 +!check_acceptance( RetrieveId, Item )
     :   retrieve( RetrieveId )[ order( _ ), state( State ), flat( _ ) ]
     &   not State = unaccepted.
+
+///////////////////////////// CHECK IF ANY ITEM HAS NOT BEEN RETRIEVED
+
+@checking_all_retrieved[atomic]
++!check_missing( OrderId )
+	:   order( id( OrderId ), status( _ ), client( _ ), email( Email ), address( _ ), items( Items ) )
+	<-  .findall( Id, retrieve( Id )[ order( OrderId ), state( unaccepted ), flat( F ) ]
+				| retrieve( Id )[ order( OrderId ), state( accepted ), flat( F ) ], I );
+		.length( I, L );
+		if ( L == 0 ) {
+			asl_actions.send_feedback( Email, 200, OrderId, Items );
+			// TODO
+		}.

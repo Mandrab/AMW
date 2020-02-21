@@ -33,7 +33,7 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) ) [
 
 // OPERATION #3 in purchase sequence schema
 @processOrder[atomic] // TODO or @up[atomic]
-+!kqml_received( Sender, achieve, Content, MsgId )                         // receive the intention of pick item(s)
++!kqml_received( Sender, achieve, Content, MsgId )                  // receive the intention of pick item(s)
 	:   Content = retrieve( order_id( OrderId ) )[ [] | Items ]
 	<-  !sufficient( Items, Sufficient );                           // check if all the elements exists (in quantity)
         if ( not Sufficient ) {                                     // if at least an item doesn't exist, send error msg
