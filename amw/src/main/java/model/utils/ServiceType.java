@@ -8,7 +8,10 @@ public enum ServiceType {
 	INFO_WAREHOUSE( "info( warehouse )" ),
 	MANAGEMENT_COMMANDS( "management( commands )"),
 	INFO_COMMANDS( "info( commands )" ),
-	REQUEST_COMMAND( "request( command )" );
+	EXECUTOR_COMMAND( "executor( command )" ),
+	EXEC_COMMAND( "exec( command )" ),
+	EXECUTOR_SCRIPT( "executor( command )" ),
+	EXEC_SCRIPT( "exec( command )" );
 
 	private String name;
 

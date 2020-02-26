@@ -23,7 +23,7 @@ set( false ).                                                       // at start 
 		.include( "utils/communication.asl" );                      // include communication utils plans
 		-+set( true ).                                              // set process ended
 
-///////////////////////////// ORDER RECEPTION:      OP #1 in purchase sequence schema
+///////////////////////////// ORDER RECEPTION:      OP #1 in order submission schema
 
 +!kqml_received( Sender, achieve, Content, MsgId )                  // receive an order                                 // KQML achieve = ACL request: http://jason.sourceforge.net/doc/faq.html TODO remove
 	:   Content = order( client( Client ), email( Email ), address( Address ) )[ [] | Items ]
@@ -36,24 +36,24 @@ set( false ).                                                       // at start 
 		!concat( retrieve( order_id( OrderId ) ), Items, Res );
         .send( Provider, achieve, Res ).                            // ask for items reservation and positions
 
-///////////////////////////// ERROR FROM WAREHOUSE: OP #6/11 in purchase sequence schema
+///////////////////////////// ERROR FROM WAREHOUSE: OP #6/11 in order submission schema
 
 +!kqml_received( Sender, failure, Content, MsgId )                  // manage error from items retrieve
 	:   Content = error( order_id( OrderId ), error_code( ErrorCode ) )
 	<-	-order( id( OrderId ), status( checking ), client( _ ), email( Email ), address( _ ),
                 items( _ ) );                                       // retrieve order information and remove the value
-		asl_actions.send_feedback( Email, ErrorCode ).              // send failure mail TODO commentato
+		.//!!asl_actions.send_feedback( Email, ErrorCode ).              // send failure mail TODO commentato
 
-///////////////////////////// CONFIRM RETRIEVE:     OP #14 in purchase sequence schema
+///////////////////////////// CONFIRM RETRIEVE:     OP #14 in order submission schema
 
 +!kqml_received( Sender, confirm, Content, MsgId )                  // receive items position and reservation confirm
 	:   Content = confirmation( order_id( OrderId ) )[ [] | Positions ]
 	&   order( id( OrderId ), status( checking ), client( Client ), email( Email ), address( Address ), items( Items ) )
 	<-  asl_actions.fuse( Items, Positions, Fused );
-		asl_actions.send_feedback( Email, 202, OrderId, Items );    //TODO non voglio intasare di mail
+		//!!asl_actions.send_feedback( Email, 202, OrderId, Items );    //TODO non voglio intasare di mail
 		!retrieve( OrderId, Fused ).                                // retrieve all the items
 
-///////////////////////////// RECEIVE PROPOSAL:     OP #17 in purchase sequence schema
+///////////////////////////// RECEIVE PROPOSAL:     OP #17 in order submission schema
 
 //@retrieve_proposal[atomic]
 +!kqml_received( Sender, propose, Content, MsgId )
@@ -82,7 +82,7 @@ set( false ).                                                       // at start 
 	:   Content = retrieve( Id )
 	&   not retrieve( Id )[ order( OrderId ), state( unaccepted ), flat( ReshapedItem ) ].
 
-///////////////////////////// TIMEOUT:              OP #19 in purchase sequence schema
+///////////////////////////// TIMEOUT:              OP #19 in order submission schema
 
 +!kqml_received( Sender, failure, Content, MsgId )
 	:   Content = retrieve( Item )
@@ -91,7 +91,7 @@ set( false ).                                                       // at start 
                 Provider );                                                     // get a random agent to contact
         .send( Provider, cfp, retrieve( id( Id ), item( ReshapedItem ) ) ).
 
-///////////////////////////// COMPLETED RETRIEVE:   OP #26 in purchase sequence schema
+///////////////////////////// COMPLETED RETRIEVE:   OP #26 in order submission schema
 
 +!kqml_received( Sender, complete, Content, MsgId )
 	:   Content = retrieve( Item )
@@ -182,6 +182,6 @@ set( false ).                                                       // at start 
 				| retrieve( Id )[ order( OrderId ), state( accepted ), flat( F ) ], I );
 		.length( I, L );
 		if ( L == 0 ) {
-			asl_actions.send_feedback( Email, 200, OrderId, Items );
+			//!!asl_actions.send_feedback( Email, 200, OrderId, Items );
 			// TODO
 		}.

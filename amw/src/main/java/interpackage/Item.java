@@ -1,6 +1,5 @@
 package interpackage;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -8,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static model.utils.LiteralUtils.*;
+import static model.utils.LiteralParser.*;
 
 /*
  * This class represent an item in a specific position in the warehouse

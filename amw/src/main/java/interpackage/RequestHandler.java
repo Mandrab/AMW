@@ -11,6 +11,7 @@ public interface RequestHandler {
 		ADD_COMMAND,
 		ORDER_STATUS,
 		EXEC_COMMAND,
+		EXEC_SCRIPT,
 		END,                                            // ask for system shutdown
 		ORDER                                           // ask for make an order
 	}

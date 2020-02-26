@@ -65,6 +65,7 @@ public class send_feedback extends DefaultInternalAction {
 		properties.setProperty( "mail.smtp.port", "587" );
 		properties.setProperty( "mail.smtp.auth", "true" );
 		properties.setProperty( "mail.smtp.starttls.enable", "true" );
+		//properties.setProperty( "mail.smtp.timeout", "5000" );
 
 		String mailFrom = reader.readLine( );
 		String pass = reader.readLine( );
@@ -74,6 +75,7 @@ public class send_feedback extends DefaultInternalAction {
 				return new PasswordAuthentication( mailFrom, pass );
 			}
 		} );
+		//session.setDebug( true );
 
 		try {
 			// Create a default MimeMessage object.

@@ -1,14 +1,13 @@
 package interpackage;
 
-import model.utils.LiteralUtils;
+import model.utils.LiteralParser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static model.utils.LiteralUtils.*;
+import static model.utils.LiteralParser.*;
 
 public class Command {
 
@@ -100,7 +99,7 @@ public class Command {
 		static public Version parse ( String input ) {
 			return new Version( getValue( input, "v_id" ),
 					split( split( getValue( input ) ).stream( ).filter( lit -> lit.startsWith( "requirements" ) )
-							.findFirst( ).map( LiteralUtils::splitStructAndList ).get( ).getValue( ) ),
+							.findFirst( ).map( LiteralParser::splitStructAndList ).get( ).getValue( ) ),
 					getValue( input, "script" ) );
 		}
 

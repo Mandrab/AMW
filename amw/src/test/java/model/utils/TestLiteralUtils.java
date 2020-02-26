@@ -1,6 +1,6 @@
 package model.utils;
 
-import static model.utils.LiteralUtils.*;
+import static model.utils.LiteralParser.*;
 import static org.junit.Assert.*;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;

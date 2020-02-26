@@ -1,4 +1,4 @@
-package model.agent;
+package model.agents;
 
 import interpackage.RequestDispatcher;
 import jade.core.Profile;
@@ -15,13 +15,13 @@ public class AgentInterfaceImpl implements AgentInterface {
 
 	private RequestDispatcher dispatcher;
 
-	public AgentInterfaceImpl( RequestDispatcher dispatcher ) {
+	public AgentInterfaceImpl ( RequestDispatcher dispatcher ) {
 		this.dispatcher = dispatcher;
 	}
 
 	// start the jade agent
 	@Override
-	public void start ( boolean retryConnection ) throws InitializationError {
+	public void start ( Class agentClass, boolean retryConnection ) throws InitializationError {
 
 		AgentController agent = null;
 
@@ -34,7 +34,7 @@ public class AgentInterfaceImpl implements AgentInterface {
 				ContainerController cc = rt.createAgentContainer( p );              // create a new non-main container
 
 				agent = cc.createNewAgent( "interface-ag" + String.format( "%.10f", // Create a new agent
-						Math.random( ) ), ClientAgentImpl.class.getCanonicalName( ), new Object[]{ dispatcher } );
+						Math.random( ) ), agentClass.getCanonicalName( ), new Object[]{ dispatcher } );
 
 				agent.start( );                                                     // fire up the agent
 

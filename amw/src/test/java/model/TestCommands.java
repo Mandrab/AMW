@@ -1,12 +1,11 @@
 package model;
 
-import interpackage.Item;
 import interpackage.RequestDispatcher;
 import interpackage.RequestHandler;
 import model.agents.TerminalAgent;
 import model.agents.AgentInterface;
 import model.agents.AgentInterfaceImpl;
-import model.agents.client.ClientAgentImpl;
+import model.agents.admin.AdminAgentImpl;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 
@@ -14,61 +13,54 @@ import java.util.function.BiConsumer;
 
 import static interpackage.RequestHandler.Request.*;
 import static interpackage.utils.Utils.sleep;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
-public class TestOrders {
+public class TestCommands {
 
 	private static final long MAX_WAIT = 10000;
 	private static final int TICK_TIME = 500;
 
-	private enum MailResult {
-		CONFIRM,
-		ERROR_NOT_FOUND,
-		ERROR_CONFLICT
-	}
-
 	private boolean started;
 
 	@Test
-	public void itemNotFound( ) {
+	public void scriptSubmission( ) {
+		String script = "[{" +
+						"+!main <- .println( \"Executing script ...\" );\n" +
+						".wait( 5000 );                                              // fake execution time\n" +
+						"!b" +
+				"}, {" +
+						"+!b <- .println( \"Script executed\" )" +
+				"}]";
 
 		RequestDispatcherImpl dispatcher = new RequestDispatcherImpl( );
 
 		startAgent( dispatcher );
 
-		dispatcher.agent.askFor( ORDER, "User", "mail@mail.com", "Street xyz, 123", "\"Item " + Math.random( ) + "\"" );
+		dispatcher.agent.askFor( EXEC_SCRIPT, script, "\"req1\"", "\"req2\"", "\"req3\"" );
 
 		sleep( TICK_TIME );
-
-		if ( ! checkMail( MailResult.ERROR_NOT_FOUND ) ) fail( "An error was expected" );
 
 		dispatcher.agent.askFor( END );
 	}
 
-	@Test
-	public void orderConfirm( ) {
-		String[] items = new String[] { "\"Item 1\"", "\"Item 3\"" };
-
+	/*	@Test
+	public void scriptSubmission( ) {
 		RequestDispatcherImpl dispatcher = new RequestDispatcherImpl( );
 
 		startAgent( dispatcher );
 
-		//pushItems( items );TODO
-
-		dispatcher.agent.askFor( ORDER, "User", "mail@mail.com", "Street xyz, 123", items[ 0 ], items[ 0 ], items[ 1 ] );
+		dispatcher.agent.askFor( EXEC_COMMAND, "Command1", "\"v0.0.1\"", "\"req1\"", "\"req2\"", "\"req3\"", "\"TODO\"" );
 
 		sleep( TICK_TIME );
 
-		if ( ! checkMail( MailResult.CONFIRM ) ) fail( "A confirm was expected" );
-
 		dispatcher.agent.askFor( END );
-	}
+	}*/
 
 	private void startAgent( RequestDispatcherImpl dispatcher ) {
 		new Thread( ( ) -> {
 			try {
 				AgentInterface agent = new AgentInterfaceImpl( dispatcher );
-				agent.start( ClientAgentImpl.class, true );
+				agent.start( AdminAgentImpl.class, true );
 			} catch ( InitializationError initializationError ) {
 				fail( "Error in agent initialization" );
 			} catch ( NullPointerException ignored ) {
@@ -83,15 +75,6 @@ public class TestOrders {
 		if ( dispatcher.agent == null ) fail( "Connection is taking too much time" );
 
 		started = true;
-	}
-
-	private void pushItems( Item... items ) {
-		// TODO push items to test
-	}
-
-	private boolean checkMail( MailResult expectedResult ) {
-		// TODO
-		return false;
 	}
 
 	private static class RequestDispatcherImpl implements RequestDispatcher {

@@ -31,7 +31,7 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) ) [
 		.include( "utils/literal.asl" );                            // include literal utils plans
 		-+set( true ).                                              // set process ended
 
-// OPERATION #3 in purchase sequence schema
+// OPERATION #3 in order submission schema
 @processOrder[atomic] // TODO or @up[atomic]
 +!kqml_received( Sender, achieve, Content, MsgId )                  // receive the intention of pick item(s)
 	:   Content = retrieve( order_id( OrderId ) )[ [] | Items ]
@@ -48,7 +48,7 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) ) [
             }
         }.
 
-// OPERATION #4 in purchase sequence schema
+// OPERATION #4 in order submission schema
 +!sufficient( [ Item | [] ], Result )                               // check if there's a sufficient quantity of product
 	:   Item = item( id( ItemId ), quantity( RequiredQ ) )
 	<-  .eval( Result, item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ ) )
@@ -59,7 +59,7 @@ item( id( "Item 3" ), quantity( 1 ), reserved( 0 ) ) [
 		!sufficient( Tail, TailRes );                               // check for the remaining elements
 		.eval( Result, HeadRes == true & TailRes == true ).         // return result
 
-// OPERATION #9 in purchase sequence schema
+// OPERATION #9 in order submission schema
 +!reserve( [ Item | [] ], [ Result ] )
 	:   Item = item( id( ItemId ), quantity( RequiredQ ) )
 	&   item( id( ItemId ), quantity( StoredQ ), reserved( ReservedQ ) )

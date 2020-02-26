@@ -8,25 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class LiteralUtils {
-
-	public static Literal buildLiteral( String name, SimpleStructure... structures ) {
-		return buildLiteral( name, structures, new Literal[] {} );
-	}
-
-	public static Literal buildLiteral( String name, SimpleStructure[] structures, Literal[] list ) {
-		Literal literal = new LiteralImpl( new Atom( name ) );
-
-		Arrays.asList( structures ).forEach( entry -> {
-			Structure struct = new Structure( entry.getName( ) );
-			struct.addTerm( entry.getValue( ) );
-			literal.addTerm( struct );
-		} );
-
-		literal.addAnnots( list );
-
-		return literal;
-	}
+public class LiteralParser {
 
 	public static String getValue( String structure, String valueOf ) {
 		Pair<String, String> parts = splitStructAndList( structure );
@@ -139,34 +121,5 @@ public class LiteralUtils {
 		}
 
 		return output;
-	}
-
-	public static class SimpleStructure {
-
-		private String name;
-		private Term value;
-
-		public SimpleStructure( String name, Atom value ) {
-			this.name = name;
-			this.value = value;
-		}
-
-		public SimpleStructure( String name, String value ) {
-			this.name = name;
-			this.value = new Atom( value );
-		}
-
-		public SimpleStructure( String name, Integer value ) {
-			this.name = name;
-			this.value = new NumberTermImpl( value );
-		}
-
-		public String getName ( ) {
-			return name;
-		}
-
-		public Term getValue ( ) {
-			return value;
-		}
 	}
 }
