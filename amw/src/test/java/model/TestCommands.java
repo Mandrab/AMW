@@ -22,7 +22,7 @@ public class TestCommands {
 
 	private boolean started;
 
-	@Test
+	/*@Test
 	public void scriptSubmission( ) {
 		String script = "[{" +
 						"+!main <- .println( \"Executing script ...\" );\n" +
@@ -41,20 +41,21 @@ public class TestCommands {
 		sleep( TICK_TIME );
 
 		dispatcher.agent.askFor( END );
-	}
+	}*/
 
-	/*	@Test
-	public void scriptSubmission( ) {
+	@Test
+	public void commandSubmission( ) {
+
 		RequestDispatcherImpl dispatcher = new RequestDispatcherImpl( );
 
 		startAgent( dispatcher );
 
-		dispatcher.agent.askFor( EXEC_COMMAND, "Command1", "\"v0.0.1\"", "\"req1\"", "\"req2\"", "\"req3\"", "\"TODO\"" );
+		dispatcher.agent.askFor( EXEC_COMMAND, "Command1" );
 
-		sleep( TICK_TIME );
+		sleep( 10 * TICK_TIME );
 
 		dispatcher.agent.askFor( END );
-	}*/
+	}
 
 	private void startAgent( RequestDispatcherImpl dispatcher ) {
 		new Thread( ( ) -> {

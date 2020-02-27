@@ -1,9 +1,9 @@
 package model.agents;
 
 import interpackage.RequestDispatcher;
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
-import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -14,6 +14,7 @@ import jade.lang.acl.MessageTemplate;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -51,26 +52,33 @@ public abstract class TerminalAgentImpl extends Agent implements TerminalAgent {
 
 	public class MessageSender {
 
-		private boolean askToAll = false;
-		private ACLMessage message;
-		private String msgID;
-		private DFAgentDescription receiverTemplate;
 		private long timeout = RESPONSE_TIME;                   // -1 = disabled
+
+		private List<DFAgentDescription> receiversTemplates;
+		private List<AID> agentIDs;
+		private String msgID;
+		private ACLMessage message;
+		private boolean askToAll = false;
 
 		public MessageSender( ) { }
 
+		public MessageSender( AID agent, int performative, Serializable content ) {
+			addReceivers( agent );
+			setMessage( performative, content );
+		}
+
 		public MessageSender( DFAgentDescription template, int performative, Serializable content ) {
-			setReceiver( template );
+			addReceivers( template );
 			setMessage( performative, content );
 		}
 
 		public MessageSender( String serviceName, String serviceType, int performative, Serializable content ) {
-			setReceiver( serviceName, serviceType );
+			addReceiver( serviceName, serviceType );
 			setMessage( performative, content );
 		}
 
-		public MessageSender askToAll( boolean active ) {
-			askToAll = active;
+		public MessageSender setMsgID( String id ) {
+			msgID = id;System.out.println( msgID);
 			return this;
 		}
 
@@ -85,22 +93,31 @@ public abstract class TerminalAgentImpl extends Agent implements TerminalAgent {
 			return this;
 		}
 
-		public MessageSender setMsgID( String id ) {
-			msgID = id;System.out.println( msgID);
+		public MessageSender addReceivers ( AID... agents ) {
+			if ( agentIDs == null ) agentIDs = new LinkedList<>(  );
+			agentIDs.addAll( Arrays.asList( agents ) );
+			if ( agentIDs.size( ) > 1 ) askToAll = true;
 			return this;
 		}
 
-		public MessageSender setReceiver( String serviceName, String serviceType ) {
-			receiverTemplate = new DFAgentDescription( );            // create a "service provider" template
+		public MessageSender addReceivers ( DFAgentDescription... templates ) {
+			if ( receiversTemplates == null ) receiversTemplates = new LinkedList<>(  );
+			receiversTemplates.addAll( Arrays.asList( templates ) );
+			if ( receiversTemplates.size( ) > 1 ) askToAll = true;
+			return this;
+		}
+
+		public MessageSender addReceiver ( String serviceName, String serviceType ) {
+			if ( receiversTemplates == null ) receiversTemplates = new LinkedList<>(  );
+
+			DFAgentDescription receiverTemplate = new DFAgentDescription( );            // create a "service provider" template
 			ServiceDescription sd = new ServiceDescription( );
 			sd.setName( serviceName );
 			sd.setType( serviceType );
 			receiverTemplate.addServices( sd );
-			return this;
-		}
 
-		public MessageSender setReceiver ( DFAgentDescription template ) {
-			receiverTemplate = template;
+			receiversTemplates.add( receiverTemplate );
+			if ( receiversTemplates.size( ) > 1 ) askToAll = true;
 			return this;
 		}
 
@@ -109,24 +126,32 @@ public abstract class TerminalAgentImpl extends Agent implements TerminalAgent {
 			return this;
 		}
 
+		public MessageSender askToAll( boolean active ) {
+			askToAll = active;
+			return this;
+		}
+
 		public void send( Agent sender ) {
-			if ( receiverTemplate == null ) throw new IllegalStateException( );
+			if ( ( receiversTemplates == null || receiversTemplates.isEmpty( ) )
+					&& ( agentIDs == null || agentIDs.isEmpty( ) ) ) throw new IllegalStateException( );
 
 			Executors.newCachedThreadPool( ).submit( ( ) -> {
-				try {
-					DFAgentDescription[] result = DFService.search( sender, receiverTemplate ); // an array containing all the agents that matches the template
+				if ( agentIDs != null ) agentIDs.forEach( aID -> message.addReceiver( aID ) );
 
-					if ( result.length == 0 ) return;
+				if ( receiversTemplates != null ) receiversTemplates.forEach( receiverTemplate -> {
+					try {
+						DFAgentDescription[] result = DFService.search( sender, receiverTemplate ); // an array containing all the agents that matches the template
 
-					for ( int i = 0; ( i == 0 || askToAll ) && i < result.length; i++ )
-						message.addReceiver( result[i].getName( ) );                    // add message's receiver
+						if ( result.length == 0 ) return;
 
-					if ( msgID != null ) message.setReplyWith( msgID );
+						for ( int i = 0; ( i == 0 || askToAll ) && i < result.length; i++ )
+							message.addReceiver( result[ i ].getName( ) );                    // add message's receiver
+					} catch( FIPAException e ) { e.printStackTrace( ); }
+				} );
 
-					sender.send( message );                                                 // send the cfp to all ability sellers
-				} catch ( FIPAException e ) {
-					e.printStackTrace( );
-				}
+				if ( msgID != null ) message.setReplyWith( msgID );
+
+				sender.send( message );                                                 // send the cfp to all ability sellers
 			} );
 		}
 

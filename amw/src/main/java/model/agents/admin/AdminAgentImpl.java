@@ -4,12 +4,15 @@ import interpackage.Command;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.UnreadableException;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import model.agents.client.ClientAgentImpl;
 import model.utils.LiteralBuilder;
 import model.utils.ServiceType;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
@@ -77,28 +80,19 @@ public class AdminAgentImpl extends ClientAgentImpl {
 		}
 
 		if ( request == Request.EXEC_COMMAND ) {
-			List<String> l = new LinkedList<>( Arrays.asList( args ) );
-
-			String commandID = l.remove( 0 );
-			String variantID = l.remove( 0 );
-			String script = l.remove( l.size( ) -1 );
-
-			Literal variant = new LiteralBuilder( ).setName( "variant" ).addValues( buildLiteral( "id", variantID ),
-					new LiteralBuilder( ).setName( "requirements" ).addQueue( l.toArray( new String[] {} ) ).build( ),
-					buildLiteral( "script", script ) ).build( );
-
-			Literal job = new LiteralBuilder( ).setName( "job" ).addValues( commandID ).addQueue( variant ).build( );
-
-			Literal execute = new LiteralBuilder( ).setName( "execute" ).addValues( job ).build( );
+			Literal execute = new LiteralBuilder( ).setName( "execute" ).addValues( LiteralBuilder.buildLiteral( "command_id", args[ 0 ] ) ).build( );
 
 			new MessageSender( EXECUTOR_COMMAND.getName( ), EXEC_COMMAND.getName( ), CFP, execute ).require( this )
 					.thenAccept( c -> {
-						if ( c == null ) return;                                    // timeout
-						if ( c.getPerformative( ) == REFUSE ) {                     // refuse to propose
-// TODO
-						} else if ( c.getPerformative( ) == PROPOSE ) {             // accept
-							new MessageSender( EXECUTOR_COMMAND.getName( ), EXEC_COMMAND.getName( ), ACCEPT_PROPOSAL,
-									c.getContent( ) ).send( this );
+						try {
+							if ( c == null ) return;                                    // timeout
+							if ( c.getPerformative( ) == REFUSE ) {                     // refuse to propose
+								// TODO
+							} else if ( c.getPerformative( ) == PROPOSE ) {             // accept
+								new MessageSender( c.getSender( ), ACCEPT_PROPOSAL, c.getContentObject( ) ).send( this );
+							}
+						} catch ( UnreadableException e ) {
+							e.printStackTrace( );
 						}
 					} );
 			return null;
