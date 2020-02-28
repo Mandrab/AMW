@@ -57,6 +57,7 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 	<-  !main[ source( script ) ];                                  // run the main intention of the script
 		.println(":)");
 		.println( Script );
+		.remove_plan( {+!main}, _, script );//TODO
 		-+activity( default );                                      // at end, setup default activity
         -+state( available );                                       // set as available to achieve unordinary operations
         !work.                                                      // restart to work

@@ -7,8 +7,14 @@ import java.util.*;
 public class LiteralBuilder {
 
 	private String name;
-	private List<Literal> values;
-	private List<Literal> queue;
+	private List<Term> values;
+	private List<Term> queue;
+
+	public LiteralBuilder( ) { }
+
+	public LiteralBuilder( String s ) {
+		this.name = s;
+	}
 
 	public LiteralBuilder setName( String s ) {
 		this.name = s;
@@ -21,9 +27,9 @@ public class LiteralBuilder {
 		return this;
 	}
 
-	public LiteralBuilder addValues( Literal... literals ) {
-		if ( values == null ) values = new LinkedList<>( Arrays.asList( literals ) );
-		else values.addAll( Arrays.asList( literals ) );
+	public LiteralBuilder addValues( Term... term ) {
+		if ( values == null ) values = new LinkedList<>( Arrays.asList( term ) );
+		else values.addAll( Arrays.asList( term ) );
 		return this;
 	}
 
@@ -42,8 +48,8 @@ public class LiteralBuilder {
 	public Literal build( ) throws IllegalStateException {
 		Literal literal = new LiteralImpl( new Atom( name ) );
 
-		if ( values != null && ! values.isEmpty( ) ) literal.addTerms( values.toArray( new Literal[] {} ) );
-		if ( queue != null && ! queue.isEmpty( ) ) literal.addAnnots( queue.toArray( new Literal[] {} ) );
+		if ( values != null && ! values.isEmpty( ) ) literal.addTerms( values.toArray( new Term[] {} ) );
+		if ( queue != null && ! queue.isEmpty( ) ) literal.addAnnots( queue.toArray( new Term[] {} ) );
 
 		return literal;
 	}

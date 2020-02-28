@@ -1,5 +1,6 @@
 package model;
 
+import asl_actions.load_commands;
 import interpackage.RequestDispatcher;
 import interpackage.RequestHandler;
 import model.agents.TerminalAgent;
@@ -9,10 +10,16 @@ import model.agents.admin.AdminAgentImpl;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import static interpackage.RequestHandler.Request.*;
 import static interpackage.utils.Utils.sleep;
+import static java.util.stream.Collectors.groupingBy;
 import static org.junit.Assert.fail;
 
 public class TestCommands {
@@ -22,8 +29,8 @@ public class TestCommands {
 
 	private boolean started;
 
-	/*@Test
-	public void scriptSubmission( ) {
+	@Test
+	public void scriptSubmission( ) throws IOException {
 		String script = "[{" +
 						"+!main <- .println( \"Executing script ...\" );\n" +
 						".wait( 5000 );                                              // fake execution time\n" +
@@ -41,7 +48,7 @@ public class TestCommands {
 		sleep( TICK_TIME );
 
 		dispatcher.agent.askFor( END );
-	}*/
+	}
 
 	@Test
 	public void commandSubmission( ) {
