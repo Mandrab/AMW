@@ -55,6 +55,8 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 +!work
 	:   activity( executing )[ client( Client ), script( Script ) ] // only if executing script
 	<-  !main[ source( script ) ];                                  // run the main intention of the script
+		.println(":)");
+		.println( Script );
 		-+activity( default );                                      // at end, setup default activity
         -+state( available );                                       // set as available to achieve unordinary operations
         !work.                                                      // restart to work
@@ -142,44 +144,77 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 +!kqml_received( Sender, cfp, Content, MsgId )                      // request of job execution
 	:   Content = execute( command_id( CommandID ) )
     <-  .println(ciao);
-        !status_if( state( available ), pending, Result );
+        !state_if( state( available ), pending, Result );
 		if ( Result ) {
 			+execution_request( command( CommandID ), client( Sender ), msg_id( MsgId ) )[ status( unaccepted ) ];
 			!random_agent( "management( commands )", "request( command )", Agent );
             .send( Agent, achieve, request( command_id( CommandID ) ) );// require command's versions
-            .wait( 5000 );                                              // max time to wait for confirm
+            .wait( 50000 );                                             // max time to wait for confirm
             !command_request_timeout( CommandID, Sender, MsgId );
 		} else
 			{ .send( Sender, refuse, execution( command_id( CommandID ) )[ err_code( 503 ) ] ); }.
 
+///////////////////////////// STATUS
+
+@state_if[atomic]
++!state_if( Cond, Status, true )
+	:   Cond
+	<-  -+state( Status ).
+
+@state_if_fail[atomic]
+-!state_if( Previous, Status, false ).
+
+////////////////////7
+
 @command_request_timeout[atomic]
 +!command_request_timeout( CommandID, Client, MsgId )
-	:   execution_request( command( CommandID ), client( Client ), msg_id( MsgId ) )[ status( unaccepted ) ]
-    <-  -execution_request( command( CommandID ), client( Client ), msg_id( MsgId ) );
+	:   execution_request( command( CommandID ), client( Client ), msg_id( MsgId ) )[ status( unaccepted ) | [] ]
+    <-  .println(ciaaaa);
+        -execution_request( command( CommandID ), client( Client ), msg_id( MsgId ) );
         -+state( available );
         .send( Client, refuse, execute( command_id( CommandID ) )[ err_code( 404 ) ], MsgId ).
 
+-!command_request_timeout( CommandID, Client, MsgId ).
+
 ///////////////////////////// GET COMMAND INFOS
 
-@get_command[atomic]
 +!kqml_received( Sender, tell, Content, MsgId )          // receive confirm of item picking
 	:   Content = command( CID )[ [] | Variants ] & .term2string( CommandID, CID )
-	&   execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( unaccepted ) ]
+	<-  !state_if( CommandID, Result );
+		if ( Result ) {
+			!get_feasible( Variants, Feasible );
+			!state_if1( CommandID, Feasible, R );
+			!x;
+		}.
+
+///////////////////////////// STATUS
+
+@state_if2[atomic]
++!state_if( CommandID, true )
+	:   execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( unaccepted ) ]
 	<-  -execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( unaccepted ) ];
-		!get_feasible( Variants, Feasible );
-		+execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( accepted ), version( Feasible ) ].
+		+execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( pending ) ].
+
+@state_if_fail2[atomic]
+-!state_if( CommandID, false ).
+
+@state_if3[atomic]
++!state_if1( CommandID, Feasible, true )
+	:   execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( pending ) ]
+	<-  -execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( pending ) ];
+        +execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( accepted ), version( Feasible ) ].
 
 @execution_request_no_version[atomic]
-+execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ]
-	:   not .ground( Feasible )
++!x : execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ]
+	&   not .ground( Feasible )
 	<-  .println("no feas");
 		-execution_request( command( CID ), client( Client ), msg_id( MsgId ) );
 		-+state( available );
 		.send( Client, refuse, execute( command_id( CommandID ) )[ err_code( 404 ) ], MsgId ).
 
-+execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ]
-	<-  .send( Client, propose, execute( command_id( CID ) ), MsgId );    // propose to exec the job
-        .wait( 5000 );                                      // max time to wait for confirm
++!x : execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ]
+	<-  .println(cieeee);.send( Client, propose, execute( command_id( CID ) ), MsgId );    // propose to exec the job
+        .wait( 50000 );                                      // TODO max time to wait for confirm
         !check_acceptance( Client, execute( command_id( CID ) )[ cause( request_timeout ) ], MsgId,
                 execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ] ).             // check the proposal acceptance
 
@@ -213,21 +248,19 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 +!kqml_received( Sender, accept_proposal, Content, MsgId )          // receive confirm of item picking
 	:   Content = execute( command_id( ID ) )
 	&   state( pending )
-    <-  .println(Content);-+state( unavailable );                                     // set as unavailable for tasks
+    <-  .println(accept);
+        ?execution_request( command( ID ), client( Client ), msg_id( M ) )[ status( accepted ), version( S ) ];
+        -+state( unavailable );                                     // set as unavailable for tasks
         -activity( _ );
-        +activity( executing )[ client( Sender ), job( ID ) ].     // pick item for client
+        .term2string( Script, S );
+        .add_plan( Script, script, begin );
+        +activity( executing )[ client( Client ), script( Script ) ].     // pick item for client
+
++state(available) <- .println("0").
++state(unavailable) <- .println("1").
++state(pending) <- .println("2").
 
 /////////////////////////////////////////////////////// GENERALS ///////////////////////////////////////////////////////
-
-///////////////////////////// STATUS
-
-@status_if[atomic]
-+!status_if( Cond, Status, true )
-	:   Cond
-	<-  -+state( Status ).
-
-@status_if_fail[atomic]
--!status_if( Previous, Status, false ).
 
 ///////////////////////////// PROPOSE FOR TASK
 

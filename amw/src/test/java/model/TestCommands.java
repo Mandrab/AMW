@@ -52,7 +52,7 @@ public class TestCommands {
 
 		dispatcher.agent.askFor( EXEC_COMMAND, "Command1" );
 
-		sleep( 10 * TICK_TIME );
+		sleep( 15 * TICK_TIME );
 
 		dispatcher.agent.askFor( END );
 	}

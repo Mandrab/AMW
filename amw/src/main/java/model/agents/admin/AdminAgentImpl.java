@@ -10,6 +10,7 @@ import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import model.agents.client.ClientAgentImpl;
 import model.utils.LiteralBuilder;
+import model.utils.LiteralParser;
 import model.utils.ServiceType;
 
 import java.io.IOException;
@@ -89,9 +90,12 @@ public class AdminAgentImpl extends ClientAgentImpl {
 							if ( c.getPerformative( ) == REFUSE ) {                     // refuse to propose
 								// TODO
 							} else if ( c.getPerformative( ) == PROPOSE ) {             // accept
-								new MessageSender( c.getSender( ), ACCEPT_PROPOSAL, c.getContentObject( ) ).send( this );
+								new MessageSender( c.getSender( ), ACCEPT_PROPOSAL, new LiteralBuilder( )
+										.setName( "execute" ).addValues( LiteralBuilder.buildLiteral( "command_id",
+												LiteralParser.getValue( c.getContent( ), "command_id" ) ) ).build( ) )
+										.send( this );
 							}
-						} catch ( UnreadableException e ) {
+						} catch ( Exception e ) {
 							e.printStackTrace( );
 						}
 					} );
