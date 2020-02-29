@@ -54,17 +54,22 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 
 +!work
 	:   activity( executing )[ client( Client ), script( Script ) ] // only if executing script
-	<-  !main[ source( script ) ];                                  // run the main intention of the script
-		.println(":)");
-		.println( Script );
-		.remove_plan( {+!main}, _, script );//TODO
+	<-  .println("merda2");!main[ source( script ) ];                                  // run the main intention of the script
+		!remove_plans( 1 );
 		-+activity( default );                                      // at end, setup default activity
         -+state( available );                                       // set as available to achieve unordinary operations
         !work.                                                      // restart to work
 
 +!work : activity( _ ).
 
+@remove_plans[atomic]
++!remove_plans( IDX )
+	:   .concat( l, IDX, Label ) & .term2string( TLabel, Label )
+	&   .plan_label( P, TLabel )
+	<-  .remove_plan( TLabel, script );
+		!remove_plans( IDX + 1 ).
 
+-!remove_plans( IDX ).
 
 ///////////////////////////////////////////////////// ITEM PICKING /////////////////////////////////////////////////////
 
@@ -133,7 +138,8 @@ implemented_plans_id[ "req1", "req3", "req4" ].
     <-  -+state( unavailable );                                     // set as unavailable for tasks
         -activity( _ );
         .term2string( Script, S );
-		.add_plan( Script, script, begin );
+        asl_actions.labelize( Script, Labelized );.println(Labelized);
+		.add_plan( Labelized, script, begin );
         +activity( executing )[ client( Sender ), script( S ) ].    // pick item for client
 
 
@@ -144,12 +150,12 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 
 +!kqml_received( Sender, cfp, Content, MsgId )                      // request of job execution
 	:   Content = execute( command_id( CommandID ) )
-    <-  .println(ciao);
-        !state_if( state( available ), pending, Result );
+    <-  .println("merda");!state_if( state( available ), pending, Result );
 		if ( Result ) {
 			+execution_request( command( CommandID ), client( Sender ), msg_id( MsgId ) )[ status( unaccepted ) ];
 			!random_agent( "management( commands )", "request( command )", Agent );
-            .send( Agent, achieve, request( command_id( CommandID ) ) );// require command's versions
+			.term2string( CommandID, CID );
+            .send( Agent, achieve, request( command_id( CID ) ) );// require command's versions
             .wait( 50000 );                                             // max time to wait for confirm
             !command_request_timeout( CommandID, Sender, MsgId );
 		} else
@@ -170,8 +176,7 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 @command_request_timeout[atomic]
 +!command_request_timeout( CommandID, Client, MsgId )
 	:   execution_request( command( CommandID ), client( Client ), msg_id( MsgId ) )[ status( unaccepted ) | [] ]
-    <-  .println(ciaaaa);
-        -execution_request( command( CommandID ), client( Client ), msg_id( MsgId ) );
+    <-  -execution_request( command( CommandID ), client( Client ), msg_id( MsgId ) );
         -+state( available );
         .send( Client, refuse, execute( command_id( CommandID ) )[ err_code( 404 ) ], MsgId ).
 
@@ -208,13 +213,12 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 @execution_request_no_version[atomic]
 +!x : execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ]
 	&   not .ground( Feasible )
-	<-  .println("no feas");
-		-execution_request( command( CID ), client( Client ), msg_id( MsgId ) );
+	<-  -execution_request( command( CID ), client( Client ), msg_id( MsgId ) );
 		-+state( available );
 		.send( Client, refuse, execute( command_id( CommandID ) )[ err_code( 404 ) ], MsgId ).
 
 +!x : execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ]
-	<-  .println(cieeee);.send( Client, propose, execute( command_id( CID ) ), MsgId );    // propose to exec the job
+	<-  .send( Client, propose, execute( command_id( CID ) ), MsgId );    // propose to exec the job
         .wait( 50000 );                                      // TODO max time to wait for confirm
         !check_acceptance( Client, execute( command_id( CID ) )[ cause( request_timeout ) ], MsgId,
                 execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ] ).             // check the proposal acceptance
@@ -249,17 +253,13 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 +!kqml_received( Sender, accept_proposal, Content, MsgId )          // receive confirm of item picking
 	:   Content = execute( command_id( ID ) )
 	&   state( pending )
-    <-  .println(accept);
-        ?execution_request( command( ID ), client( Client ), msg_id( M ) )[ status( accepted ), version( S ) ];
+    <-  ?execution_request( command( ID ), client( Client ), msg_id( M ) )[ status( accepted ), version( S ) ];
         -+state( unavailable );                                     // set as unavailable for tasks
         -activity( _ );
         .term2string( Script, S );
+        asl_actions.labelize( Script, Labelized );
         .add_plan( Script, script, begin );
-        +activity( executing )[ client( Client ), script( Script ) ].     // pick item for client
-
-+state(available) <- .println("0").
-+state(unavailable) <- .println("1").
-+state(pending) <- .println("2").
+        +activity( executing )[ client( Client ), script( Labelized ) ].     // pick item for client
 
 /////////////////////////////////////////////////////// GENERALS ///////////////////////////////////////////////////////
 

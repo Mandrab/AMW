@@ -3,12 +3,11 @@
 ***********************************************************************************************************************/
 
 set( false ).                                                       // at start is not yet set
-/*
+
 command( id( "Command1" ), name( "command 1 name" ), description( "descr command 1" ) ) [
-		variant( v_id( "v0.0.1" ), requirements[ "req1", "req2", "req3" ], script( "" ) ),
 		variant( v_id( "v0.0.2" ), requirements[ "req1", "req3" ], script(
-				"[  {+!main <- .println( 'Executing script ...' );.wait( 5000 ); !b}, {+!b <- .println( 'Script executed' ) }]" ) ) ].
-*/
+				"[  {@l1 +!main <- .println( 'Executing script ...' );.wait( 500 ); !b}, {@l2 +!b <- .println( 'Script executed' ) }]" ) ) ].
+
 /***********************************************************************************************************************
  Initial goals
 ***********************************************************************************************************************/
@@ -51,3 +50,5 @@ command( id( "Command1" ), name( "command 1 name" ), description( "descr command
     &   command( id( CommandId ), name( _ ), description( _ ) )[ source( self ) | Variants ]
     <-  !concat( command( CommandId ), Variants, Msg );
         .send( Sender, tell, Msg, MsgId ).                          // ask if able to run the specified script
+
+-!kqml_received( Sender, achieve, Content, MsgId ) <- .println( Content ).

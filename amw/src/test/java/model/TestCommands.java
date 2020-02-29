@@ -29,7 +29,7 @@ public class TestCommands {
 
 	private boolean started;
 
-	@Test
+	/*@Test
 	public void scriptSubmission( ) throws IOException {
 		String script = "[{" +
 						"+!main <- .println( \"Executing script ...\" );\n" +
@@ -48,7 +48,7 @@ public class TestCommands {
 		sleep( TICK_TIME );
 
 		dispatcher.agent.askFor( END );
-	}
+	}*/
 
 	@Test
 	public void commandSubmission( ) {
