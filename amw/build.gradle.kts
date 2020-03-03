@@ -54,8 +54,9 @@ val apacheCommonsIo: Configuration by configurations.creating
 val apacheCommonsLang : Configuration by configurations.creating
 val javaMailApi : Configuration by configurations.creating
 val activation : Configuration by configurations.creating
+val snakeYaml : Configuration by configurations.creating
 
-val dependencies: List<Configuration> = Arrays.asList( junit, jason, guava, apacheCommonsIo, apacheCommonsLang, javaMailApi, activation )
+val dependencies: List<Configuration> = Arrays.asList( junit, jason, guava, apacheCommonsIo, apacheCommonsLang, javaMailApi, activation, snakeYaml )
 
 dependencies {
     junit( "junit", "junit", "4.12" )
@@ -72,6 +73,8 @@ dependencies {
     implementation( javaMailApi )
     activation( "javax.activation", "activation", "1.1.1" )
     implementation( activation )
+    snakeYaml( "org.yaml", "snakeyaml", "1.21" )
+    implementation( snakeYaml )
 }
 
 //**********************************************************************************************************************

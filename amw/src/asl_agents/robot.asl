@@ -3,7 +3,7 @@
 ***********************************************************************************************************************/
 
 set( false ).                                                       // at start is not yet set
-implemented_plans_id[ "req1", "req3", "req4" ].
+implements[ "cid0.0.0.2" ].                                         // implements send mail
 
 /***********************************************************************************************************************
  Initial goals
@@ -35,7 +35,7 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 
 +!work
 	:   activity( default )                                         // only if achieving default activity
-	<-  .println( "Doing stuffs ..." );
+	<-  //.println( "Doing stuffs ..." );
 		.wait( 5000 );                                              // fake execution time
 		!work.                                                      // restart to work
 
@@ -54,7 +54,7 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 
 +!work
 	:   activity( executing )[ client( Client ), script( Script ) ] // only if executing script
-	<-  .println("merda2");!main[ source( script ) ];                                  // run the main intention of the script
+	<-  !main[ source( script ) ];               // run the main intention of the script
 		!remove_plans( 1 );
 		-+activity( default );                                      // at end, setup default activity
         -+state( available );                                       // set as available to achieve unordinary operations
@@ -62,41 +62,34 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 
 +!work : activity( _ ).
 
-@remove_plans[atomic]
-+!remove_plans( IDX )
-	:   .concat( l, IDX, Label ) & .term2string( TLabel, Label )
-	&   .plan_label( P, TLabel )
-	<-  .remove_plan( TLabel, script );
-		!remove_plans( IDX + 1 ).
 
--!remove_plans( IDX ).
 
 ///////////////////////////////////////////////////// ITEM PICKING /////////////////////////////////////////////////////
 
 ///////////////////////////// PICKING REQUEST:      OP #15 in order submission schema
 
-+!kqml_received( Sender, cfp, Content, MsgId )                      // request of item picking
++!kqml_received( Sender, cfp, Content, MsgID )                      // request of item picking
 	:   Content = retrieve( id( Id ), item( item( Item )[ [] | Positions ] ) )
-    <-  !propose( Sender, retrieve( Id ), MsgId );                  // propose to retrieve the item
+    <-  !propose( Sender, retrieve( Id ), MsgID );                  // propose to retrieve the item
         .wait( 5000 );                                              // max time to wait for confirm
         !check_acceptance( Sender, retrieve( Id )
-                [ cause( request_timeout ) ], MsgId ).              // check if an acceptance has came
+                [ cause( request_timeout ) ], MsgID ).              // check if an acceptance has came
 
--!kqml_received( Sender, cfp, Content, MsgId )                      // failure of plan (e.g. when no available)
+-!kqml_received( Sender, cfp, Content, MsgID )                      // failure of plan (e.g. when no available)
 	:   Content = retrieve( id( Id ), item( item( Item )[ [] | Positions ] ) )
 	<-  .send( Sender, refuse, retrieve( Id ) ).                    // refuse to retrieve item
 
 ///////////////////////////// REFUSED PROPOSAL:     OP #21 in order submission schema
 
 @client_reject[atomic]
-+!kqml_received( Sender, reject_proposal, retrieve( Item ), MsgId ) // clients refuse proposal
++!kqml_received( Sender, reject_proposal, retrieve( Item ), MsgID ) // clients refuse proposal
 	:   state( pending )
     <-  -+state( available ).                                       // become available again
 
 ///////////////////////////// ACCEPTED PROPOSAL:    OP #24 in order submission schema
 
 @client_accept[atomic]
-+!kqml_received( Sender, accept_proposal, retrieve( Item ), MsgId ) // receive confirm of item picking
++!kqml_received( Sender, accept_proposal, retrieve( Item ), MsgID ) // receive confirm of item picking
 	:   state( pending )
     <-  -+state( unavailable );                                     // set as unavailable for tasks
         -activity( _ );
@@ -108,38 +101,30 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 
 ///////////////////////////// JOB EXECUTION REQ:    OP #5 in command submission schema
 
-+!kqml_received( Sender, cfp, Content, MsgId )                      // request of job execution
++!kqml_received( Sender, cfp, Content, MsgID )                      // request of job execution
 	:   Content = execute( script( S )[ [] | Requirements ] )
-    <-  !feasible( Requirements, Result );
+	&   implements[ source( self ) | Labels ]
+    <-  .println(Requirements);.println(Labels);!provided( Requirements, Labels, Result );
         if ( Result ) {                                             // i'm able to run the script
-            +script( S )[ client( Sender ), msg_id( MsgId ) ];
-            !propose( Sender, execute( script( S ) ), MsgId );      // propose to exec the job
+            +script( S )[ client( Sender ), msg_id( MsgID ) ];
+            !propose( Sender, execute( script( S ) ), MsgID );      // propose to exec the job
             .wait( 5000 );                                          // max time to wait for confirm
-            !check_acceptance( Sender, execute( script )[ cause( request_timeout ) ], MsgId,
+            !check_acceptance( Sender, execute( script )[ cause( request_timeout ) ], MsgID,
                     script( S ) );                                  // check the proposal acceptance
         } else { .send( Sender, refuse,
-                execute( script )[ err_code( 407 ) ], MsgId ); }.   // refuse to run the script
-
-+!feasible( [ Head | [] ], Result ) <- Result = true.   // TODO check fasibility
-
-+!feasible( [ Head | Tail ], Result )
-	<-  !feasible( [ Head ], HeadRes );
-		!feasible( Tail, TailRes );
-		.eval( Result, HeadRes & TailRes ).
-
--!feasible( [ H | T ], Result ) <- Result = false.
+                execute( script )[ err_code( 407 ) ], MsgID ); }.   // refuse to run the script
 
 ///////////////////////////// ACCEPTED PROPOSAL
 
 @accept_execution_prop[atomic]
-+!kqml_received( Sender, accept_proposal, execute( script ), MsgId )          // receive confirm of item picking
-	:   script( S )[ client( Sender ), msg_id( MsgId ) ]
++!kqml_received( Sender, accept_proposal, execute( script ), MsgID )          // receive confirm of item picking
+	:   script( S )[ client( Sender ), msg_id( MsgID ) ]
 	&   state( pending )
     <-  -+state( unavailable );                                     // set as unavailable for tasks
         -activity( _ );
-        .term2string( Script, S );
-        asl_actions.labelize( Script, Labelized );.println(Labelized);
-		.add_plan( Labelized, script, begin );
+        asl_actions.labelize( S, Labelized );
+        .term2string( Script, Labelized );
+		.add_plan( Script, script, begin );
         +activity( executing )[ client( Sender ), script( S ) ].    // pick item for client
 
 
@@ -148,90 +133,101 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 
 ///////////////////////////// COMMAND EXECUTION REQ:OP #5 in command submission schema
 
-+!kqml_received( Sender, cfp, Content, MsgId )                      // request of job execution
++!kqml_received( Sender, cfp, Content, MsgID )                      // request of job execution
 	:   Content = execute( command_id( CommandID ) )
-    <-  .println("merda");!state_if( state( available ), pending, Result );
+    <-  !change_status( state( available ), pending, Result );
 		if ( Result ) {
-			+execution_request( command( CommandID ), client( Sender ), msg_id( MsgId ) )[ status( unaccepted ) ];
+			+execution_request( command( CommandID ), client( Sender ), msg_id( MsgID ) )[ status( unaccepted ) ];
 			!random_agent( "management( commands )", "request( command )", Agent );
 			.term2string( CommandID, CID );
             .send( Agent, achieve, request( command_id( CID ) ) );// require command's versions
             .wait( 50000 );                                             // max time to wait for confirm
-            !command_request_timeout( CommandID, Sender, MsgId );
+            !command_request_timeout( CommandID, Sender, MsgID );
 		} else
 			{ .send( Sender, refuse, execution( command_id( CommandID ) )[ err_code( 503 ) ] ); }.
-
-///////////////////////////// STATUS
-
-@state_if[atomic]
-+!state_if( Cond, Status, true )
-	:   Cond
-	<-  -+state( Status ).
-
-@state_if_fail[atomic]
--!state_if( Previous, Status, false ).
 
 ////////////////////7
 
 @command_request_timeout[atomic]
-+!command_request_timeout( CommandID, Client, MsgId )
-	:   execution_request( command( CommandID ), client( Client ), msg_id( MsgId ) )[ status( unaccepted ) | [] ]
-    <-  -execution_request( command( CommandID ), client( Client ), msg_id( MsgId ) );
++!command_request_timeout( CommandID, Client, MsgID )
+	:   execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) )[ status( unaccepted ) | [] ]
+    <-  -execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) );
         -+state( available );
-        .send( Client, refuse, execute( command_id( CommandID ) )[ err_code( 404 ) ], MsgId ).
+        .send( Client, refuse, execute( command_id( CommandID ) )[ err_code( 404 ) ], MsgID ).
 
--!command_request_timeout( CommandID, Client, MsgId ).
+-!command_request_timeout( CommandID, Client, MsgID ).
 
 ///////////////////////////// GET COMMAND INFOS
 
-+!kqml_received( Sender, tell, Content, MsgId )          // receive confirm of item picking
-	:   Content = command( CID )[ [] | Variants ] & .term2string( CommandID, CID )
-	<-  !state_if( CommandID, Result );
++!kqml_received( Sender, tell, Content, MsgID )          // receive confirm of item picking
+	:   Content = command( CID )[ [ ] | Variants ]
+	<-  !update_request( CommandID, unaccepted, pending, Result );
 		if ( Result ) {
 			!get_feasible( Variants, Feasible );
-			!state_if1( CommandID, Feasible, R );
-			!x;
+			!update_request( CommandID, pending, accepted, Feasible, R );
+			!cfp_response( CommandID );
 		}.
 
-///////////////////////////// STATUS
+///////////////////////////// EXECUTION REQUEST ACCEPTANCE
 
-@state_if2[atomic]
-+!state_if( CommandID, true )
-	:   execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( unaccepted ) ]
-	<-  -execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( unaccepted ) ];
-		+execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( pending ) ].
+@add_request[atomic]
++!add_request( CommandID, Client, MsgID, true )
+	:   not execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) )
+	<-  +execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) )[ status( unaccepted ) ].
 
-@state_if_fail2[atomic]
--!state_if( CommandID, false ).
+@add_request_fail[atomic]
+-!add_request( CommandID, Client, MsgID, false ).
 
-@state_if3[atomic]
-+!state_if1( CommandID, Feasible, true )
-	:   execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( pending ) ]
-	<-  -execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( pending ) ];
-        +execution_request( command( CommandID ), client( Client ), msg_id( ReqMsgId ) )[ status( accepted ), version( Feasible ) ].
+///////////////////////////// EXECUTION REQUEST STATUS UPDATE
 
-@execution_request_no_version[atomic]
-+!x : execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ]
-	&   not .ground( Feasible )
-	<-  -execution_request( command( CID ), client( Client ), msg_id( MsgId ) );
+@update_status_request[atomic]
++!update_request( CommandID, OldStatus, Status, true )
+	:   execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) )[ status( OldStatus ) ]
+	<-  -execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) )[ status( OldStatus ) ];
+		+execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) )[ status( Status ) ].
+
+@update_status_request_fail[atomic]
+-!update_request( CommandID, OldStatus, Status, false ).
+
+///////////////////////////// EXECUTION REQUEST VERSION UPDATE
+
+@update_version_request[atomic]
++!update_request( CommandID, OldStatus, Status, Version, true )
+	:   execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) )[ status( OldStatus ) ]
+	<-  -execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) )[ status( OldStatus ) ];
+		+execution_request( command( CommandID ), client( Client ), msg_id( MsgID ) )[ status( Status ), version( Version ) ].
+
+@update_version_request_fail[atomic]
+-!update_request( CommandID, OldStatus, Status, Version, false ).
+
+///////////////////////////// RESPONSE TO CLIENT
+
+@cfp_response[atomic]
++!cfp_response( CID )
+	:   execution_request( command( CID ), client( Client ), msg_id( MsgID ) )[ status( accepted ), version( Feasible ) ]
+	&   not .ground( Feasible )                                     // no script found
+	<-  -execution_request( command( CID ), client( Client ), msg_id( MsgID ) );
 		-+state( available );
-		.send( Client, refuse, execute( command_id( CommandID ) )[ err_code( 404 ) ], MsgId ).
+		.send( Client, refuse, execute( command_id( CommandID ) )[ err_code( 404 ) ], MsgID ).
 
-+!x : execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ]
-	<-  .send( Client, propose, execute( command_id( CID ) ), MsgId );    // propose to exec the job
-        .wait( 50000 );                                      // TODO max time to wait for confirm
-        !check_acceptance( Client, execute( command_id( CID ) )[ cause( request_timeout ) ], MsgId,
-                execution_request( command( CID ), client( Client ), msg_id( MsgId ) )[ status( accepted ), version( Feasible ) ] ).             // check the proposal acceptance
++!cfp_response( CID )
+	:   execution_request( command( CID ), client( Client ), msg_id( MsgID ) )[ status( accepted ), version( Feasible ) ]
+	<-  .send( Client, propose, execute( command_id( CID ) ), MsgID );    // propose to exec the job
+        .wait( 5000 );                                      // TODO max time to wait for confirm
+        !check_acceptance( Client, execute( command_id( CID ) )[ cause( request_timeout ) ], MsgID,
+                execution_request( command( CID ), client( Client ), msg_id( MsgID ) )[ status( accepted ), version( Feasible ) ] ).             // check the proposal acceptance
 
 +!get_feasible( [ Head | [] ], Feasible )
 	:   Head = variant( v_id( ID ), requirements[ [] | Requirements ], script( Script ) )
-	&   implemented_plans_id[ source( self ) | Labels ]
+	&   implements[ source( self ) | Labels ]
 	<-  !provided( Requirements, Labels, Provided );
 		if ( Provided ) { Feasible = Script; }.
 
 +!get_feasible( [ Head | Tail ], Feasible )
 	<-  !get_feasible( [ Head ], Feasible );
 		if ( not .ground( Feasible ) ) { !get_feasible( Tail, Feasible ); }.
+
++!provided( Requirements, Label, true ) : not .ground( Requirements ) | .empty( Requirements ).
 
 +!provided( [ Req | [] ], [ Label | [] ], true ) : Req == Label.
 
@@ -250,46 +246,76 @@ implemented_plans_id[ "req1", "req3", "req4" ].
 ///////////////////////////// ACCEPTED PROPOSAL
 
 @accept_execution_propTODO2[atomic]
-+!kqml_received( Sender, accept_proposal, Content, MsgId )          // receive confirm of item picking
++!kqml_received( Sender, accept_proposal, Content, MsgID )          // receive confirm of item picking
 	:   Content = execute( command_id( ID ) )
 	&   state( pending )
     <-  ?execution_request( command( ID ), client( Client ), msg_id( M ) )[ status( accepted ), version( S ) ];
         -+state( unavailable );                                     // set as unavailable for tasks
         -activity( _ );
-        .term2string( Script, S );
-        asl_actions.labelize( Script, Labelized );
+        asl_actions.labelize( S, Labelized );
+        .term2string( Script, Labelized);
         .add_plan( Script, script, begin );
         +activity( executing )[ client( Client ), script( Labelized ) ].     // pick item for client
 
-/////////////////////////////////////////////////////// GENERALS ///////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////// COMMANDS IMPLEMENTATIONS ///////////////////////////////////////////////
+
+///////////////////////////// COMMAND 0.0.0.2
+
++!send( Email, Code, Msg )[ source( "cid0.0.0.2" ) ]
+	<-  asl_actions.send_feedback( Email, Code, Msg ).
+
+//////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
+
+///////////////////////////// REMOVE SCRIPT'S PLANS
+
+@remove_plans[atomic]
++!remove_plans( IDX )
+	:   .concat( l, IDX, Label ) & .term2string( TLabel, Label )
+	&   .plan_label( P, TLabel )
+	<-  .remove_plan( TLabel, script );
+		!remove_plans( IDX + 1 ).
+
+-!remove_plans( IDX ).
+
+///////////////////////////// ATOMIC STATUS CHANGE
+
+@change_status[atomic]
++!change_status( Cond, Status, true )
+	:   Cond
+	<-  -+state( Status ).
+
+@change_status_fail[atomic]
+-!change_status( Previous, Status, false ).
 
 ///////////////////////////// PROPOSE FOR TASK
 
 @propose[atomic]
-+!propose( Sender, Msg, MsgId )                                     // propose for task (item picking or job execution)
++!propose( Sender, Msg, MsgID )                                     // propose for task (item picking or job execution)
 	:   state( available )                                          // if i'm not doing other unstoppable things
 	<-  -+state( pending );                                         // update state to wait confirm
-		.send( Sender, propose, Msg, MsgId ).                       // propose to accept the work
+		.send( Sender, propose, Msg, MsgID ).                       // propose to accept the work
 
 ///////////////////////////// CHECK PROPOSAL RESPONSE
 
 @accepted[atomic]
-+!check_acceptance( Sender, Id, MsgId )                             // the propose has been accepted
++!check_acceptance( Sender, Id, MsgID )                             // the propose has been accepted
 	:   not state( pending ).                                       // do nothing here
 
 @unaccepted[atomic]
-+!check_acceptance( Sender, Msg, MsgId )                            // the propose hasn't been accepted
++!check_acceptance( Sender, Msg, MsgID )                            // the propose hasn't been accepted
 	:   state( pending )                                            // if i got no response ...
 	<-  -+state( available );                                       // ... stop waiting and reset as available
-        .send( Sender, failure, Msg, MsgId ).                       // send timeout failure
+        .send( Sender, failure, Msg, MsgID ).                       // send timeout failure
 
 @accepted_with_delete[atomic]
-+!check_acceptance( Sender, Id, MsgId, Annot )                      // the propose has been accepted
++!check_acceptance( Sender, Id, MsgID, Annot )                      // the propose has been accepted
 	:   not state( pending ).                                       // do nothing here
 
 @unaccepted_with_delete[atomic]
-+!check_acceptance( Sender, Msg, MsgId, Annot )                     // the propose hasn't been accepted
++!check_acceptance( Sender, Msg, MsgID, Annot )                     // the propose hasn't been accepted
 	:   state( pending )                                            // if i got no response ...
 	<-  -+state( available );                                       // ... stop waiting and reset as available
 		-Annot;                                                     // delete annotation
-        .send( Sender, failure, Msg, MsgId ).                       // send timeout failure
+        .send( Sender, failure, Msg, MsgID ).                       // send timeout failure

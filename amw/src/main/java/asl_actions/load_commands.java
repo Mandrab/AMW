@@ -1,6 +1,5 @@
 package asl_actions;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import jason.asSemantics.DefaultInternalAction;
 import jason.asSemantics.TransitionSystem;
 import jason.asSemantics.Unifier;
@@ -46,7 +45,7 @@ public class load_commands extends DefaultInternalAction {
 		versions.remove( infoFile );
 
 		return new LiteralBuilder( ).setName( "command" ).addValues(
-				new LiteralBuilder( "id" ).addValues( new StringTermImpl( infoFile.getName( ).substring( 3, infoFile.getName( ).indexOf( "-" ) ) ) ).build( ),
+				new LiteralBuilder( "id" ).addValues( new StringTermImpl( infoFile.getName( ).substring( 0, infoFile.getName( ).indexOf( "-" ) ) ) ).build( ),
 				new LiteralBuilder( "name" ).addValues( new StringTermImpl( getName( infoFile ) ) ).build( ),
 				new LiteralBuilder( "description" ).addValues( new StringTermImpl( getDescription( infoFile ) ) ).build( ) )
 				.addQueue( versions.stream( ).filter( f -> ! f.getName( ).contains( "info" ) )
@@ -77,19 +76,7 @@ public class load_commands extends DefaultInternalAction {
 		try {
 			String fileName = file.getName( );
 
-			List<String> lines = Files.readAllLines( file.toPath( ), StandardCharsets.UTF_8 );
-
-			String requirements = lines.remove( 0 );
-
-			while( ! requirements.contains( "[" ) && ! requirements.contains( "]" ) ) {
-				String line = lines.remove( 0 );
-				if ( ! line.contains( "]" ) )
-					requirements = requirements + line;
-				else
-					requirements = requirements + line.substring( 0, line.indexOf( "]" ) + 1 );
-			}
-
-			List<String> terms = split( requirements.substring( requirements.indexOf( "[" ), requirements.indexOf( "]" ) + 1 ) );
+			List<String> terms = getRequirements( file );
 
 			return new LiteralBuilder( ).setName( "variant" ).addValues( new LiteralBuilder( "v_id" ).addValues( new StringTermImpl(
 							fileName.substring( fileName.indexOf( "-" ) +1, fileName.indexOf( ".asl" ) ) ) ).build( ),
@@ -101,15 +88,36 @@ public class load_commands extends DefaultInternalAction {
 		return null;
 	}
 
+	public static List<String> getRequirements( File file ) throws IOException {
+		List<String> lines = Files.readAllLines( file.toPath( ), StandardCharsets.UTF_8 );
+
+		StringBuilder requirements = new StringBuilder( lines.remove( 0 ) );
+
+		while( ! requirements.toString( ).contains( "[" ) && ! requirements.toString( ).contains( "]" ) ) {
+			String line = lines.remove( 0 );
+			if ( ! line.contains( "]" ) )
+				requirements.append( line );
+			else
+				requirements.append( line, 0, line.indexOf( "]" ) + 1 );
+		}
+
+		requirements = new StringBuilder( requirements.toString( ).replaceAll( " ", "" ) );
+
+		return split( requirements.substring( requirements.indexOf( "[" ), requirements.indexOf( "]" ) + 1 ) );
+	}
+
 	public static String getScript( File path ) throws IOException {
-		List<String> lines = Files.readAllLines( path.toPath( ), StandardCharsets.UTF_8 );
+		List<String> lines = Files.readAllLines( path.toPath( ), StandardCharsets.UTF_8 ).stream( )
+				.filter( load_commands::valid ).map( load_commands::removeComments ).collect( Collectors.toList( ) );
 
 		boolean requirementsEnded = false;
 		while ( ! requirementsEnded ) {
-			if ( lines.get( 0 ).contains( "]" ) ) {
+			String line = lines.get( 0 );
+
+			if ( line.contains( "]" ) ) {
 				requirementsEnded = true;
-				if ( lines.get( 0 ).indexOf( "]" ) < lines.get( 0 ).length( ) )
-					lines.add( 0, lines.get( 0 ).substring( lines.remove( 0 ).indexOf( "]" ) +1 ) );
+				if ( line.indexOf( "]" ) < line.length( ) )
+					lines.add( 0, line.substring( lines.remove( 0 ).indexOf( "]" ) +1 ) );
 			} else {
 				lines.remove( 0 );
 			}
@@ -131,11 +139,27 @@ public class load_commands extends DefaultInternalAction {
 		AtomicInteger ai = new AtomicInteger(  );
 		AtomicInteger labelIdx = new AtomicInteger(  );
 
-		return "[" + lines.stream( ).map( l -> l.substring( 0, l.contains( "//" ) ? l.indexOf( "//" ) : l.length( ) ) )     // remove comments
-				.collect( groupingBy( s -> s.endsWith( "." ) ? ai.getAndIncrement( ) : ai.get( ) ) )    // group string in sublist till find a plan end
+		return "[" + lines.stream( ).collect( groupingBy( s -> s.endsWith( "." ) ? ai.getAndIncrement( ) : ai.get( ) ) )    // group string in sublist till find a plan end
 				.values( ).stream( ).map( plan -> String.join( "", plan ) )                // join plans
-				.map( s -> "@" + path.getName( ) + labelIdx.getAndIncrement( ) + s.replaceAll( "\t", " " ) )
 				.map( s -> "{" + s.substring( 0, s.length( ) -1 ) + "}" )
+				.map( s -> labelize.labelizePlan( s, ( ) -> labelIdx.getAndIncrement( ) + "" ) )
+				.map( s -> s.replaceAll( "\"", "'" ) )
 				.collect( Collectors.joining( "," ) ) + "]";
+	}
+
+	private static boolean valid( String s ) {
+		s = s.replace( " ", "" ).replace( "\t", "" );
+
+		return ! ( s.isEmpty( ) || s.startsWith( "//" ) );
+	}
+
+	private static String removeComments( String s ) {
+		if ( ! valid( s ) ) return "";
+		if ( ! s.contains( "//" ) ) return s;
+
+		int idx = s.indexOf( "//" );
+		s = s.substring( 0, idx );
+		String s2 = s.substring( idx );
+		return s;
 	}
 }

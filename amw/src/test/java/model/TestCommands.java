@@ -12,9 +12,9 @@ import org.junit.runners.model.InitializationError;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static interpackage.RequestHandler.Request.*;
@@ -24,6 +24,8 @@ import static org.junit.Assert.fail;
 
 public class TestCommands {
 
+	private static final String SCRIPT_PATH = "src" + File.separator + "test" + File.separator + "asl" + File.separator;
+	private static final String TEST_SCRIPT_01 = "script_submission-test_01.asl";
 	private static final long MAX_WAIT = 10000;
 	private static final int TICK_TIME = 500;
 
@@ -31,19 +33,20 @@ public class TestCommands {
 
 	/*@Test
 	public void scriptSubmission( ) throws IOException {
-		String script = "[{" +
-						"+!main <- .println( \"Executing script ...\" );\n" +
-						".wait( 5000 );                                              // fake execution time\n" +
-						"!b" +
-				"}, {" +
-						"+!b <- .println( \"Script executed\" )" +
-				"}]";
+		// start system
+		RequestDispatcherImpl dispatcher = new RequestDispatcherImpl( );    // create communication dispatcher
+		startAgent( dispatcher );                                           // start client agent
 
-		RequestDispatcherImpl dispatcher = new RequestDispatcherImpl( );
+		// get test file data
+		File file = new File( new java.io.File( "." ).getCanonicalPath( ) + File.separator + SCRIPT_PATH
+				+ TEST_SCRIPT_01 );
 
-		startAgent( dispatcher );
+		List<String> data = new LinkedList<>( Collections.singletonList( load_commands.getScript( file ) ) );   // get script
+		System.out.println( data.get( 0 ) );
+		data.addAll( load_commands.getRequirements( file ) );               // get script requirements
 
-		dispatcher.agent.askFor( EXEC_SCRIPT, script, "\"req1\"", "\"req2\"", "\"req3\"" );
+		// exec script
+		dispatcher.agent.askFor( EXEC_SCRIPT, data.toArray( new String[ ] { } ) );
 
 		sleep( TICK_TIME );
 
@@ -57,7 +60,7 @@ public class TestCommands {
 
 		startAgent( dispatcher );
 
-		dispatcher.agent.askFor( EXEC_COMMAND, "Command1" );
+		dispatcher.agent.askFor( EXEC_COMMAND, "cid0.0.0.1" );
 
 		sleep( 15 * TICK_TIME );
 

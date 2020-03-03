@@ -5,7 +5,7 @@
 set( false ).                                                       // at start is not yet set
 
 command( id( "Command1" ), name( "command 1 name" ), description( "descr command 1" ) ) [
-		variant( v_id( "v0.0.2" ), requirements[ "req1", "req3" ], script(
+		variant( v_id( "vid0.0.0.1" ), requirements[ "requirement_1", "requirement_3" ], script(
 				"[  {@l1 +!main <- .println( 'Executing script ...' );.wait( 500 ); !b}, {@l2 +!b <- .println( 'Script executed' ) }]" ) ) ].
 
 /***********************************************************************************************************************
@@ -28,12 +28,6 @@ command( id( "Command1" ), name( "command 1 name" ), description( "descr command
 		.include( "utils/literal.asl" );
 		-+set( true ).                                              // set process ended
 
-+!add( [ Command | [] ] )
-	<-  +Command.
-
-+!add( [ Command | Commands ] )
-	<-  +Command; !add( Commands ).
-
 +!kqml_received( Sender, cfp, add( Command ), MsgId )
 	:   command( id( CID ), name( CName ), description( CDescr ) )[ Versions ]
 	<-  +Command.
@@ -45,10 +39,21 @@ command( id( "Command1" ), name( "command 1 name" ), description( "descr command
                 [ variant( v_id( VersionID ), requirements[ RH | RT ], script( Script ) ) ], L );
         .send( Sender, propose, L, MsgId ).
 
-+!kqml_received( Sender, achieve, Content, MsgId )                  // send the warehouse state (items info & position)
-	:   Content = request( command_id( CommandId ) )
-    &   command( id( CommandId ), name( _ ), description( _ ) )[ source( self ) | Variants ]
-    <-  !concat( command( CommandId ), Variants, Msg );
-        .send( Sender, tell, Msg, MsgId ).                          // ask if able to run the specified script
++!kqml_received( Sender, achieve, Content, MsgID )                  // send the warehouse state (items info & position)
+	:   Content = request( command_id( CommandID ) )
+	&   command( id( CommandID ), name( N ), description( D ) )[ source( self ) | Variants ]
+    <-  !concat( command( CommandID ), Variants, Msg );
+        .send( Sender, tell, Msg, MsgID ).                          // ask if able to run the specified script
 
--!kqml_received( Sender, achieve, Content, MsgId ) <- .println( Content ).
+-!kqml_received( Sender, achieve, Content, MsgId ).
+
+//////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
+
+///////////////////////////// ADD COMMAND(S)
+
++!add( [ Command | [] ] )
+	<-  +Command.
+
++!add( [ Command | Commands ] )
+	<-  !add( [ Command ] );
+		!add( Commands ).
