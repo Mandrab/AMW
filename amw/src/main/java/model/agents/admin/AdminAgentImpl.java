@@ -7,6 +7,8 @@ import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 import jason.asSyntax.Literal;
+import jason.asSyntax.StringTerm;
+import jason.asSyntax.StringTermImpl;
 import jason.asSyntax.Structure;
 import model.agents.client.ClientAgentImpl;
 import model.utils.LiteralBuilder;
@@ -105,8 +107,9 @@ public class AdminAgentImpl extends ClientAgentImpl {
 		if ( request == Request.EXEC_SCRIPT ) {
 			String script = args[ 0 ];
 
-			Literal scriptLit = new LiteralBuilder( ).setName( "script" ).addValues( script )
-					.addQueue( Arrays.copyOfRange( args, 1, args.length ) ).build( );
+			Literal scriptLit = new LiteralBuilder( ).setName( "script" ).addValues( new StringTermImpl( script ) )
+					.addQueue( Arrays.stream( args ).map( StringTermImpl::new ).collect( Collectors.toList( ) )
+							.subList( 1, args.length ).toArray( new StringTerm[] { } ) ).build( );
 
 			Literal execute = new LiteralBuilder( ).setName( "execute" ).addValues( scriptLit ).build( );
 

@@ -7,8 +7,8 @@ import java.util.*;
 public class LiteralBuilder {
 
 	private String name;
-	private List<Term> values;
-	private List<Term> queue;
+	private ListTerm values;
+	private ListTerm queue;
 
 	public LiteralBuilder( ) { }
 
@@ -22,34 +22,34 @@ public class LiteralBuilder {
 	}
 
 	public LiteralBuilder addValues( String... l ) {
-		if ( values == null ) values = new LinkedList<>( );
-		for ( String s : l ) values.add( new Atom( s ) );
+		if ( values == null ) values = new ListTermImpl( );                         // first add
+		for ( String s : l ) values.add( new Atom( s ) );                           // add all string
 		return this;
 	}
 
-	public LiteralBuilder addValues( Term... term ) {
-		if ( values == null ) values = new LinkedList<>( Arrays.asList( term ) );
-		else values.addAll( Arrays.asList( term ) );
+	public LiteralBuilder addValues( Term... terms ) {
+		if ( values == null ) values = new ListTermImpl( );
+		values.addAll( Arrays.asList( terms ) );
 		return this;
 	}
 
 	public LiteralBuilder addQueue( String... l ) {
-		if ( queue == null ) queue = new LinkedList<>( );
+		if ( queue == null ) queue = new ListTermImpl( );
 		for ( String s : l ) queue.add( new Atom( s ) );
 		return this;
 	}
 
-	public LiteralBuilder addQueue( Literal... literals ) {
-		if ( queue == null ) queue = new LinkedList<>( Arrays.asList( literals ) );
-		else queue.addAll( Arrays.asList( literals ) );
+	public LiteralBuilder addQueue( Term... terms ) {
+		if ( queue == null ) queue = new ListTermImpl( );
+		queue.addAll( Arrays.asList( terms ) );
 		return this;
 	}
 
 	public Literal build( ) throws IllegalStateException {
 		Literal literal = new LiteralImpl( new Atom( name ) );
 
-		if ( values != null && ! values.isEmpty( ) ) literal.addTerms( values.toArray( new Term[] {} ) );
-		if ( queue != null && ! queue.isEmpty( ) ) literal.addAnnots( queue.toArray( new Term[] {} ) );
+		if ( values != null ) literal.addTerms( values.toArray( new Term[] {} ) );
+		if ( queue != null ) literal.addAnnots( queue.toArray( new Term[] {} ) );
 
 		return literal;
 	}
