@@ -25,7 +25,7 @@ import static org.junit.Assert.fail;
 public class TestCommands {
 
 	private static final String SCRIPT_PATH = "src" + File.separator + "test" + File.separator + "asl" + File.separator;
-	private static final String TEST_SCRIPT_01 = "script_submission-test_01.asl";
+	private static final String TEST_SCRIPT_01 = "cidScriptTest01-vidTestVersionID.asl";
 	private static final long MAX_WAIT = 10000;
 	private static final int TICK_TIME = 500;
 
