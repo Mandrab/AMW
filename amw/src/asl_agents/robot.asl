@@ -22,6 +22,7 @@ implements[ "cid0.0.0.2" ].                                         // implement
 	<-  .df_register( "executor( item_picker )", "retrieve( item )" );  // register for pick items
 		.df_register( "executor( command )", "exec( command )" );   // register for pick items
 		.include( "utils/communication.asl" );                      // include communication utils plans
+		.include( "utils/literal.asl" );                            // include communication utils plans
 		+activity( default );                                       // setup default activity
         +state( available );                                        // set as available to achieve unordinary operations
         -+set( true );                                              // set process ended
@@ -35,7 +36,7 @@ implements[ "cid0.0.0.2" ].                                         // implement
 
 +!work
 	:   activity( default )                                         // only if achieving default activity
-	<-  //.println( "Doing stuffs ..." );
+	<-  .println( "Doing stuffs ..." );
 		.wait( 5000 );                                              // fake execution time
 		!work.                                                      // restart to work
 
@@ -141,7 +142,7 @@ implements[ "cid0.0.0.2" ].                                         // implement
 			!random_agent( "management( commands )", "request( command )", Agent );
 			.term2string( CommandID, CID );
             .send( Agent, achieve, request( command_id( CID ) ) );// require command's versions
-            .wait( 50000 );                                             // max time to wait for confirm
+            .wait( 5000 );                                             // max time to wait for confirm
             !command_request_timeout( CommandID, Sender, MsgID );
 		} else
 			{ .send( Sender, refuse, execution( command_id( CommandID ) )[ err_code( 503 ) ] ); }.

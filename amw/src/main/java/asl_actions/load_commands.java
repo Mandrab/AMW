@@ -158,8 +158,6 @@ public class load_commands extends DefaultInternalAction {
 		if ( ! s.contains( "//" ) ) return s;
 
 		int idx = s.indexOf( "//" );
-		s = s.substring( 0, idx );
-		String s2 = s.substring( idx );
-		return s;
+		return s.substring( 0, idx );
 	}
 }

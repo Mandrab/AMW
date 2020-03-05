@@ -6,6 +6,7 @@ MAS amw {
 		order_manager;
 		warehouse_mapper;
 		commands_manager;
+		collection_points_manager;
 		robot #2;
 
 	classpath:

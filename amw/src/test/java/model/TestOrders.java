@@ -29,7 +29,7 @@ public class TestOrders {
 
 	private boolean started;
 
-	@Test
+	/*@Test
 	public void itemNotFound( ) {
 
 		RequestDispatcherImpl dispatcher = new RequestDispatcherImpl( );
@@ -43,7 +43,7 @@ public class TestOrders {
 		if ( ! checkMail( MailResult.ERROR_NOT_FOUND ) ) fail( "An error was expected" );
 
 		dispatcher.agent.askFor( END );
-	}
+	}*/
 
 	@Test
 	public void orderConfirm( ) {
@@ -54,6 +54,8 @@ public class TestOrders {
 		startAgent( dispatcher );
 
 		//pushItems( items );TODO
+
+		//sleep( 10000 );
 
 		dispatcher.agent.askFor( ORDER, "User", "mail@mail.com", "Street xyz, 123", items[ 0 ], items[ 0 ], items[ 1 ] );
 
