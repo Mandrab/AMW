@@ -42,7 +42,6 @@ public class TestCommands {
 				+ TEST_SCRIPT_01 );
 
 		List<String> data = new LinkedList<>( Collections.singletonList( load_commands.getScript( file ) ) );   // get script
-		System.out.println( data.get( 0 ) );
 		data.addAll( load_commands.getRequirements( file ) );               // get script requirements
 
 		// exec script

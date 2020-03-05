@@ -1,4 +1,4 @@
-package view;
+package view.panels;
 
 import interpackage.Item;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class WarehousePanel extends JPanel {
+public class ControlPanel extends JPanel {
 
 	private JPanel graphicPanel;
 	private JTextArea textualArea;
 	private int rackNumber;
 
-	public WarehousePanel ( int racksNumber ) {
+	public ControlPanel ( int racksNumber ) {
 
 		this.rackNumber = racksNumber;
 
@@ -29,12 +29,12 @@ public class WarehousePanel extends JPanel {
 				( int ) Math.floor( racksNumber / 2.0 ),
 				( int ) Math.floor( racksNumber / 2.0 ) ) );
 		new GridBagPanelAdder( ).setPosition( 0, 0 )
-				.setWeight( 0.85, 0.5 )
+				.setWeight( 1, 0.6 )
 				.addToPanel( this, graphicPanel );
 
 		textualArea = new JTextArea( );
-		new GridBagPanelAdder( ).setPosition( 1, 0 )
-				.setWeight( 0.15, 0.5 )
+		new GridBagPanelAdder( ).setPosition( 0, 1 )
+				.setWeight( 1, 0.4 )
 				.addToPanel( this, textualArea );
 
 		IntStream.range( 0, 10 ).mapToObj( i -> new JPanel( ) ).forEach( rack -> {

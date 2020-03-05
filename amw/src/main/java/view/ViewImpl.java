@@ -10,15 +10,18 @@ import java.util.concurrent.CompletableFuture;
 import interpackage.Command;
 import interpackage.Item;
 import interpackage.RequestDispatcher;
+import view.panels.ControlPanel;
+import view.utils.GridBagPanelAdder;
 
 import static interpackage.RequestHandler.Request.*;
 
 public class ViewImpl extends JFrame implements View {
 
 	private RequestDispatcher dispatcher;
-	private OrderPanel orderPanel;
-	private WarehousePanel graphicalWarehousePanel;
-	private CommandPanel commandPanel;
+
+	private ClientPanel clientPanel;
+	private AdminPanel adminPanel;
+	private ControlPanel controlPanel;
 
 	// setup window
 	public ViewImpl ( RequestDispatcher dispatcher ) {
@@ -27,9 +30,9 @@ public class ViewImpl extends JFrame implements View {
 
 		setupTheme(  );
 
-		orderPanel = new OrderPanel( dispatcher );
-		graphicalWarehousePanel = new WarehousePanel( 10 );
-		commandPanel = new CommandPanel( dispatcher );
+		clientPanel = new ClientPanel( dispatcher );
+		adminPanel = new AdminPanel( dispatcher );
+		controlPanel = new ControlPanel( 10 );
 
 		setupView( dispatcher );
 	}
@@ -74,15 +77,21 @@ public class ViewImpl extends JFrame implements View {
 	private void setupView( RequestDispatcher dispatcher ) {
 		setTitle( "Model.agents.TerminalAg" );
 
+		JPanel mainPanel = new JPanel(  );
+		mainPanel.setLayout( new GridBagLayout( ) );
+
 		JTabbedPane tabbedPane = new JTabbedPane( );
+		tabbedPane.add( "Client", clientPanel );
+		tabbedPane.add( "Admin", adminPanel );
+		new GridBagPanelAdder( ).setPosition( 0, 0 )
+				.setPadding( 0, 10, 0, 0 )
+				.setWeight( 0.5, 0.5 )
+				.addToPanel( mainPanel, tabbedPane );
 
-		tabbedPane.add( "Order", orderPanel );
-
-		tabbedPane.add( "Graphic", graphicalWarehousePanel );
-
-		tabbedPane.add( "Command", commandPanel );
-
-		add( tabbedPane );                                                  // add the panel to this frame
+		new GridBagPanelAdder( ).setPosition( 1, 0 )
+				.setPadding( 0, 0, 0, 10 )
+				.setWeight( 0.9, 0.5 )
+				.addToPanel( mainPanel, controlPanel );
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		addWindowListener( new WindowAdapter(  ) {                            // at close ask and stop the agent
@@ -97,6 +106,9 @@ public class ViewImpl extends JFrame implements View {
 				}
 			}
 		});
+
+		add( mainPanel );
+
 		pack(  );
 		setVisible( true );
 		setMinimumSize( new Dimension( 150, 150 ) );
@@ -105,9 +117,9 @@ public class ViewImpl extends JFrame implements View {
 
 	public void update( ) {
 		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_ITEMS_LIST )
-				.thenAccept( state -> orderPanel.update( state ) );
-		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE ).thenAccept( state -> graphicalWarehousePanel.update( state ) );
-		dispatcher.<CompletableFuture<List<Command>>>askFor( INFO_COMMANDS ).thenAccept( commands -> commandPanel.update( commands ) );
+				.thenAccept( state -> clientPanel.update( state ) );
+		dispatcher.<CompletableFuture<List<Item>>>askFor( INFO_WAREHOUSE_STATE ).thenAccept( state -> controlPanel.update( state ) );
+		dispatcher.<CompletableFuture<List<Command>>>askFor( INFO_COMMANDS ).thenAccept( commands -> adminPanel.update( commands ) );
 	}
 
 }

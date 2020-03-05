@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.joining;
 import static model.utils.LiteralParser.split;
 
 public class load_commands extends DefaultInternalAction {
@@ -91,6 +92,12 @@ public class load_commands extends DefaultInternalAction {
 	public static List<String> getRequirements( File file ) throws IOException {
 		List<String> lines = Files.readAllLines( file.toPath( ), StandardCharsets.UTF_8 );
 
+		return getRequirements( String.join( "\n", lines ) );
+	}
+
+	public static List<String> getRequirements( String s ) {
+		List<String> lines = new LinkedList<>( Arrays.asList( s.split( "\n" ) ) );
+
 		StringBuilder requirements = new StringBuilder( lines.remove( 0 ) );
 
 		while( ! requirements.toString( ).contains( "[" ) && ! requirements.toString( ).contains( "]" ) ) {
@@ -109,6 +116,12 @@ public class load_commands extends DefaultInternalAction {
 	public static String getScript( File path ) throws IOException {
 		List<String> lines = Files.readAllLines( path.toPath( ), StandardCharsets.UTF_8 ).stream( )
 				.filter( load_commands::valid ).map( load_commands::removeComments ).collect( Collectors.toList( ) );
+
+		return getScript( String.join( "\n", lines ) );
+	}
+
+	public static String getScript( String string ) {
+		List<String> lines = new LinkedList<>( Arrays.asList( string.split( "\n" ) ) );
 
 		boolean requirementsEnded = false;
 		while ( ! requirementsEnded ) {

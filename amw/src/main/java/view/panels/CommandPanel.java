@@ -1,4 +1,4 @@
-package view;
+package view.panels;
 
 import interpackage.Command;
 import interpackage.RequestDispatcher;
