@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.Assert.*
 
 /**
- * Test command class
+ * Test item class
  *
  * @author Paolo Baldini
  */

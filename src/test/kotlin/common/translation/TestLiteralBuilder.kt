@@ -5,6 +5,11 @@ import jason.asSyntax.StringTermImpl
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
+/**
+ * Test literal builder
+ *
+ * @author Paolo Baldini
+ */
 class TestLiteralBuilder {
 
 	@Test fun testBasicStringBuild() {

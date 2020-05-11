@@ -6,6 +6,11 @@ import common.translation.LiteralParser.splitStructAndList
 import org.junit.Assert.*
 import org.junit.Test
 
+/**
+ * Test literal parser
+ *
+ * @author Paolo Baldini
+ */
 class TestLiteralParser {
 	@Test fun testSplit() {
 		listOf(
