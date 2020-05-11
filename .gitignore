@@ -1,0 +1,9 @@
+build
+.idea
+.gradle
+*bin
+*.stop___MAS
+*APDescription.txt
+*MTPs-Main-Container.txt
+src/test/resources/test_mail_login
+src/main/resources/amw_mail_login
