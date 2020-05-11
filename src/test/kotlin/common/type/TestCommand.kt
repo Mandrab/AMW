@@ -26,8 +26,8 @@ class TestCommand {
 		assertEquals(command, command.clone())
 		assertEquals(command.hashCode(), command.clone().hashCode())
 
-		assertNotEquals(Command("id", "command name", "description", emptyList()), command)
-		assertNotEquals(Command("id", "command name", "description", emptyList()).hashCode(), command.hashCode())
+		assertEquals(Command("id", "command name", "description", emptyList()), command)
+		assertEquals(Command("id", "command name", "description", emptyList()).hashCode(), command.hashCode())
 	}
 
 	@Test fun testCloneVersion() {
@@ -35,8 +35,8 @@ class TestCommand {
 		assertEquals(version, version.clone())
 		assertEquals(version.hashCode(), version.clone().hashCode())
 
-		assertNotEquals(Version("id", listOf("req1"), "script"), version)
-		assertNotEquals(Version("id", listOf("req1"), "script").hashCode(), version.hashCode())
+		assertEquals(Version("id", listOf("req1"), "script"), version)
+		assertEquals(Version("id", listOf("req1"), "script").hashCode(), version.hashCode())
 	}
 
 	@Test fun testCloningSublist() {
