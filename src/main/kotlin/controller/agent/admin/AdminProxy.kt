@@ -3,8 +3,9 @@ package controller.agent.admin
 import common.Request
 import common.Request.EXEC_COMMAND
 import common.Request.EXEC_SCRIPT
-import controller.agent.AgentProxy
+import common.Request.END
 import common.type.Command
+import controller.agent.abstracts.ItemUpdaterProxy
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.functions.Consumer
 import jade.core.Agent
@@ -15,12 +16,18 @@ import jade.core.Agent
  *
  * @author Paolo Baldini
  */
-class AdminProxy: AgentProxy, Consumer<Pair<Request, Array<out Any>>> {
+class AdminProxy: ItemUpdaterProxy(), Consumer<Pair<Request, Array<out Any>>> {
 	private val commandSubscribers = mutableSetOf<Observer<in Collection<Command>>>()
-	private lateinit var agent: Agent
+	private lateinit var agent: AdminAgent
 
 	/** {@inheritDoc} */
-	override fun setAgent(agent: Agent) { this.agent = agent }
+	override fun setAgent(agent: Agent) {
+		check(agent is AdminAgent) { "Erroneous use of AdminProxy" }
+		this.agent = agent
+	}
+
+	/** {@inheritDoc} */
+	override fun isAvailable(): Boolean = this::agent.isInitialized
 
 	/**
 	 * Set an observer who will be notified at commands update
@@ -30,7 +37,7 @@ class AdminProxy: AgentProxy, Consumer<Pair<Request, Array<out Any>>> {
 	/**
 	 * Notify observers with a new commands list
 	 */
-	fun onNext(t: Collection<Command>) { commandSubscribers.onEach { it.onNext(t) } }
+	fun dispatchCommands(t: Collection<Command>) { commandSubscribers.onEach { it.onNext(t) } }
 
 	/** {@inheritDoc} */
 	override fun accept(t: Pair<Request, Array<out Any>>) {
@@ -81,6 +88,7 @@ class AdminProxy: AgentProxy, Consumer<Pair<Request, Array<out Any>>> {
 	                })
 	            return null*/
 			}
+			END -> agent.shutdown()
 			else -> Unit
 		}
 	}

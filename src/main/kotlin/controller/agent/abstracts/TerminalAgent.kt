@@ -1,4 +1,4 @@
-package controller.agent
+package controller.agent.abstracts
 
 import jade.core.behaviours.OneShotBehaviour
 import jade.domain.DFService
@@ -21,9 +21,10 @@ import jade.core.*
 abstract class TerminalAgent: Agent() {
     private val outdatedMsgTemplate: MutableList<MessageTemplate> = mutableListOf()
 
-    override fun setup() {
-        addBehaviour(collectOutdatedResponses())
-    }
+    /**
+     * Ad a behaviour to remove un-responded calls
+     */
+    override fun setup() = apply { super.setup() }.addBehaviour(collectOutdatedResponses())
 
     /**
      * Remove un-responded OLD messages (the ones with specified timeout)

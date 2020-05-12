@@ -22,7 +22,7 @@ object AgentUtils {
 	 * @param proxy proxy pattern to the agent
 	 * @param retryConnection if true, retry a failed connection till it succeed
  	 */
-	fun startAgent(agentClass: Class<*>, proxy: AgentProxy, retryConnection: Boolean) {
+	fun startAgent(agentClass: Class<*>, proxy: AgentProxy?, retryConnection: Boolean = true) {
 		var agent: AgentController? = null
 		do {
 			try {
@@ -31,7 +31,7 @@ object AgentUtils {
 				val cc: ContainerController = rt.createAgentContainer(p)    // create a new non-main container
 				agent = cc.createNewAgent(                                  // Create a new agent
 					"interface-ag" + String.format("%.10f", Math.random()),
-					agentClass.canonicalName, arrayOf<Any>(proxy)
+					agentClass.canonicalName, proxy?.let { arrayOf<Any>(it) } ?: emptyArray()
 				)
 				agent.start()                                               // fire up the agent
 			} catch (se: StaleProxyException) {
@@ -40,6 +40,6 @@ object AgentUtils {
 				Thread.sleep(1000)
 				if (!retryConnection) npe.printStackTrace()
 			}
-		} while (agent == null && retryConnection)
+		} while (agent == null && retryConnection)                          // while an error occurred and need to retry
 	}
 }

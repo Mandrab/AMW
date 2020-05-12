@@ -14,4 +14,9 @@ interface AgentProxy {
 	 * Set agent to be the proxy
 	 */
 	fun setAgent(agent: Agent)
+
+	/**
+	 * Says if proxy is set and available
+	 */
+	fun isAvailable(): Boolean
 }
