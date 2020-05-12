@@ -1,29 +1,23 @@
 package common
 
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.functions.Consumer
+import io.reactivex.rxjava3.subjects.PublishSubject
+
 /**
  * Implementation of request dispatcher. See @see RequestDispatcher
  *
  * @author Paolo Baldini
  */
-class RequestDispatcherImpl private constructor(): RequestDispatcher {
-    companion object {
-        val get: RequestDispatcher = RequestDispatcherImpl()
-    }
+object RequestDispatcherImpl: RequestDispatcher {
+    private val dispatcher = PublishSubject.create<Pair<Request, Array<out Any>>>()
 
-    private val handlers: MutableSet<RequestHandler> = mutableSetOf()
+    /** {@inheritDoc} */
+    override fun register(s: Consumer<Pair<Request, Array<out Any>>>): Disposable = dispatcher.subscribe(s)
 
-    /**
-     * {@inheritDoc}
-     */
-    override fun register(handler: RequestHandler) = handlers.add(handler)
+    /** {@inheritDoc} */
+    override fun dispatch(request: Request) = dispatcher.onNext(Pair(request, emptyArray()))
 
-    /**
-     * {@inheritDoc}
-     */
-    override fun unregister(handler: RequestHandler) = handlers.remove(handler)
-
-    /**
-     * {@inheritDoc}
-     */
-    override fun dispatch(request: Request, vararg args: String) = handlers.forEach { it.askFor(request, *args) }
+    /** {@inheritDoc} */
+    override fun dispatch(request: Request, vararg args: Any) = dispatcher.onNext(Pair(request, args))
 }

@@ -26,7 +26,8 @@ interface Model {
 
 	/**
 	 * Allow to add an order to the set.
-	 * Return:
+	 *
+	 * @return
 	 *      true if addition succeed,
 	 *      false otherwise
 	 */

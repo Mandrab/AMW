@@ -1,7 +1,7 @@
 package common
 
+import io.reactivex.rxjava3.functions.Consumer
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Test
 
 /**
@@ -11,43 +11,37 @@ import org.junit.Test
  */
 class TestRequestDispatcher {
 
-	@Test fun testSingleton() {
-		assert(RequestDispatcherImpl.get === RequestDispatcherImpl.get)
-	}
-
-	@Test fun testRegistrations() {
-		val dispatcher = RequestDispatcherImpl.get
-		val handler = object: RequestHandler {
-			override fun askFor(request: Request, vararg args: String) { }
-		}
-		assert(dispatcher.register(handler))
-		assertFalse(dispatcher.register(handler))
-
-		assert(dispatcher.register(object: RequestHandler {
-			override fun askFor(request: Request, vararg args: String) { }
-		}))
-
-		assert(dispatcher.unregister(handler))
-		assertFalse(dispatcher.unregister(handler))
-	}
-
-	@Test fun testDispatch() {
-		val dispatcher = RequestDispatcherImpl.get
+	@Test fun testRequestDispatch() {
+		val dispatcher = RequestDispatcherImpl
 		var dispatched = 0
 
-		assert(dispatcher.register(object: RequestHandler {
-			override fun askFor(request: Request, vararg args: String) {
-				if (request == Request.ADD_COMMAND) dispatched += 2
+		dispatcher.register(Consumer<Pair<Request, Array<out Any>>> {
+				if (it.first == Request.ADD_COMMAND) dispatched += 2
 				else dispatched++
-			}
-		}))
-		assert(dispatcher.register(object: RequestHandler {
-			override fun askFor(request: Request, vararg args: String) { dispatched++ }
-		}))
+		})
+		dispatcher.register(Consumer<Pair<Request, Array<out Any>>> { dispatched++ })
 
 		dispatcher.dispatch(Request.ADD_COMMAND)
 		assertEquals(3, dispatched)
 		dispatcher.dispatch(Request.EXEC_COMMAND)
 		assertEquals(5, dispatched)
+	}
+
+	@Test fun testArgsDispatch() {
+		val dispatcher = RequestDispatcherImpl
+		var dispatched = 0
+
+		dispatcher.register(Consumer<Pair<Request, Array<out Any>>> {
+			if (it.second.isNotEmpty() && it.second[0] is Int) {
+				dispatched += 2
+			} else dispatched++
+		})
+
+		dispatcher.dispatch(Request.ADD_COMMAND)
+		assertEquals(1, dispatched)
+		dispatcher.dispatch(Request.ADD_COMMAND, String())
+		assertEquals(2, dispatched)
+		dispatcher.dispatch(Request.EXEC_COMMAND, 5)
+		assertEquals(4, dispatched)
 	}
 }
