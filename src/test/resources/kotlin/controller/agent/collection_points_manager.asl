@@ -1,0 +1,1 @@
+../../../../../main/asl/agent/collection_points_manager.asl

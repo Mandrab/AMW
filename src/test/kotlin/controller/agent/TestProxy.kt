@@ -12,6 +12,7 @@ import org.junit.AfterClass
 import org.junit.Assert.*
 import org.junit.BeforeClass
 import org.junit.Test
+import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -21,7 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class TestProxy {
 	companion object {
-		private val masPath: String = Resources.getResource("TestProxy.mas2j").path
+		private val pathToMas = "kotlin/controller/agent/".replace("/", File.separator)
+		private val masPath: String = Resources.getResource(pathToMas + "TestProxy.mas2j").path
 		private val absTest = AgentTestUtil()
 		@BeforeClass @JvmStatic fun init() = absTest.startMAS(masPath)
 		@AfterClass @JvmStatic fun end() = absTest.endContainer()
