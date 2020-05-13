@@ -13,14 +13,14 @@ class TestModel {
 
 		assert(model.orders.isEmpty())
 
-		var order = Order("id1", Order.Status.SUBMITTED, listOf(Item("", 0, emptyList())))
+		var order = Order("id1", Order.Status.SUBMITTED, listOf(Pair("", 1)))
 		assert(model.addOrder(order))
 		assertEquals(1, model.orders.size)
 
 		assertFalse(model.addOrder(order))
 		assertEquals(1, model.orders.size)
 
-		order = Order("id2", Order.Status.SUBMITTED, listOf(Item("", 0, emptyList())))
+		order = Order("id2", Order.Status.SUBMITTED, listOf(Pair("", 2)))
 		assert(model.addOrder(order))
 		assertEquals(2, model.orders.size)
 

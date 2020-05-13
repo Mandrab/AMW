@@ -7,7 +7,7 @@ import common.type.Item
  *
  * @author Paolo Baldini
  */
-data class Order(val id: String, var status: Status, val items: List<Item>) {
+data class Order(val id: String, var status: Status, val items: List<Pair<String, Int>>) {
 	/**
 	 * Represents the status of the order
 	 *
