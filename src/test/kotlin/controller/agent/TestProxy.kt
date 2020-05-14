@@ -12,6 +12,7 @@ import org.junit.AfterClass
 import org.junit.Assert.*
 import org.junit.BeforeClass
 import org.junit.Test
+import util.AgentTestUtil
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 

@@ -7,5 +7,5 @@ MAS amw {
 		commands_manager;
 
 	aslSourcePath:
-	        "kotlin/controller/agent";
+	        "asl/agent";
 }

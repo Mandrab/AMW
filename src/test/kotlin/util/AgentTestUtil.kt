@@ -1,4 +1,4 @@
-package controller.agent
+package util
 
 import jade.core.ProfileImpl
 import jade.core.Runtime
