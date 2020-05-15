@@ -5,7 +5,7 @@ import common.type.Command.Version
 import common.type.Item
 import common.type.User
 import io.reactivex.rxjava3.core.Observable
-import model.Order
+import common.type.Order
 
 /**
  * Bootable class with manual test purpose only (at least at the moment)
@@ -23,8 +23,16 @@ fun main() {
 	Observable.fromArray<Collection<Item>>(items).subscribe(view.itemObserver)
 
 	val orders = listOf(
-		Order("id1", Order.Status.SUBMITTED, listOf(Pair("id1", 1), Pair("id2", 2))),
-		Order("id2", Order.Status.SUBMITTED, listOf(Pair("id1", 2), Pair("id3", 1)))
+		Order(
+			"id1",
+			Order.Status.SUBMITTED,
+			listOf(Pair("id1", 1), Pair("id2", 2))
+		),
+		Order(
+			"id2",
+			Order.Status.SUBMITTED,
+			listOf(Pair("id1", 2), Pair("id3", 1))
+		)
 	)
 	Observable.fromArray<Collection<Order>>(orders).subscribe(view.orderObserver)
 
