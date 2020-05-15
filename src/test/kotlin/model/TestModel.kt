@@ -2,6 +2,7 @@ package model
 
 import common.type.Command
 import common.type.Item
+import common.type.Order
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
@@ -13,14 +14,22 @@ class TestModel {
 
 		assert(model.orders.isEmpty())
 
-		var order = Order("id1", Order.Status.SUBMITTED, listOf(Pair("", 1)))
+		var order = Order(
+			"id1",
+			Order.Status.SUBMITTED,
+			listOf(Pair("", 1))
+		)
 		assert(model.addOrder(order))
 		assertEquals(1, model.orders.size)
 
 		assertFalse(model.addOrder(order))
 		assertEquals(1, model.orders.size)
 
-		order = Order("id2", Order.Status.SUBMITTED, listOf(Pair("", 2)))
+		order = Order(
+			"id2",
+			Order.Status.SUBMITTED,
+			listOf(Pair("", 2))
+		)
 		assert(model.addOrder(order))
 		assertEquals(2, model.orders.size)
 

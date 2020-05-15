@@ -89,8 +89,8 @@ class TestProxy {
 		assertEquals(1, admin.get())
 		assertEquals(1, client.get())
 
-		adminProxy.accept(Pair(Request.END, emptyArray()))
-		clientProxy.accept(Pair(Request.END, emptyArray()))
+		adminProxy.stop()
+		clientProxy.stop()
 
 		assertEquals(1, admin.get())
 		assertEquals(1, client.get())
