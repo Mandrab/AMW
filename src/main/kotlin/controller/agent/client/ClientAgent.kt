@@ -10,7 +10,9 @@ import common.translation.LiteralParser.getValue
 import common.translation.LiteralParser.split
 import common.translation.Service.*
 import controller.agent.abstracts.ItemUpdater
-import model.Order
+import common.type.Order
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 /**
  * Agent for client-side application.
@@ -43,19 +45,26 @@ class ClientAgent: ItemUpdater() {
                 val struct2: String = split(getValue(content))[1]
 
                 if (message.performative == ACLMessage.CONFIRM && content.startsWith("confirmation"))
-                    proxy.dispatchOrder(Order(getValue(struct1), Order.Status.SUBMITTED, emptyList()))//, getValue(struct2)))
+                    proxy.dispatchOrder(
+	                    Order(
+		                    getValue(struct1),
+		                    Order.Status.SUBMITTED,
+		                    emptyList()
+	                    )
+                    )//, getValue(struct2)))
                 else println("Received message: " + message.content) // TODO
             } else block()
         }
     }
 
-    fun shutdown() = super.takeDown()                               // TODO make behaviour to close things
-
     /**
      * Allows to place an order with submitted elements
      */
-    fun placeOrder(vararg args: String) {
-        val l: MutableList<String> = mutableListOf(*args)
+    fun placeOrder(vararg args: Pair<String, Int>): Future<Boolean> {
+        val result = CompletableFuture<Boolean>()
+
+        TODO()
+        /*val l: MutableList<String> = mutableListOf(*args)
         val order: Literal = LiteralBuilder("order")
             .setValues(
                 pairTerm("client", l.removeAt(0)),
@@ -68,6 +77,14 @@ class ClientAgent: ItemUpdater() {
                         .build()
                 }.toTypedArray()
             ).build()
-        MessageSender(MANAGEMENT_ORDERS.toString(), ACCEPT_ORDER.toString(), ACLMessage.REQUEST, order).send(this)
+        MessageSender(MANAGEMENT_ORDERS.toString(), ACCEPT_ORDER.toString(), ACLMessage.REQUEST, order).send(this)*/
+
+        return result
+    }
+
+    fun shutdown(): Future<Unit> {
+        // TODO make behaviour to close things
+        super.takeDown()
+        return CompletableFuture.completedFuture(Unit)
     }
 }

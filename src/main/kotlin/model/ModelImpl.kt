@@ -2,6 +2,7 @@ package model
 
 import common.type.Command
 import common.type.Item
+import common.type.Order
 
 /**
  * An implementations of @see Model interface. See it for more information

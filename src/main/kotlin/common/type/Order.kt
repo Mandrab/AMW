@@ -1,6 +1,4 @@
-package model
-
-import common.type.Item
+package common.type
 
 /**
  * Represents an order made by an user. This class only contains data
@@ -8,6 +6,7 @@ import common.type.Item
  * @author Paolo Baldini
  */
 data class Order(val id: String, var status: Status, val items: List<Pair<String, Int>>) {
+
 	/**
 	 * Represents the status of the order
 	 *

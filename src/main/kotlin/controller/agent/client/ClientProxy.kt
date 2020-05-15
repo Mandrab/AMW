@@ -5,9 +5,9 @@ import common.Request.END
 import common.Request.ORDER
 import controller.agent.abstracts.ItemUpdaterProxy
 import io.reactivex.rxjava3.core.Observer
-import io.reactivex.rxjava3.functions.Consumer
 import jade.core.Agent
-import model.Order
+import common.type.Order
+import java.util.concurrent.Future
 
 /**
  * Client-agent proxy class (proxy pattern)
@@ -15,7 +15,7 @@ import model.Order
  *
  * @author Paolo Baldini
  */
-class ClientProxy: ItemUpdaterProxy(), Consumer<Pair<Request, Array<out Any>>> {
+class ClientProxy: ItemUpdaterProxy() {
 	private val orderObservers = mutableSetOf<Observer<Order>>()
 	private lateinit var agent: ClientAgent
 
@@ -38,13 +38,7 @@ class ClientProxy: ItemUpdaterProxy(), Consumer<Pair<Request, Array<out Any>>> {
 	 */
 	fun dispatchOrder(t: Order) { orderObservers.onEach { it.onNext(t) } }
 
-	/** {@inheritDoc} */
-	override fun accept(t: Pair<Request, Array<out Any>>) {
-		when (t.first) {
-			ORDER -> if (t.second.isNotEmpty() && t.second[0] is String)
-					agent.placeOrder(t.second[0] as String)
-			END -> agent.shutdown()
-			else -> Unit
-		}
-	}
+	fun placeOrder(vararg items: Pair<String, Int>): Future<Boolean> = agent.placeOrder(*items)
+
+	fun stop(): Future<Unit> = agent.shutdown()
 }

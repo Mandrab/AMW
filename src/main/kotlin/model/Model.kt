@@ -2,6 +2,7 @@ package model
 
 import common.type.Command
 import common.type.Item
+import common.type.Order
 
 /**
  * Interface to the application model. It aims to store local information

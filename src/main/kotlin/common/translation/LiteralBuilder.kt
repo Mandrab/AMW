@@ -14,8 +14,10 @@ class LiteralBuilder(name: String) {
 	}
 
 	private val name = Atom(name)
-	private val values: ListTerm by lazy { ListTermImpl() }
-	private val queue: ListTerm by lazy { ListTermImpl() }
+	private val values by lazy { mutableListOf<Term>().apply { isValuesInitialized = true } }
+	private var isValuesInitialized: Boolean = false
+	private val queue by lazy { mutableListOf<Term>().apply { isQueueInitialized = true } }
+	private var isQueueInitialized: Boolean = false
 
 	/**
 	 * Set values of the literal. A value is considered as:
@@ -47,8 +49,11 @@ class LiteralBuilder(name: String) {
 	fun build(): Literal {
 		val literal = LiteralImpl(name)
 
-		if (values.isNotEmpty()) literal.addTerms(*values.toTypedArray())
-		if (queue.isNotEmpty()) literal.addAnnots(*queue.toTypedArray())
+		if (isValuesInitialized && values.isEmpty()) literal.addTerm(Atom(""))
+		if (isQueueInitialized && queue.isEmpty()) literal.addAnnot(Atom(""))
+
+		literal.addTerms(values)
+		literal.addAnnots(queue)
 
 		return literal
 	}
