@@ -7,7 +7,7 @@ import java.awt.Dimension
 import java.awt.GridBagLayout
 import java.util.Vector
 import javax.swing.*
-import model.Order
+import common.type.Order
 import java.awt.event.*
 
 /**

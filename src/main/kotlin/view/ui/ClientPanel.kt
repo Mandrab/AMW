@@ -2,7 +2,7 @@ package view.ui
 
 import common.type.Item
 import io.reactivex.rxjava3.functions.Consumer
-import model.Order
+import common.type.Order
 
 /**
  * Interface that specifies what client-panel 'consumes'.

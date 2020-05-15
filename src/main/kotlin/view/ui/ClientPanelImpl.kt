@@ -2,7 +2,7 @@ package view.ui
 
 import common.type.Item
 import io.reactivex.rxjava3.functions.Consumer
-import model.Order
+import common.type.Order
 import view.panel.OrderHistory
 import view.panel.NewOrder
 import java.awt.BorderLayout

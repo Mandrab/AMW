@@ -5,7 +5,7 @@ import common.type.Item
 import common.RequestDispatcherImpl
 import common.Request.END
 import common.type.User
-import model.Order
+import common.type.Order
 import view.panel.ControlPanel
 import java.awt.Color
 import java.awt.Dimension

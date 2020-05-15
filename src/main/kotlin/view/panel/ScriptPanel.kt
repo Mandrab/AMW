@@ -1,6 +1,6 @@
 package view.panel
 
-import asl.action.load_commands
+//import action.load_commands
 import common.RequestDispatcherImpl
 import common.Request.EXEC_SCRIPT
 import view.util.GridBagPanelAdder
@@ -17,7 +17,7 @@ import javax.swing.JTextArea
  * @author Paolo Baldini
  */
 class ScriptPanel: JPanel() {
-    private fun requirementsAndScript(s: String): Array<String> {
+    /*private fun requirementsAndScript(s: String): Array<String> {
         val list: MutableList<String> = load_commands.getRequirements(s) as MutableList<String>
         list.add(0, load_commands.getScript(s))
         return list.toTypedArray()
@@ -42,5 +42,5 @@ class ScriptPanel: JPanel() {
                 )
             }
         }
-    }
+    }*/
 }

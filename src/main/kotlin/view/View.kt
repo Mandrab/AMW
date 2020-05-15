@@ -3,7 +3,7 @@ package view
 import common.type.Command
 import common.type.Item
 import io.reactivex.rxjava3.core.Observer
-import model.Order
+import common.type.Order
 
 /**
  * Interface to an application view.
