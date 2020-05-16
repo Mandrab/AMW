@@ -5,6 +5,8 @@
 { include("module/robot/ItemPicker.asl") }                          // include plans for items picking
 { include("module/robot/ScriptExecutor.asl") }                      // include plans for scripts execution
 { include("module/robot/CommandExecutor.asl") }                     // include plans for commands execution
+{ include("module/robot/Move.asl") }                                // include plans for motion
+{ include("module/robot/Geolocalization.asl") }
 
 /***********************************************************************************************************************
  Initial beliefs and rules
@@ -37,7 +39,8 @@
 ///////////////////////////// DEFAULT
 
 +!work : activity(default)                                          // only if achieving default activity
-	<-  .println("Doing stuffs ...");
+	<-  !move_by(5, 6);
+	    .println("Doing stuffs ...");
 		.wait(1000);                                                // fake execution time
 		!work.                                                      // restart to work
 
@@ -45,7 +48,7 @@
 
 +!work : activity(picking)[ client(Client), item(Item) ]            // only if picking
 	<-  .println("Picking ...");
-    .wait(1000);                                                    // fake execution time
+        .wait(1000);                                                // fake execution time
 		.send(Client, complete, retrieve(Item));                    // confirm task completion
         -+activity(default);                                        // setup default activity
         -+state(available);                                         // set as available to achieve unordinary operations
