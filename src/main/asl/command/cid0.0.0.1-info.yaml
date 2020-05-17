@@ -1,5 +1,0 @@
-name: test command
-description: >
-  This command is a simple test.
-  It's loaded at system startup.
-  When his main method is called, it makes some prints.

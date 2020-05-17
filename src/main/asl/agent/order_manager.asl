@@ -25,8 +25,8 @@ set(false).                                                       // at start is
 @setup[atomic] +!setup                                              // setup the agent
 	:   set(false)
 	<-  .df_register("management(orders)", "accept(order)");  // register service as order acceptor
-		.include("util/literal.asl");                            // include string utils plans
-		.include("util/communication.asl");                      // include communication utils plans
+		.include("asl/util/literal.asl");                            // include string utils plans
+		.include("asl/util/communication.asl");                      // include communication utils plans
 		-+set(true).                                              // set process ended
 
 

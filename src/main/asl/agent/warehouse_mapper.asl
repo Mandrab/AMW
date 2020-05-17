@@ -25,11 +25,11 @@ item(id("Item 3"), quantity(1), reserved(0)) [
  **********************************************************************************************************************/
 
 +!setup : set(false)
-	<-  .df_register("management(items)", "info(warehouse)"); // register as warehouse's infos dispatcher
-		.df_register("management(items)", "store(item)");     // register for acquire information about items
-		.df_register("management(items)", "retrieve(item)");  // register for remove infos at item removal
-		.include("util/literal.asl");                            // include literal utils plans
-		-+set(true).                                              // set process ended
+	<-  .df_register("management(items)", "info(warehouse)");       // register as warehouse's infos dispatcher
+		.df_register("management(items)", "store(item)");           // register for acquire information about items
+		.df_register("management(items)", "retrieve(item)");        // register for remove infos at item removal
+		.include("asl/util/literal.asl");                           // include literal utils plans
+		-+set(true).                                                // set process ended
 
 // OPERATION #3 in order submission schema
 @processOrder[atomic] // TODO or @up[atomic]

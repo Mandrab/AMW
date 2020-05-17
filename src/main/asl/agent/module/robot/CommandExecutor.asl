@@ -2,7 +2,7 @@
 
 { include("CheckAcceptance.asl") }
 { include("PlansRemover.asl") }
-{ include("util/communication.asl") }                               // include communication utils plans
+{ include("communication.asl") }                           // include communication utils plans
 
 ///////////////////////////// COMMAND EXECUTION
 
