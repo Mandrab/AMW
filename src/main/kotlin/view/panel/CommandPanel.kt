@@ -47,7 +47,7 @@ class CommandPanel : JPanel(), Consumer<Collection<Command>> {
         GridBagPanelAdder().xPos(1).xWide(2).weight(.33, .0).addTo(this, commandName)
         GridBagPanelAdder().position(1, 1).xWide(2).xWeight(.33).addTo(this, commandDescription)
         GridBagPanelAdder().position(1, 3).xWide(2).weight(.9, .77).addTo(this, commandScript)
-        GridBagPanelAdder().yWide(4).weight(0.1, 1.0).east(10).addTo(this, commandsList)
+        GridBagPanelAdder().yWide(4).weight(.1, 1.0).east(10).addTo(this, commandsList)
         GridBagPanelAdder().position(1, 2).weight(.5, .33).padding(5, 0, 5, 0)
             .addTo(this, versionsList)
         GridBagPanelAdder().position(2, 2).weight(.5, .33).padding(5, 0, 5, 0).addTo(this, requirementsList)
@@ -69,8 +69,9 @@ class CommandPanel : JPanel(), Consumer<Collection<Command>> {
             override fun mouseClicked(e: MouseEvent) {
                 if (!versionsList.isSelectionEmpty) {
                     execButton.isEnabled = true
-                    val elem = commands.elementAt(commandsList.selectedIndex)
                     commandScript.text = selectedElem?.versions?.get(versionsList.selectedIndex)?.script
+                        ?.replace("}, {", ".\n\n")?.replace(";", ";\n\t")
+                        ?.removeSurrounding("\"[  {", "}]\"") + "."
                     requirementsList.setListData(selectedElem?.versions?.get(versionsList.selectedIndex)?.requirements
                         ?.toTypedArray())
                 }
@@ -82,7 +83,8 @@ class CommandPanel : JPanel(), Consumer<Collection<Command>> {
     }
 
     override fun accept(t: Collection<Command>) {
-        commands = t.toSet()
+        commands = t.groupBy { it.id }.map { Command(it.key, it.value[0].name, it.value[0].description, it.value
+            .map { c -> c.versions }.reduce { l1, l2 -> l1.toMutableSet().apply { addAll(l2) }.toList() }) }.toSet()
         commandsList.setListData(Vector(commands.map { it.id }))
     }
 }

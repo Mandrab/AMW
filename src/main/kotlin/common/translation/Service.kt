@@ -7,10 +7,11 @@ package common.translation
  */
 enum class Service(val service: String) {
     MANAGEMENT_ORDERS("management(orders)"),
-    ACCEPT_ORDER("accept(order)"),
     MANAGEMENT_ITEMS("management(items)"),
-    INFO_WAREHOUSE("info(warehouse)"),
     MANAGEMENT_COMMANDS("management(commands)"),
+
+    ACCEPT_ORDER("accept(order)"),
+    INFO_WAREHOUSE("info(warehouse)"),
     INFO_COMMANDS("info(commands)"),
     EXECUTOR_COMMAND("executor(command)"),
     EXEC_COMMAND("exec(command)"),
