@@ -19,8 +19,7 @@ import java.util.function.Function
 
 class TestRobot {
 	companion object {
-		private val pathToMas = "asl/".replace("/", File.separator)
-		private val masPath: String = Resources.getResource(pathToMas + "TestRobot.mas2j").path
+		private val masPath: String = Resources.getResource("asl/TestRobot.mas2j").path
 		private val absTest = AgentTestUtil()
 		@BeforeClass @JvmStatic fun init() = absTest.startMAS(masPath)
 		@AfterClass @JvmStatic fun end() = absTest.endContainer()
@@ -42,7 +41,7 @@ class TestRobot {
 		var evaluated3 = false
 
 		// load script
-		val script = Resources.getResource("${pathToMas}script${File.separator}test_robot_script.asl").readText()
+		val script = Resources.getResource("asl${File.separator}script${File.separator}test_robot_script.asl").readText()
 
 		// wait till agents are started
 		while (!adminProxy1.isAvailable() && !adminProxy2.isAvailable() && !adminProxy3.isAvailable()) Thread.sleep(50)
@@ -72,7 +71,7 @@ class TestRobot {
 		var evaluated2 = false
 
 		// load script
-		val script = Resources.getResource("${pathToMas}script${File.separator}test_robot_script.asl").readText()
+		val script = Resources.getResource("asl${File.separator}script${File.separator}test_robot_script.asl").readText()
 
 		// wait till agent is started
 		while (fakeAdminAgent == null) Thread.sleep(50)

@@ -1,3 +1,5 @@
+{ include("literal.asl") }
+
 set(false).
 
 command(id("Command1"), name("command 1 name"), description("descr command 1")) [
@@ -8,7 +10,6 @@ command(id("Command1"), name("command 1 name"), description("descr command 1")) 
 
 +!setup : set(false)
 	<-  .df_register("management(commands)", "request(command)");
-	    .include("util/literal.asl");
 		-+set(true).
 
 +!kqml_received(Sender, achieve, Content, MsgID)                  // send the warehouse state (items info & position)

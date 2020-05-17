@@ -5,10 +5,11 @@ MAS amw {
 	    robot;
 	    fcommand_manager;
 
-	classpath:
-        TODO;
+    classpath:
+        ;//TODO
 
 	aslSourcePath:
-	    "agent";
-	    "fake/agent";
+	    "asl/agent";
+	    "asl/util";
+	    "fake.agent";
 }
