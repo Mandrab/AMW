@@ -1,7 +1,8 @@
 package controller.agent.admin
 
 import common.translation.ServiceType.INFO_COMMANDS
-import common.translation.ServiceType.ADD_COMMANDS
+import common.translation.ServiceType.ADD_COMMAND
+import common.translation.ServiceType.ADD_VERSION
 import common.translation.ServiceType.EXEC_COMMAND
 import common.translation.ServiceType.EXEC_SCRIPT
 import common.translation.LiteralBuilder
@@ -52,7 +53,7 @@ class AdminAgent: ItemUpdater() {
     fun add(command: Command): CompletableFuture<Boolean> {
         val result = CompletableFuture<Boolean>()
 
-        MessageSender(MANAGEMENT_COMMANDS.service, ADD_COMMANDS.service, ACLMessage.REQUEST, ADD_COMMANDS.parse(command))
+        MessageSender(MANAGEMENT_COMMANDS.service, ADD_COMMAND.service, ACLMessage.REQUEST, ADD_COMMAND.parse(command))
             .require(this).thenAccept {
             it ?: result.complete(false)
             when (it?.performative) {
@@ -66,6 +67,15 @@ class AdminAgent: ItemUpdater() {
 
     fun add(commandID: String, version: Command.Version): CompletableFuture<Boolean> {
         val result = CompletableFuture<Boolean>()
+
+        MessageSender(MANAGEMENT_COMMANDS.service, ADD_COMMAND.service, ACLMessage.REQUEST, ADD_VERSION.parse(Pair(commandID,version)))
+            .require(this).thenAccept {
+                it ?: result.complete(false)
+                when (it?.performative) {
+                    ACLMessage.REFUSE -> result.complete(false)
+                    ACLMessage.CONFIRM -> result.complete(true)
+                }
+            }
 
         return result
     }

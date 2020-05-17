@@ -32,10 +32,12 @@ command(id("Command1"), name("command 1 name"), description("descr command 1")) 
 
 @versionAddition[atomic]
 +!kqml_received(Sender, achieve, add(CommandID, Version), MsgID)
-	:   Version = variant(v_id(ID), requirements[ Requirements ], script(Script))
-	&   command(id(CommandID), name(N), description(D)) [ Versions ]
-	<-  -command(id(CommandID), name(N), description(D));
-	    +command(id(CommandID), name(N), description(D)) [ Version | Versions ].
+    :   Version = variant(v_id(ID), requirements[ [] | Requirements ], script(Script))
+    &   command(id(CommandID), N, D) [ source(self) | Versions ]
+    <-  ? not Versions = [ variant(v_id(ID), _, _) | _ ];
+        -command(id(CommandID), N, D);
+        +command(id(CommandID), name(N), description(D)) [ Version | Versions ];
+        .send(Sender, confirm, add(Command), MsgID).
 
 -!kqml_received(Sender, achieve, Content, MsgID) <- .send(Sender, refuse, Content, MsgID).
 

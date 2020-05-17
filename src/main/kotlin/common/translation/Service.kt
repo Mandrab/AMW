@@ -23,7 +23,8 @@ enum class ServiceType(
     val parse: (Any) -> Literal = { _ -> Literal.parseLiteral(service) }
 ) {
     ACCEPT_ORDER("accept(order)"),
-    ADD_COMMANDS("add(command)", parseCommand),
+    ADD_COMMAND("add(command)", parseCommand),
+    ADD_VERSION("add(version)", parseVersionPair),
     INFO_WAREHOUSE("info(warehouse)"),
     INFO_COMMANDS("info(commands)"),
     EXEC_COMMAND("exec(command)", parseExecCommand),
@@ -50,8 +51,13 @@ private val parseCommand: (Any) -> Literal =  { command -> check(command is Comm
     ).setQueue(*command.versions.map { parseVersion(it) }.toTypedArray()).build())
 }
 
-private fun parseVersion(version: Command.Version): Literal {
-    return LiteralBuilder("variant").setValues(
+private val parseVersionPair: (Any) -> Literal = {
+    check(it is Pair<*,*> && it.first is String && it.second is Command.Version)
+    Structure("add").addTerms(StringTermImpl(it.first as String), parseVersion(it.second as Command.Version))
+}
+
+private val parseVersion: (Any) -> Literal = { version -> check(version is Command.Version)
+    LiteralBuilder("variant").setValues(
         Structure("v_id").addTerms(StringTermImpl(version.id)),
         LiteralBuilder("requirements").setQueue(*version.requirements.map { StringTermImpl(it) }.toTypedArray())
             .build(), Structure("script").addTerms(StringTermImpl(version.script))

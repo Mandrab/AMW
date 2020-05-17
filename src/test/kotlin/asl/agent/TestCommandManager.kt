@@ -20,6 +20,9 @@ class TestCommandManager {
 		private val absTest = AgentTestUtil()
 		@BeforeClass @JvmStatic fun init() = absTest.startMAS(masPath)
 		@AfterClass @JvmStatic fun end() = absTest.endContainer()
+
+		var expectedCommandsN = 2
+		var expectedVariantsN = 3
 	}
 
 	@Test fun commandsLoading() {
@@ -31,12 +34,12 @@ class TestCommandManager {
 		while (!adminProxy.isAvailable()) Thread.sleep(50);
 
 		adminProxy.subscribeCommands(inlineOnNextObserver { c ->
-			assertEquals(2, c.groupBy { it.id }.count())
-			assertEquals(3, c.count())
+			assertEquals(expectedCommandsN, c.groupBy { it.id }.count())
+			assertEquals(expectedVariantsN, c.count())
 			evaluated = true;
 		})
 
-		Thread.sleep(1500)
+		Thread.sleep(2500)
 
 		assert(evaluated)
 	}
@@ -64,6 +67,8 @@ class TestCommandManager {
 		))).thenAccept {
 			assert(it)
 			evaluated2 = true
+			expectedCommandsN++
+			expectedVariantsN += 2
 		}
 
 		Thread.sleep(3000)
@@ -73,7 +78,29 @@ class TestCommandManager {
 	}
 
 	@Test fun newVersionAddition() {
-		//TODO()
+		val adminProxy = AdminProxy()
+		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
+
+		var evaluated1 = false
+		var evaluated2 = false
+
+		while (!adminProxy.isAvailable()) Thread.sleep(50)
+
+		adminProxy.add("Command1", Command.Version("vid0.0.0.1", listOf("req1", "req2"), "script2")).thenAccept {
+			assertFalse(it)
+			evaluated1 = true
+		}
+
+		adminProxy.add("Command1", Command.Version("vid0.0.0.2", listOf("req1", "req2"), "script2")).thenAccept {
+			assert(it)
+			evaluated2 = true
+			expectedVariantsN++
+		}
+
+		Thread.sleep(3000)
+
+		assert(evaluated1)
+		assert(evaluated2)
 	}
 
 	private fun <T>inlineOnNextObserver(action: (param: T) -> Unit) = object: Observer<T> {
