@@ -7,8 +7,8 @@ MAS amw {
 		commands_manager;
 
     classpath:
-        //TODO
+        ;//TODO
 
 	aslSourcePath:
-	    "agent";
+	    "asl/agent";
 }
