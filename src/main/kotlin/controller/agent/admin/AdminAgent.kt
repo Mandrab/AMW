@@ -52,18 +52,12 @@ class AdminAgent: ItemUpdater() {
     fun add(command: Command): CompletableFuture<Boolean> {
         val result = CompletableFuture<Boolean>()
 
-        MessageSender(MANAGEMENT_COMMANDS.service, ADD_COMMANDS.service, ACLMessage.CFP, ADD_COMMANDS.parse(command))
+        MessageSender(MANAGEMENT_COMMANDS.service, ADD_COMMANDS.service, ACLMessage.REQUEST, ADD_COMMANDS.parse(command))
             .require(this).thenAccept {
             it ?: result.complete(false)
             when (it?.performative) {
                 ACLMessage.REFUSE -> result.complete(false)
-                ACLMessage.PROPOSE -> {
-                    MessageSender(it.sender, ACLMessage.ACCEPT_PROPOSAL, LiteralBuilder("execute").setValues(
-                        LiteralBuilder("command_id").setValues(getValue(it.content, "command_id")!!).build()
-                    ).build()
-                    ).send(this)
-                    result.complete(true)
-                }
+                ACLMessage.CONFIRM -> result.complete(true)
             }
         }
 

@@ -24,22 +24,38 @@ command(id("Command1"), name("command 1 name"), description("descr command 1")) 
 		.include("literal.asl");
 		+set.                                              // set process ended
 
-+!kqml_received(Sender, cfp, add(Command), MsgId)
-	:   command(id(CID), name(CName), description(CDescr))[ Versions ]
-	<-  +Command.
+@commandAddition[atomic]
++!kqml_received(Sender, achieve, add(Command), MsgID)
+	:   Command = command(id(CID), name(CName), description(CDescr))[ [] | Versions ]
+	<-  !add([ Command ]);
+	    .send(Sender, confirm, add(Command), MsgID).
 
-+!kqml_received(Sender, cfp, info(commands), MsgId)                      // send the warehouse state (items info & position)
+@versionAddition[atomic]
++!kqml_received(Sender, achieve, add(CommandID, Version), MsgID)
+	:   Version = variant(v_id(ID), requirements[ Requirements ], script(Script))
+	&   command(id(CommandID), name(N), description(D)) [ Versions ]
+	<-  -command(id(CommandID), name(N), description(D));
+	    +command(id(CommandID), name(N), description(D)) [ Version | Versions ].
+
+-!kqml_received(Sender, achieve, Content, MsgID) <- .send(Sender, refuse, Content, MsgID).
+
+@informationRequest[atomic]
++!kqml_received(Sender, cfp, info(commands), MsgID)                      // send the warehouse state (items info & position)
 	<-  .findall(command(id(Id), name(Name), description(Descr))
                 [ variant(v_id(VersionID), requirements[ RH | RT ], script(Script)) ],
                 command(id(Id), name(Name), description(Descr))
                 [ variant(v_id(VersionID), requirements[ RH | RT ], script(Script)) ], L);
-        .send(Sender, propose, L, MsgId).
+        .send(Sender, propose, L, MsgID).
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
 
 ///////////////////////////// ADD COMMAND(S)
 
-+!add([ Command | [] ]) <- +Command.
++!add(Command) : Command = command(id(CID), _, _) [_|_]
+    &   not command(id(CID), _, _)
+    <-  +Command.
+
++!add([ Command | [] ]) <- !add(Command).
 
 +!add([ Command | Commands ])
     <-  !add([ Command ]);

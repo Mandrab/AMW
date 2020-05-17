@@ -3,6 +3,7 @@ package common.translation
 import common.type.Command
 import jason.asSyntax.Literal
 import jason.asSyntax.StringTermImpl
+import jason.asSyntax.Structure
 
 /**
  * Possible services type in the system
@@ -42,17 +43,17 @@ private val parseExecScript: (Any) -> Literal = {
 }
 
 private val parseCommand: (Any) -> Literal =  { command -> check(command is Command)
-    LiteralBuilder("command").setValues(
-        LiteralBuilder.pairTerm("id", command.id),
-        LiteralBuilder.pairTerm("name", command.name),
-        LiteralBuilder.pairTerm("description", command.description)
-    ).setQueue(*command.versions.map { parseVersion(it) }.toTypedArray()).build()
+    Structure("add").addTerms(LiteralBuilder("command").setValues(
+        Structure("id").addTerms(StringTermImpl(command.id)),
+        Structure("name").addTerms(StringTermImpl(command.name)),
+        Structure("description").addTerms(StringTermImpl(command.description))
+    ).setQueue(*command.versions.map { parseVersion(it) }.toTypedArray()).build())
 }
 
 private fun parseVersion(version: Command.Version): Literal {
     return LiteralBuilder("variant").setValues(
-        LiteralBuilder.pairTerm("v_id", version.id),
-        LiteralBuilder("requirements").setQueue(*version.requirements.toTypedArray()).build(),
-        LiteralBuilder.pairTerm("script", version.script)
+        Structure("v_id").addTerms(StringTermImpl(version.id)),
+        LiteralBuilder("requirements").setQueue(*version.requirements.map { StringTermImpl(it) }.toTypedArray())
+            .build(), Structure("script").addTerms(StringTermImpl(version.script))
     ).build()
 }
