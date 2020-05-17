@@ -2,6 +2,7 @@ package controller.agent.abstracts
 
 import common.translation.LiteralParser
 import common.translation.Service
+import common.translation.ServiceType.INFO_WAREHOUSE
 import common.type.Item
 import jade.core.behaviours.CyclicBehaviour
 import jade.lang.acl.ACLMessage
@@ -27,10 +28,7 @@ open class ItemUpdater: TerminalAgent() {
 
 	private fun updateItems() = object: CyclicBehaviour() {
 		override fun action() {                                     // update warehouse (items) info
-			// setup the message and send it
-			val info = Structure("info")
-			info.addTerm(Structure("warehouse"))
-			MessageSender(Service.MANAGEMENT_ITEMS.service, Service.INFO_WAREHOUSE.service, ACLMessage.CFP, info)
+			MessageSender(Service.MANAGEMENT_ITEMS.service, INFO_WAREHOUSE.service, ACLMessage.CFP, INFO_WAREHOUSE.literal)
 				.require(agent).thenAccept { message ->
 					proxy.dispatchItems(LiteralParser.split(message!!.content).map { Item.parse(it) }
 						.groupBy { it.itemId }.entries.map{

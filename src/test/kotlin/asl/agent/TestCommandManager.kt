@@ -24,15 +24,25 @@ class TestCommandManager {
 		val adminProxy = AdminProxy()
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
 
+		var evaluated = false
+
 		adminProxy.subscribeCommands(inlineOnNextObserver { c ->
-			assertEquals(2, c.count())
-			assertEquals(3, c.flatMap { it.versions }.count())
+			assertEquals(2, c.groupBy { it.id }.count())
+			assertEquals(3, c.count())
+			evaluated = true;
 		})
 
-		Thread.sleep(3000)
+		Thread.sleep(1500)
+
+		assert(evaluated)
 	}
 
-	@Test fun commandsAddition() {
+	@Test fun newCommandAddition() {
+		val adminProxy = AdminProxy()
+		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
+	}
+
+	@Test fun newVersionAddition() {
 		//TODO()
 	}
 

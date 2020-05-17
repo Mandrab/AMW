@@ -1,12 +1,10 @@
 package asl.agent.fake
 
-import common.translation.LiteralBuilder
-import common.translation.Service
+import common.translation.Service.EXECUTOR_SCRIPT
+import common.translation.ServiceType.EXEC_SCRIPT
 import controller.agent.abstracts.TerminalAgent
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.MessageTemplate
-import jason.asSyntax.Literal
-import jason.asSyntax.StringTermImpl
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 
@@ -20,11 +18,8 @@ class FakeAdminAgent: TerminalAgent() {
 	fun executeButNotRespond(script: String, consumer: Function<ACLMessage?, Boolean>): CompletableFuture<Boolean> {
 		val result = CompletableFuture<Boolean>()
 
-		val scriptLiteral: Literal = LiteralBuilder("script").setValues(StringTermImpl(script))
-			.setQueue(*emptySet<String>().map { StringTermImpl(it) }.toTypedArray()).build()
-		val executeLiteral = LiteralBuilder("execute").setValues(scriptLiteral).build()
-
-		MessageSender(Service.EXECUTOR_SCRIPT.service, Service.EXEC_SCRIPT.service, ACLMessage.CFP, executeLiteral).require(this)
+		MessageSender(EXECUTOR_SCRIPT.service, EXEC_SCRIPT.service, ACLMessage.CFP,
+			EXEC_SCRIPT.parse(Pair(script, emptySet<String>()))).require(this)
 			.thenAccept { result.complete(consumer.apply(it)) }
 		return result;
 	}

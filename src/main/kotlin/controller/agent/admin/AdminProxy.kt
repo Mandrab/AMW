@@ -35,6 +35,10 @@ class AdminProxy: ItemUpdaterProxy() {
 	 */
 	fun dispatchCommands(t: Collection<Command>) { commandSubscribers.onEach { it.onNext(t) } }
 
+	fun add(command: Command) = agent.add(command)
+
+	fun add(commandID: String, version: Command.Version) = agent.add(commandID, version)
+
 	fun execute(commandID: String) = agent.execute(commandID)
 
 	fun execute(script: String, requirements: Set<String>) = agent.execute(script, requirements)
