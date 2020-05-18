@@ -8,7 +8,8 @@
 
 +!kqml_received(Sender, cfp, Content, MsgID)                        // request of job execution
 	:   Content = execute(command_id(CommandID))
-    <-  !change_status(state(available), pending, Result);
+    <-  .println("Request to execute a command");
+        !change_status(state(available), pending, Result);
 		if (Result) {
 			+execution_request(command(CommandID), client(Sender), msg_id(MsgID))[ status(unaccepted) ];
 			!random_agent("management(commands)", "request(command)", Agent);
