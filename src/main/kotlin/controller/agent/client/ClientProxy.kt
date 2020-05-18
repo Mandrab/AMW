@@ -1,8 +1,5 @@
 package controller.agent.client
 
-import common.Request
-import common.Request.END
-import common.Request.ORDER
 import controller.agent.abstracts.ItemUpdaterProxy
 import io.reactivex.rxjava3.core.Observer
 import jade.core.Agent

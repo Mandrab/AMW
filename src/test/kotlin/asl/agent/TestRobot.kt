@@ -78,9 +78,9 @@ class TestRobot {
 
 		// i expect an acceptance for script execution but a fail after not receive confirm
 		fakeAdminAgent!!.executeButNotRespond(script, Function {
-			return@Function it != null &&  it.performative == ACLMessage.PROPOSE
+			return@Function it != null && it.performative == ACLMessage.PROPOSE
 		}).thenAccept {
-			assert(true).apply { evaluated1 = true }
+			assert(it).apply { evaluated1 = true }
 			evaluated2 = fakeAdminAgent!!.waitMsg()
 		}
 
@@ -140,7 +140,7 @@ class TestRobot {
 		fakeAgent!!.retrieveButNotRespond(message, Function {
 			return@Function it != null &&  it.performative == ACLMessage.PROPOSE
 		}).thenAccept {
-			assert(true).apply { evaluated1 = true }
+			assert(it).apply { evaluated1 = true }
 			evaluated2 = fakeAgent!!.waitMsg()
 		}
 

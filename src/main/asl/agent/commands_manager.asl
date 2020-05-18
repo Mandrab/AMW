@@ -9,7 +9,7 @@
  **********************************************************************************************************************/
 
 command(id("Command1"), name("command 1 name"), description("descr command 1")) [
-		variant(v_id("vid0.0.0.1"), requirements[ "requirement_1", "requirement_3" ], script(
+		variant(v_id("vid0.0.0.1"), requirements[ "move" ], script(
 				"[  {@l1 +!main <- .println('Executing script ...');.wait(500); !b}, {@l2 +!b <- .println('Script executed') }]")) ].
 
 /***********************************************************************************************************************
@@ -34,6 +34,7 @@ command(id("Command1"), name("command 1 name"), description("descr command 1")) 
 +!kqml_received(Sender, achieve, add(Command), MsgID)
 	:   Command = command(id(CID), name(CName), description(CDescr))[ [] | Versions ]
 	<-  !add([ Command ]);
+	    // TODO fail labelling della versione
 	    .println("Request for command addition...");
 	    .send(Sender, confirm, add(Command), MsgID).
 
@@ -54,9 +55,10 @@ command(id("Command1"), name("command 1 name"), description("descr command 1")) 
 @commandRequest[atomic]
 +!kqml_received(Sender, achieve, Content, MsgID)                  // send the warehouse state (items info & position)
 	:   Content = request(command_id(CommandID))
-	&   command(id(CommandID), _, _)[ source(self) | Variants ] //source(self)
+	&   command(id(CommandID), _, _)[ source(self) | Variants ]
     <-  .println("Request for command...");
         !concat(command(CommandID), Variants, Msg);
+        .term2string(MsgT, Msg);
         .send(Sender, tell, Msg, MsgID).                          // ask if able to run the specified script
 
 @informationRequest[atomic]

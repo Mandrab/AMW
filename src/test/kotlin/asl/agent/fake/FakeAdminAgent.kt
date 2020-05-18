@@ -34,5 +34,5 @@ class FakeAdminAgent: TerminalAgent() {
 		return result
 	}
 
-	fun waitMsg() = blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.FAILURE)) != null
+	fun waitMsg() = blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.FAILURE)).also { println(it) } != null
 }

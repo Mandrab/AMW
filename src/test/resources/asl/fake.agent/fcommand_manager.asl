@@ -14,8 +14,10 @@ command(id("Command1"), name("command 1 name"), description("descr command 1")) 
 
 +!kqml_received(Sender, achieve, Content, MsgID)                  // send the warehouse state (items info & position)
 	:   Content = request(command_id(CommandID))
-	&   command(id(CommandID), name(N), description(D))[ source(self) | Variants ]
-    <-  !concat(command(CommandID), Variants, Msg);
-        .send(Sender, tell, Msg, MsgID).                          // ask if able to run the specified script
+	&   command(id(CommandID), _, _)[ source(self) | Variants ]
+    <-  !concat(command(CID), Variants, Msg);
+        .term2string(MsgT, Msg);
+        .send(Sender, tell, MsgT, MsgID).                          // ask if able to run the specified script
 
-+!kqml_received(Sender, achieve, Content, MsgID) <- .send(Sender, failure, Content, MsgID).
++!kqml_received(Sender, achieve, Content, MsgID)
+    <-  .send(Sender, failure, request(command_id(_)), MsgID).

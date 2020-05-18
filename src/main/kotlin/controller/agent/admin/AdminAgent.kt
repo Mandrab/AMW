@@ -87,13 +87,12 @@ class AdminAgent: ItemUpdater() {
             .thenAccept {
                 it ?: result.complete(false)
                 when (it?.performative) {
-                    ACLMessage.REFUSE -> result.complete(false)
+                    ACLMessage.REFUSE -> result.complete(false) //TODO("solo false non basta perchè potrebbero rispondere altri agenti")
                     ACLMessage.PROPOSE -> {
-                        MessageSender(it.sender, ACLMessage.ACCEPT_PROPOSAL, LiteralBuilder("execute").setValues(
-                                LiteralBuilder("command_id").setValues(getValue(it.content, "command_id")!!).build()
-                            ).build()
-                        ).send(this)
-                        result.complete(true)
+                        val performative = if (result.isDone) ACLMessage.REJECT_PROPOSAL
+                        else ACLMessage.ACCEPT_PROPOSAL.also { result.complete(true) }
+
+                        MessageSender(it.sender, performative, it.content).send(this)
                     }
                 }
             }

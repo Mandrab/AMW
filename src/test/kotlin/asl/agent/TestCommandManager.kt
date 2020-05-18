@@ -58,14 +58,14 @@ class TestCommandManager {
 
 		agent!!.getCommand("Command1", Function { result = it?.content })
 
-		val expectedBase = """command("Command1")[variant(v_id("vid0.0.0.1"),requirements["requirement_1",""" +
-				""""requirement_3"],script("[  {@l1 +!main <- .println('Executing script ...');.wait(500); !b}, """ +
+		val expectedBase = """command("Command1")[variant(v_id("vid0.0.0.1"),requirements["move"],""" +
+				"""script("[  {@l1 +!main <- .println('Executing script ...');.wait(500); !b}, """ +
 				"""{@l2 +!b <- .println('Script executed') }]"))"""
 		val otherTestExecuted = """,variant(v_id("vid0.0.0.2"),requirements["req1","req2"],script("script2"))]"""
 
 		Thread.sleep(50)
 
-		assert("$expectedBase]" == result || (expectedBase + otherTestExecuted) == result, { result!! })
+		assert("$expectedBase]" == result || (expectedBase + otherTestExecuted) == result) { result!! }
 	}
 
 	@Test fun newCommandAddition() {

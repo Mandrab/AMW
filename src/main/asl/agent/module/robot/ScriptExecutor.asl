@@ -5,19 +5,21 @@ implements[ "script_executor" ].
 { include("Propose.asl") }
 { include("CheckAcceptance.asl") }
 { include("PlansRemover.asl") }
+{ include("UsableVersionFinder.asl") }
 
 ///////////////////////////// JOB EXECUTION REQ
 
 +!kqml_received(Sender, cfp, Content, MsgID)                        // request of job execution
 	:   Content = execute(script(S)[ [] | Requirements ])
-	&   implements[ source(self) | Labels ] & action.implement(Labels, Requirements)
-    <-  +script(S)[ client(Sender), msg_id(MsgID) ]
+	&   implements[ source(self) | Labels ]
+    <-  !contained(Requirements, Labels);
+        +script(S)[ client(Sender), msg_id(MsgID) ]
         !propose(Sender, execute(script(S)), MsgID)                 // propose to exec the job
         .wait(3000)                                                 // max time to wait for confirm
         !check_acceptance(Sender, execute(script)[ cause(request_timeout) ], MsgID, script(S)). // check the proposal
                                                                     // acceptance
 
-+!kqml_received(Sender, cfp, Content, MsgID) : Content = execute(script(S)[_])  // request of job execution
+-!kqml_received(Sender, cfp, Content, MsgID) : Content = execute(script(S)[_])  // request of job execution
     <-  .send(Sender, refuse, execute(script)[ err_code(407) ], MsgID). // refuse to run the script
 
 ///////////////////////////// ACCEPTED PROPOSAL

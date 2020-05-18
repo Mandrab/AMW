@@ -1,7 +1,6 @@
 package view.panel
 
-import common.Request.ADD_VERSION
-import common.Request.EXEC_COMMAND
+import common.Request.*
 import common.type.Command
 import io.reactivex.rxjava3.functions.Consumer
 import view.ViewImpl
@@ -24,7 +23,7 @@ import javax.swing.*
  */
 class CommandPanel : JPanel(), Consumer<Collection<Command>> {
     private val commands = mutableSetOf<Command>()
-    private val commandsList = ComponentsBuilder.createList(Vector(commands.map { it.id }),
+    private val commandsList = ComponentsBuilder.createList(Vector(commands.map { it.id.removeSurrounding("\"") }),
         commands.size.coerceAtMost(25), 60)
     private var selectedElem: Command? = null
 
@@ -60,11 +59,11 @@ class CommandPanel : JPanel(), Consumer<Collection<Command>> {
         // LISTENERS
         commandsList.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                execButton.isEnabled = false
+                execButton.isEnabled = true
                 selectedElem = commands.elementAt(commandsList.selectedIndex)
-                commandName.text = "ID: " + selectedElem?.name
-                commandDescription.text = "Description: " + selectedElem?.description
-                versionsList.setListData(selectedElem?.versions?.map { obj: Command.Version -> obj.id }?.toTypedArray())
+                commandName.text = "ID: " + selectedElem?.name?.removeSurrounding("\"")
+                commandDescription.text = "Description: " + selectedElem?.description?.removeSurrounding("\"")
+                versionsList.setListData(selectedElem?.versions?.map { obj: Command.Version -> obj.id }?.map { it.removeSurrounding("\"") }?.toTypedArray())
                 requirementsList.setListData(Vector())
                 commandScript.text = "[Script]"
                 newVersionButton.isEnabled = true
@@ -73,72 +72,71 @@ class CommandPanel : JPanel(), Consumer<Collection<Command>> {
         versionsList.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (!versionsList.isSelectionEmpty) {
-                    execButton.isEnabled = true
-                    commandScript.text = selectedElem?.versions?.get(versionsList.selectedIndex)?.script
+                    commandScript.text = selectedElem?.versions?.get(versionsList.selectedIndex)?.script?.removeSurrounding("\"")
                         ?.replace("}, {", ".\n\n")?.replace(";", ";\n\t")
                         ?.removeSurrounding("\"[  {", "}]\"") + "."
                     requirementsList.setListData(selectedElem?.versions?.get(versionsList.selectedIndex)?.requirements
-                        ?.toTypedArray())
+                        ?.map { it.removeSurrounding("\"") }?.toTypedArray())
                 }
             }
         })
         newCommandButton.addActionListener {
             val panel = NewCommandPanel()
             if (JOptionPane.showConfirmDialog(null, panel, "New Command", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
-                ViewImpl.publish(ADD_VERSION, panel.idArea, panel.requirementsArea, panel.scriptArea)
+                ViewImpl.publish(ADD_COMMAND, Command(panel.commandID.text, panel.name.text, panel.description.text, listOf(
+                    Command.Version(panel.versionID.text, panel.requirements.text.split(","), panel.script.text)
+                )))
             }
         }
         newVersionButton.addActionListener {
             val panel = NewVersionPanel()
             if (JOptionPane.showConfirmDialog(null, panel, "New Version", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
-                ViewImpl.publish(ADD_VERSION, panel.idArea, panel.requirementsArea, panel.scriptArea)
+                ViewImpl.publish(ADD_VERSION, arrayOf(selectedElem!!.id, Command.Version(panel.versionID.text, panel.requirements.text.split(","), panel.script.text)))
             }
         }
-        execButton.addActionListener {// TODO
-            ViewImpl.publish(EXEC_COMMAND, selectedElem?.id as Any, versionsList.selectedValue)
-        }
+        execButton.addActionListener { ViewImpl.publish(EXEC_COMMAND, selectedElem!!.id) }
     }
 
     override fun accept(t: Collection<Command>) {
         if (commands.addAll(t.groupBy { it.id }.map { Command(it.key, it.value[0].name, it.value[0].description, it.value
             .map { c -> c.versions }.reduce { l1, l2 -> l1.toMutableSet().apply { addAll(l2) }.toList() }) }))
-            commandsList.setListData(Vector(commands.map { it.id }))
+            commandsList.setListData(Vector(commands.map { it.id.removeSurrounding("\"") }))
     }
 
     private open class NewVersionPanel: JPanel() {
-        val idArea = JTextField("Version ID")
-        val requirementsArea = JTextField("Requirements (e.g. req1, req2, req3, ...)")
-        val scriptArea = JTextArea("Script").also { it.lineWrap = true }
+        val versionID = JTextField("Version ID")
+        val requirements = JTextField("Requirements (e.g. req1, req2, req3, ...)")
+        val script = JTextArea("Script").also { it.lineWrap = true }
 
         /**
          * Creates the GUI shown inside the frame's content pane.
          * */
         init {
             layout = GridBagLayout()
-            GridBagPanelAdder().weight(1.0, .0).addTo(this, idArea)
-            GridBagPanelAdder().yPos(1).weight(1.0, .0).addTo(this, requirementsArea)
-            GridBagPanelAdder().yPos(2).weight(1.0, 1.0).addTo(this, scriptArea)
+            GridBagPanelAdder().weight(1.0, .0).addTo(this, versionID)
+            GridBagPanelAdder().yPos(1).weight(1.0, .0).addTo(this, requirements)
+            GridBagPanelAdder().yPos(2).weight(1.0, 1.0).addTo(this, script)
 
             preferredSize = Dimension(400, 400)
         }
     }
 
     private class NewCommandPanel: NewVersionPanel() {
-        val commandIdArea = JTextField("Command ID")
-        val nameArea = JTextField("Command name")
-        val descriptionArea = JTextArea("Description").also { it.lineWrap = true }
+        val commandID = JTextField("Command ID")
+        val name = JTextField("Command name")
+        val description = JTextArea("Description").also { it.lineWrap = true }
 
         /**
          * Creates the GUI shown inside the frame's content pane.
          * */
         init {
             layout = GridBagLayout()
-            GridBagPanelAdder().weight(1.0, .0).addTo(this, commandIdArea)
-            GridBagPanelAdder().yPos(1).weight(1.0, .0).addTo(this, nameArea)
-            GridBagPanelAdder().yPos(2).weight(1.0, 1.0).addTo(this, JScrollPane(descriptionArea))
-            GridBagPanelAdder().position(1, 0).weight(1.0, .0).addTo(this, super.idArea)
-            GridBagPanelAdder().position(1, 1).weight(1.0, .0).addTo(this, super.requirementsArea)
-            GridBagPanelAdder().position(1, 2).weight(1.0, 1.0).addTo(this, JScrollPane(super.scriptArea))
+            GridBagPanelAdder().weight(1.0, .0).addTo(this, commandID)
+            GridBagPanelAdder().yPos(1).weight(1.0, .0).addTo(this, name)
+            GridBagPanelAdder().yPos(2).weight(1.0, 1.0).addTo(this, JScrollPane(description))
+            GridBagPanelAdder().position(1, 0).weight(1.0, .0).addTo(this, super.versionID)
+            GridBagPanelAdder().position(1, 1).weight(1.0, .0).addTo(this, super.requirements)
+            GridBagPanelAdder().position(1, 2).weight(1.0, 1.0).addTo(this, JScrollPane(super.script))
 
             preferredSize = Dimension(400, 400)
         }

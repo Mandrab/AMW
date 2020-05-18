@@ -8,7 +8,7 @@ import java.awt.GridBagLayout
 import java.util.Vector
 import javax.swing.*
 import common.type.Item
-import common.Request.ORDER
+import common.Request.PLACE_ORDER
 import io.reactivex.rxjava3.functions.Consumer
 import view.ViewImpl
 
@@ -19,11 +19,6 @@ import view.ViewImpl
  * @author Paolo Baldini
  */
 open class NewOrder: JPanel(), Consumer<Collection<Item>> {
-	data class ItemPair(val first: String, val second: Int) {
-		override fun equals(other: Any?): Boolean = other is ItemPair && first == other.first
-		override fun hashCode(): Int = first.hashCode()
-	}
-
 	private var items = mutableListOf<ItemPair>()
 	private val itemsList = ComponentsBuilder.createList(Vector(items.map { "${it.first}        ${it.second}" }),
 		items.size.coerceAtMost(25), 225)
@@ -59,8 +54,8 @@ open class NewOrder: JPanel(), Consumer<Collection<Item>> {
 				l.add(clientInput.text)
 				l.add(mailInput.text)
 				l.add(addressInput.text)
-				l.addAll(selectedItems.elements().toList())
-				ViewImpl.publish(ORDER, *l.toTypedArray())
+				l.addAll(selectedItems.elements().toList().map { Pair(it.first, it.second) })
+				ViewImpl.publish(PLACE_ORDER, *l.toTypedArray())
 				// TODO
 			}
 		}
@@ -144,5 +139,10 @@ open class NewOrder: JPanel(), Consumer<Collection<Item>> {
 
 		if (update) itemsList.setListData(Vector(items.map { "${it.first}        Quantity: ${it.second}" }))
 		if (update) selectedItemsList.setListData(Vector(selectedItems.map { "${it.first}        Quantity: ${it.second}" }))
+	}
+
+	data class ItemPair(val first: String, val second: Int) {
+		override fun equals(other: Any?): Boolean = other is ItemPair && first == other.first
+		override fun hashCode(): Int = first.hashCode()
 	}
 }
