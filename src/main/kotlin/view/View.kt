@@ -1,9 +1,11 @@
 package view
 
+import common.Request
 import common.type.Command
 import common.type.Item
 import io.reactivex.rxjava3.core.Observer
 import common.type.Order
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * Interface to an application view.
@@ -12,6 +14,11 @@ import common.type.Order
  * @author Paolo Baldini
  */
 interface View {
+
+	/**
+	 * Can be used to be informed of user inputs
+	 */
+	val userInput: Observable<Pair<Request, Any>>
 
 	/**
 	 * View could observe on commands info changes

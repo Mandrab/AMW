@@ -19,8 +19,8 @@ import java.awt.event.MouseEvent
  * @author Paolo Baldini
  */
 open class AddItem: JPanel(), Consumer<Collection<Item>> {
-	private var items = mutableListOf<Item>()
-	private var itemsList = ComponentsBuilder.createList(Vector(items.map { it.itemId }),
+	private val items = mutableSetOf<Item>()
+	private val itemsList = ComponentsBuilder.createList(Vector(items.map { it.itemId }),
 		items.size.coerceAtMost(25), 225)
 
 	private val itemID = JTextArea("ID: -").also { it.isEditable = false }
@@ -54,7 +54,6 @@ open class AddItem: JPanel(), Consumer<Collection<Item>> {
 	}
 
 	override fun accept(items: Collection<Item>) {
-		this.items = items.toMutableList()
-		itemsList.setListData(Vector(this.items.map { it.itemId }))
+		if (this.items.addAll(items)) itemsList.setListData(Vector(this.items.map { it.itemId }))
 	}
 }

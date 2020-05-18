@@ -19,6 +19,7 @@ import kotlin.math.floor
  * @author Paolo Baldini
  */
 class ControlPanel(private val rackNumber: Int): JPanel(), Consumer<Collection<Item>> {
+
     private val graphicPanel: JPanel
     private val textualArea: JTextArea
 

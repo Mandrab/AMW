@@ -1,15 +1,6 @@
 package view.panel
 
-//import action.load_commands
-import common.RequestDispatcherImpl
-import common.Request.EXEC_SCRIPT
-import view.util.GridBagPanelAdder
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import javax.swing.JButton
-import javax.swing.JOptionPane
 import javax.swing.JPanel
-import javax.swing.JTextArea
 
 /**
  * TODO this class is a residual of an older test. I will conserve it for the moment
@@ -17,6 +8,7 @@ import javax.swing.JTextArea
  * @author Paolo Baldini
  */
 class ScriptPanel: JPanel() {
+
     /*private fun requirementsAndScript(s: String): Array<String> {
         val list: MutableList<String> = load_commands.getRequirements(s) as MutableList<String>
         list.add(0, load_commands.getScript(s))

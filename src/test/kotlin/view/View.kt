@@ -6,6 +6,9 @@ import common.type.Item
 import common.type.User
 import io.reactivex.rxjava3.core.Observable
 import common.type.Order
+import io.reactivex.rxjava3.subjects.PublishSubject
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Bootable class with manual test purpose only (at least at the moment)
@@ -19,8 +22,15 @@ fun main() {
 		Item("id1", 3, arrayListOf(Triple(0, 0, 2), Triple(0, 1, 3))),
 		Item("id2", 2, arrayListOf(Triple(1, 0, 2), Triple(1, 1, 3))),
 		Item("id3", 5, arrayListOf(Triple(2, 0, 2), Triple(2, 1, 3)))
-	)
-	Observable.fromArray<Collection<Item>>(items).subscribe(view.itemObserver)
+	).let { view.itemObserver.onNext(it) }
+
+	Executors.newSingleThreadScheduledExecutor().schedule({
+		val items = listOf(
+			Item("id1", 4, arrayListOf(Triple(0, 0, 2), Triple(0, 1, 3))),
+			Item("id2", 2, arrayListOf(Triple(1, 0, 2), Triple(1, 1, 3))),
+			Item("id3", 5, arrayListOf(Triple(2, 0, 2), Triple(2, 1, 3)))
+		).let { view.itemObserver.onNext(it) }
+	}, 5, TimeUnit.SECONDS)
 
 	val orders = listOf(
 		Order(

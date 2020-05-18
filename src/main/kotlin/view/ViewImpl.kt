@@ -1,11 +1,12 @@
 package view
 
+import common.Request
 import common.type.Command
 import common.type.Item
-import common.RequestDispatcherImpl
 import common.Request.END
 import common.type.User
 import common.type.Order
+import io.reactivex.rxjava3.core.Observable
 import view.panel.ControlPanel
 import java.awt.Color
 import java.awt.Dimension
@@ -23,7 +24,14 @@ import kotlin.system.exitProcess
  *
  * @author Paolo Baldini
  */
-class ViewImpl(private val user: User): JFrame(), View {
+class ViewImpl(user: User): JFrame(), View {
+    companion object {
+        private val inputs = PublishSubject.create<Pair<Request, Any>>()
+        internal fun publish(request: Request, vararg params: Any) = inputs.onNext(Pair(request, params))
+    }
+
+    /** {@inheritDoc} */
+    override val userInput: Observable<Pair<Request, Any>> = inputs
     /** {@inheritDoc} */
     override val commandObserver: Observer<Collection<Command>> = PublishSubject.create()
     /** {@inheritDoc} */
@@ -74,8 +82,8 @@ class ViewImpl(private val user: User): JFrame(), View {
             override fun windowClosing(windowEvent: WindowEvent) {
                 if (JOptionPane.showConfirmDialog(parent, "Are you sure you want to close this window?",
                         "Close Window?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)
-                    == JOptionPane.YES_OPTION ) {
-                    RequestDispatcherImpl.dispatch(END)
+                        == JOptionPane.YES_OPTION ) {
+                    (userInput as PublishSubject).onNext(Pair(END, Unit))
                     exitProcess(0)
                 }
             }
