@@ -7,6 +7,7 @@ package common
  */
 enum class Request {
 	ADD_COMMAND,        // push a command to repo
+	ADD_VERSION,        // push a version to repo
 	EXEC_COMMAND,       // exec a command
 	EXEC_SCRIPT,        // exec a script
 	END,                // shutdown system

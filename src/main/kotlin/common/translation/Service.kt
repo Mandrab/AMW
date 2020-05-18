@@ -40,7 +40,7 @@ private val parseExecCommand: (Any) -> Literal = { check(it is String)
 private val parseExecScript: (Any) -> Literal = {
     check(it is Pair<*,*> && it.first is String && it.second is Set<*> && (it.second as Set<*>).all { e -> e is String })
     LiteralBuilder("execute").setValues(LiteralBuilder("script").setValues(StringTermImpl(it.first as String))
-        .setQueue(*(it.second as Set<String>).map { r -> StringTermImpl(r) }.toTypedArray()).build()).build()
+        .setQueue(*(it.second as Set<*>).map { r -> StringTermImpl(r as String) }.toTypedArray()).build()).build()
 }
 
 private val parseCommand: (Any) -> Literal =  { command -> check(command is Command)
