@@ -15,7 +15,7 @@ class Item(val itemId: String, val reserved: Int, var positions: List<Triple<Int
     public override fun clone() = Item(itemId, reserved, positions.map { Triple(it.first, it.second, it.third) })
 
     override fun equals(other: Any?): Boolean = other is Item && itemId == other.itemId && reserved == other.reserved
-            && positions == other.positions
+            && positions.size == other.positions.size && positions.all { other.positions.contains(it) }
 
     override fun toString(): String = "ID: $itemId, Reserved: $reserved " +
 		    positions.joinToString { "rack: ${it.first}, shelf: ${it.second}, quantity: ${it.third}" } + "\n"

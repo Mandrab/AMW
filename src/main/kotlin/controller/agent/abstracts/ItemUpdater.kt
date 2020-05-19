@@ -28,7 +28,7 @@ open class ItemUpdater: TerminalAgent() {
 
 	private fun updateItems() = object: CyclicBehaviour() {
 		override fun action() {                                     // update warehouse (items) info
-			MessageSender(Service.MANAGEMENT_ITEMS.service, INFO_WAREHOUSE.service, ACLMessage.CFP, INFO_WAREHOUSE.literal)
+			MessageSender(Service.MANAGEMENT_ITEMS.service, INFO_WAREHOUSE.service, ACLMessage.REQUEST, INFO_WAREHOUSE.literal)
 				.require(agent).thenAccept { message ->
 					proxy.dispatchItems(LiteralParser.split(message!!.content).map { Item.parse(it) }
 						.groupBy { it.itemId }.entries.map{

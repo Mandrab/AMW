@@ -34,12 +34,12 @@ class TestCommandManager {
 
 		var evaluated = false
 
-		while (!adminProxy.isAvailable()) Thread.sleep(50);
+		while (!adminProxy.isAvailable()) Thread.sleep(50)
 
 		adminProxy.subscribeCommands(inlineOnNextObserver { c ->
 			assertEquals(expectedCommandsN, c.groupBy { it.id }.count())
 			assertEquals(expectedVariantsN, c.count())
-			evaluated = true;
+			evaluated = true
 		})
 
 		Thread.sleep(2500)
@@ -54,7 +54,7 @@ class TestCommandManager {
 
 		var result: String? = ""
 
-		while (!adminProxy.isAvailable() || agent == null) Thread.sleep(50);
+		while (!adminProxy.isAvailable() || agent == null) Thread.sleep(50)
 
 		agent!!.getCommand("Command1", Function { result = it?.content })
 

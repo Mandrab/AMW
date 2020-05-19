@@ -1,5 +1,6 @@
 package common.translation
 
+import common.translation.LiteralBuilder.Companion.pairTerm
 import common.type.Command
 import jason.asSyntax.Literal
 import jason.asSyntax.StringTermImpl
@@ -16,6 +17,7 @@ enum class Service(val service: String) {
     MANAGEMENT_ORDERS("management(orders)"),
     EXECUTOR_COMMAND("executor(command)"),
     EXECUTOR_SCRIPT("executor(command)"),
+    PICKER_ITEMS("executor(item_picker)")
 }
 
 enum class ServiceType(
@@ -28,7 +30,9 @@ enum class ServiceType(
     INFO_WAREHOUSE("info(warehouse)"),
     INFO_COMMANDS("info(commands)"),
     EXEC_COMMAND("exec(command)", parseExecCommand),
-    EXEC_SCRIPT("exec(command)", parseExecScript);
+    EXEC_SCRIPT("exec(command)", parseExecScript),
+    RETRIEVE_ITEMS("retrieve(item)", parseRetrieveItems),
+    RETRIEVE_ITEM("retrieve(item)"); // TODO
 
     val literal: Literal = Literal.parseLiteral(service)
 }
@@ -41,6 +45,15 @@ private val parseExecScript: (Any) -> Literal = {
     check(it is Pair<*,*> && it.first is String && it.second is Set<*> && (it.second as Set<*>).all { e -> e is String })
     LiteralBuilder("execute").setValues(LiteralBuilder("script").setValues(StringTermImpl(it.first as String))
         .setQueue(*(it.second as Set<*>).map { r -> StringTermImpl(r as String) }.toTypedArray()).build()).build()
+}
+
+private val parseRetrieveItems: (Any) -> Literal = {
+    check(it is Pair<*,*> && it.first is String && (it.second as Collection<*>).all { e ->
+        e is Pair<*,*> && e.first is String && e.second is Int })
+    LiteralBuilder("retrieve").setValues(LiteralBuilder("order_id").setValues(it.first as String).build())
+        .setQueue(*(it.second as Collection<Pair<String, Int>>).map { p -> LiteralBuilder("item")
+            .setValues(LiteralBuilder("id").setValues(StringTermImpl(p.first)).build(), pairTerm("quantity", p.second.toDouble())).build() }
+            .toTypedArray()).build()
 }
 
 private val parseCommand: (Any) -> Literal =  { command -> check(command is Command)

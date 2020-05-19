@@ -110,9 +110,9 @@ class TestRobot {
 		val message = "retrieve(id(Id), item(item(Item)[todo]))"
 
 		// with two correct request, one should succeed and one should fail
-		fakeAgent1!!.retrieve(message).thenAccept { synchronized(synch) {
+		fakeAgent1!!.retrieveItem(message).thenAccept { synchronized(synch) {
 			assert((it && !evaluated2) || (evaluated2 && !it)).apply { evaluated1 = true } } }
-		fakeAgent1!!.retrieve(message).thenAccept { synchronized(synch) {
+		fakeAgent1!!.retrieveItem(message).thenAccept { synchronized(synch) {
 			assert((it && !evaluated1) || (evaluated1 && !it)).apply { evaluated2 = true } } }
 
 		Thread.sleep(4000)

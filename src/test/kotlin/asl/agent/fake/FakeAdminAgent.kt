@@ -6,7 +6,6 @@ import common.translation.ServiceType.EXEC_SCRIPT
 import controller.agent.abstracts.TerminalAgent
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.MessageTemplate
-import jason.asSyntax.Atom
 import jason.asSyntax.StringTermImpl
 import jason.asSyntax.Structure
 import java.util.concurrent.CompletableFuture

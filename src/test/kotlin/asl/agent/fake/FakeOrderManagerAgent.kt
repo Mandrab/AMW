@@ -1,14 +1,15 @@
 package asl.agent.fake
 
 import common.translation.LiteralBuilder
+import common.translation.Service.MANAGEMENT_ITEMS
 import common.translation.Service.EXECUTOR_SCRIPT
+import common.translation.Service.PICKER_ITEMS
 import common.translation.ServiceType.EXEC_SCRIPT
+import common.translation.ServiceType.RETRIEVE_ITEMS
+import common.translation.ServiceType.RETRIEVE_ITEM
 import controller.agent.abstracts.TerminalAgent
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.MessageTemplate
-import jason.asSyntax.Literal
-import jason.asSyntax.StringTermImpl
-import org.apache.tools.ant.taskdefs.optional.Script
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 
@@ -19,10 +20,24 @@ class FakeOrderManagerAgent: TerminalAgent() {
 		(arguments[0] as FakeOrderManagerProxy).setAgent(this)
 	}
 
-	fun retrieve(message: String): CompletableFuture<Boolean> {
+	fun retrieveItems(orderID: String, items: Collection<Pair<String, Int>>): CompletableFuture<Boolean> {
 		val result = CompletableFuture<Boolean>()
 
-		MessageSender(EXECUTOR_SCRIPT.service, EXEC_SCRIPT.service, ACLMessage.CFP, message).require(this)
+		MessageSender(MANAGEMENT_ITEMS.service, RETRIEVE_ITEMS.service, ACLMessage.REQUEST,
+			RETRIEVE_ITEMS.parse(Pair(orderID, items))).require(this).thenAccept {
+				it ?: result.complete(false)
+				when (it?.performative) {
+					ACLMessage.FAILURE -> result.complete(false)
+					ACLMessage.CONFIRM -> result.complete(true)
+				}
+			}
+		return result
+	}
+
+	fun retrieveItem(message: String): CompletableFuture<Boolean> {
+		val result = CompletableFuture<Boolean>()
+
+		MessageSender(PICKER_ITEMS.service, RETRIEVE_ITEM.service, ACLMessage.CFP, message).require(this)
 			.thenAccept {
 				it ?: result.complete(false)
 				when (it?.performative) {
@@ -35,7 +50,7 @@ class FakeOrderManagerAgent: TerminalAgent() {
 					}
 				}
 			}
-		return result;
+		return result
 	}
 
 	fun retrieveButNotRespond(script: String, consumer: Function<ACLMessage?, Boolean>): CompletableFuture<Boolean> {
@@ -45,7 +60,7 @@ class FakeOrderManagerAgent: TerminalAgent() {
 			EXEC_SCRIPT.parse(Pair(script, emptySet<String>()))).require(this).thenAccept {
 			result.complete(consumer.apply(it))
 		}
-		return result;
+		return result
 	}
 
 	fun waitMsg() = blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.FAILURE)) != null
