@@ -4,6 +4,7 @@ import common.type.Command
 import controller.agent.abstracts.ItemUpdaterProxy
 import io.reactivex.rxjava3.core.Observer
 import jade.core.Agent
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
 /**
@@ -34,6 +35,8 @@ class AdminProxy: ItemUpdaterProxy() {
 	 * Notify observers with a new commands list
 	 */
 	fun dispatchCommands(t: Collection<Command>) { commandSubscribers.onEach { it.onNext(t) } }
+
+	fun add(itemID: String, rack: Int, shelf: Int, quantity: Int) = agent.add(itemID, rack, shelf, quantity)
 
 	fun add(command: Command) = agent.add(command)
 

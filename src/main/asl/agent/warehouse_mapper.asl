@@ -21,7 +21,6 @@
 		.df_register("management(items)", "retrieve(item)");        // register for remove infos at item removal
 		+set.                                                       // set setup-process ended
 
-// OPERATION #3 in order submission schema
 @processOrder[atomic]
 +!kqml_received(Sender, achieve, Content, MsgID)                  // receive the intention of pick item(s)
 	:   Content = retrieve(order_id(OrderId))[ [] | Items ]
@@ -30,14 +29,13 @@
         !reserve(Items, Positions);                           // try to reserve the items
         !concat(confirmation(order_id(OrderId)), Positions, Msg);
         .send(Sender, confirm, Msg, MsgID).
+-!kqml_received(Sender, achieve, retrieve(order_id(OrderId))[_], MsgID)
+    <-  .send(Sender, failure, error(order_id(OrderId)), MsgID).
 
--!kqml_received(Sender, achieve, Content, MsgID) <- .send(Sender, failure, error(order_id(OrderId)), MsgID).
++!kqml_received(Sender, achieve, add(Item), MsgID) <- !add(Item); .send(Sender, confirm, Msg, MsgID).
+-!kqml_received(Sender, achieve, add(Item), MsgID) <- .send(Sender, failure, error(add(Item)), MsgID).
 
-+!release(Item)
-	:   Item = item(id(ItemId), quantity(RequiredQ))
-	&   item(id(ItemId), quantity(Quantity), reserved(ReservedQ))
-    <-  -+item(id(ItemId), quantity(Quantity), reserved(ReservedQ - RequiredQ)).
-
+@infoItems[atomic]
 +!kqml_received(Sender, achieve, info(warehouse), MsgID)         // send the warehouse state (items info & position)
     <-  .findall(item(id(ItemId), quantity(QT), reserved(R))
                 [ position(rack(RK), shelf(S), quantity(Q)) ],
@@ -49,6 +47,24 @@
 /***********************************************************************************************************************
  Utils
  **********************************************************************************************************************/
+
+@add[atomic]
++!add(item(id(ItemId), position(rack(Rack), shelf(Shelf), quantity(NewQuantity))))
+    :   item(id(ItemId), quantity(Quantity), reserved(ReservedQ))
+    <-  -item(id(ItemId), _, _)[source(self)|Positions];
+        +item(id(ItemId), quantity(Quantity + NewQuantity), reserved(ReservedQ))
+            [position(rack(Rack), shelf(Shelf), quantity(NewQuantity)) | Positions].
+
+@addNew[atomic]
++!add(item(id(ItemId), position(rack(Rack), shelf(Shelf), quantity(Quantity)))) : not item(id(ItemId), _, _)
+    <-  +item(id(ItemId), quantity(Quantity), reserved(0))[position(rack(Rack), shelf(Shelf), quantity(Quantity))].
+
+///////////////////////////// TODO
+
++!release(Item)
+	:   Item = item(id(ItemId), quantity(RequiredQ))
+	&   item(id(ItemId), quantity(Quantity), reserved(ReservedQ))
+    <-  -+item(id(ItemId), quantity(Quantity), reserved(ReservedQ - RequiredQ)).
 
 ///////////////////////////// CHECK SET OF ITEMS
 
@@ -71,10 +87,10 @@
 
 /////////////////////////////
 
-+!reserve(item(id(ItemID), _), Output) : item(id(ItemID), _, _)[source(self) | Positions]
++!reserve(item(id(ItemID), quantity(RequiredQ)), Output) : item(id(ItemID), _, _)[source(self) | Positions]
     <-  !concat(item(id(ItemID)), Positions, Output);
         -item(id(ItemID), quantity(StoredQ), reserved(ReservedQ))[source(self) | Positions];
-        +item(id(ItemID), quantity(StoredQ), reserved(ReservedQ))[source(self) | Positions].
+        +item(id(ItemID), quantity(StoredQ), reserved(ReservedQ + RequiredQ))[source(self) | Positions].
 // TODO? reserve([], []).
 +!reserve([H | []], [Output]) <- !reserve(H, Output).
 +!reserve([H | T], [Output1 | Output2]) <- !reserve(H, Output1); !reserve(T, Output2).

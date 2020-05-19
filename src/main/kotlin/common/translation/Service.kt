@@ -3,6 +3,7 @@ package common.translation
 import common.translation.LiteralBuilder.Companion.pairTerm
 import common.type.Command
 import jason.asSyntax.Literal
+import jason.asSyntax.NumberTermImpl
 import jason.asSyntax.StringTermImpl
 import jason.asSyntax.Structure
 
@@ -32,7 +33,8 @@ enum class ServiceType(
     EXEC_COMMAND("exec(command)", parseExecCommand),
     EXEC_SCRIPT("exec(command)", parseExecScript),
     RETRIEVE_ITEMS("retrieve(item)", parseRetrieveItems),
-    RETRIEVE_ITEM("retrieve(item)"); // TODO
+    RETRIEVE_ITEM("retrieve(item)"), // TODO
+    STORE_ITEM("store(item)", parseStoreItem);
 
     val literal: Literal = Literal.parseLiteral(service)
 }
@@ -75,4 +77,17 @@ private val parseVersion: (Any) -> Literal = { version -> check(version is Comma
         LiteralBuilder("requirements").setQueue(*version.requirements.map { StringTermImpl(it) }.toTypedArray())
             .build(), Structure("script").addTerms(StringTermImpl(version.script))
     ).build()
+}
+
+private val parseStoreItem: (Any) -> Literal = {
+    check(it is Pair<*,*> && it.first is String && it.second is Array<*>)
+    Structure("add").addTerms(LiteralBuilder("item").setValues(
+        LiteralBuilder("id").setValues(StringTermImpl(it.first as String)).build(), Structure("position")
+            .addTerms(
+                LiteralBuilder("rack").setValues(NumberTermImpl(((it.second as Array<*>)[0] as Int).toDouble()))
+                    .build(),
+                LiteralBuilder("shelf").setValues(NumberTermImpl(((it.second as Array<*>)[1] as Int).toDouble()))
+                    .build(),
+            LiteralBuilder("quantity").setValues(NumberTermImpl(((it.second as Array<*>)[2] as Int).toDouble()))
+                .build())).build())
 }

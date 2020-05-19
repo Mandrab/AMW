@@ -5,6 +5,7 @@ import common.translation.ServiceType.ADD_COMMAND
 import common.translation.ServiceType.ADD_VERSION
 import common.translation.ServiceType.EXEC_COMMAND
 import common.translation.ServiceType.EXEC_SCRIPT
+import common.translation.ServiceType.STORE_ITEM
 import common.translation.LiteralBuilder
 import common.translation.LiteralParser.getValue
 import jade.core.behaviours.CyclicBehaviour
@@ -41,8 +42,8 @@ class AdminAgent: ItemUpdater() {
     private fun updateCommands() = object : CyclicBehaviour() {
         override fun action() {                                     // update repository (commands) info periodically
 
-            MessageSender(MANAGEMENT_COMMANDS.service, INFO_COMMANDS.service, ACLMessage.CFP, INFO_COMMANDS.literal).require(agent)
-                .thenAccept { message -> proxy.dispatchCommands(split(message!!.content).map { Command.parse(it) }) }
+            MessageSender(MANAGEMENT_COMMANDS.service, INFO_COMMANDS.service, ACLMessage.CFP, INFO_COMMANDS.literal)
+                .require(agent) { msg -> proxy.dispatchCommands(split(msg!!.content).map { Command.parse(it) }) }
             lastUpdate = Date().time
 
             while (Date().time - lastUpdate < updateTime)
@@ -50,11 +51,26 @@ class AdminAgent: ItemUpdater() {
         }
     }
 
+    fun add(itemID: String, rack: Int, shelf: Int, quantity: Int): CompletableFuture<Boolean> {
+        val result = CompletableFuture<Boolean>()
+
+        MessageSender(MANAGEMENT_ITEMS.service, STORE_ITEM.service, ACLMessage.REQUEST,
+            STORE_ITEM.parse(Pair(itemID, arrayOf(rack, shelf, quantity)))).require(this) {
+                it ?: result.complete(false)
+                when (it?.performative) {
+                    ACLMessage.FAILURE -> result.complete(false)
+                    ACLMessage.CONFIRM -> result.complete(true)
+                }
+            }
+
+        return result
+    }
+
     fun add(command: Command): CompletableFuture<Boolean> {
         val result = CompletableFuture<Boolean>()
 
         MessageSender(MANAGEMENT_COMMANDS.service, ADD_COMMAND.service, ACLMessage.REQUEST, ADD_COMMAND.parse(command))
-            .require(this).thenAccept {
+            .require(this) {
             it ?: result.complete(false)
             when (it?.performative) {
                 ACLMessage.REFUSE -> result.complete(false)
@@ -69,7 +85,7 @@ class AdminAgent: ItemUpdater() {
         val result = CompletableFuture<Boolean>()
 
         MessageSender(MANAGEMENT_COMMANDS.service, ADD_COMMAND.service, ACLMessage.REQUEST, ADD_VERSION.parse(Pair(commandID,version)))
-            .require(this).thenAccept {
+            .require(this) {
                 it ?: result.complete(false)
                 when (it?.performative) {
                     ACLMessage.REFUSE -> result.complete(false)
@@ -83,8 +99,8 @@ class AdminAgent: ItemUpdater() {
     fun execute(commandID: String): CompletableFuture<Boolean> {
         val result = CompletableFuture<Boolean>()
 
-        MessageSender(EXECUTOR_COMMAND.service, EXEC_COMMAND.service, ACLMessage.CFP, EXEC_COMMAND.parse(commandID)).require(this)
-            .thenAccept {
+        MessageSender(EXECUTOR_COMMAND.service, EXEC_COMMAND.service, ACLMessage.CFP, EXEC_COMMAND.parse(commandID))
+            .require(this) {
                 it ?: result.complete(false)
                 when (it?.performative) {
                     ACLMessage.REFUSE -> result.complete(false) //TODO("solo false non basta perchè potrebbero rispondere altri agenti")
@@ -103,8 +119,8 @@ class AdminAgent: ItemUpdater() {
     fun execute(script: String, requirements: Set<String>): CompletableFuture<Boolean> {
         val result = CompletableFuture<Boolean>()
 
-        MessageSender(EXECUTOR_SCRIPT.service, EXEC_SCRIPT.service, ACLMessage.CFP, EXEC_SCRIPT.parse(Pair(script, requirements))).require(this)
-			.thenAccept {
+        MessageSender(EXECUTOR_SCRIPT.service, EXEC_SCRIPT.service, ACLMessage.CFP,
+            EXEC_SCRIPT.parse(Pair(script, requirements))).require(this) {
                 it ?: result.complete(false) //TODO timeout
                 when (it?.performative) {
                     ACLMessage.REFUSE -> result.complete(false)
