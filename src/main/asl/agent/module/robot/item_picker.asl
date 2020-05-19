@@ -2,8 +2,8 @@
 
 implements[ "item_picker" ].
 
-{ include("Propose.asl") }
-{ include("CheckAcceptance.asl") }
+{ include("propose.asl") }
+{ include("check_acceptance.asl") }
 
 ///////////////////////////// PICKING REQUEST
 

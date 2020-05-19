@@ -2,10 +2,10 @@
 
 implements[ "script_executor" ].
 
-{ include("Propose.asl") }
-{ include("CheckAcceptance.asl") }
-{ include("PlansRemover.asl") }
-{ include("UsableVersionFinder.asl") }
+{ include("propose.asl") }
+{ include("check_acceptance.asl") }
+{ include("plans_remover.asl") }
+{ include("usable_version_finder.asl") }
 
 ///////////////////////////// JOB EXECUTION REQ
 
