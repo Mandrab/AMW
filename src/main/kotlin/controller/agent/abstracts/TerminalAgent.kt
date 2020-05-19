@@ -12,6 +12,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import jade.core.*
+import java.util.function.Consumer
 
 /**
  * A class that encapsulate useful communication features
@@ -114,6 +115,12 @@ abstract class TerminalAgent: Agent() {
                 sender.send(message) // send the cfp to all ability sellers
             }
         }
+
+        /**
+         * Send a message expecting a response.
+         * Call the passed callback when a response is received.
+         */
+        fun require(sender: Agent, callback: (ACLMessage?) -> Unit) = require(sender).thenAccept { callback(it) }
 
         /**
          * Send a message expecting a response
