@@ -1,7 +1,6 @@
 package controller.agent
 
 import com.google.common.io.Resources
-import common.Request
 import controller.agent.admin.AdminAgent
 import controller.agent.admin.AdminProxy
 import controller.agent.client.ClientAgent
@@ -13,6 +12,7 @@ import org.junit.Assert.*
 import org.junit.BeforeClass
 import org.junit.Test
 import util.AgentTestUtil
+import util.ResultLock
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -50,24 +50,26 @@ class TestProxy {
 	}
 
 	@Test fun subscribeItemCommand() {
-		val adminC = AtomicInteger()
-		val adminI = AtomicInteger()
-		val clientI = AtomicInteger()
+		val adminC = ResultLock(false)
+		val adminI = ResultLock(false)
+		val clientI = ResultLock(false)
 
 		val adminProxy = AdminProxy()
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
-		adminProxy.subscribeCommands(inlineOnNextObserver { adminC.incrementAndGet() })
-		adminProxy.subscribeItems(inlineOnNextObserver { adminI.incrementAndGet() })
+		adminProxy.subscribeCommands(inlineOnNextObserver { adminC.tryComplete { true } })
+		adminProxy.subscribeItems(inlineOnNextObserver { adminI.tryComplete { true } })
 
 		val clientProxy = ClientProxy()
 		AgentUtils.startAgent(ClientAgent::class.java, clientProxy)
-		clientProxy.subscribeItems(inlineOnNextObserver { clientI.incrementAndGet() })
+		clientProxy.subscribeItems(inlineOnNextObserver { clientI.tryComplete { true } })
 
-		Thread.sleep(2000)
+		adminC.maxTimeToComplete(2000)
+		adminI.maxTimeToComplete(2000)
+		clientI.maxTimeToComplete(2000)
 
-		assert(adminC.get() > 0)
-		assert(adminI.get() > 0)
-		assert(clientI.get() > 0)
+		assert(adminC.result)
+		assert(adminI.result)
+		assert(clientI.result)
 	}
 
 	// TODO: test other Request
@@ -84,6 +86,7 @@ class TestProxy {
 		adminProxy.subscribeCommands(inlineOnNextObserver { admin.incrementAndGet() })
 		clientProxy.subscribeItems(inlineOnNextObserver { client.incrementAndGet() })
 
+		// wait a single update cycle (from agent impl)
 		Thread.sleep(1000)
 
 		assertEquals(1, admin.get())

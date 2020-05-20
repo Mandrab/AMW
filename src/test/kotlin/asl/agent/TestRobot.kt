@@ -14,8 +14,10 @@ import org.junit.AfterClass
 import org.junit.Assert.assertFalse
 import org.junit.BeforeClass
 import org.junit.Test
+import util.ResultLock
 import java.io.File
 import java.util.function.Function
+import kotlin.concurrent.withLock
 
 class TestRobot {
 	companion object {
@@ -23,9 +25,13 @@ class TestRobot {
 		private val absTest = AgentTestUtil()
 		@BeforeClass @JvmStatic fun init() = absTest.startMAS(masPath)
 		@AfterClass @JvmStatic fun end() = absTest.endContainer()
+
+		private var executedTests = 5
 	}
 
 	@Test fun scriptExecution() {
+		--executedTests
+
 		// Start agents
 		val adminProxy1 = AdminProxy()
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy1)
@@ -35,40 +41,49 @@ class TestRobot {
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy3)
 
 		// create test variables
-		val synch = Any()
-		var evaluated1 = false
-		var evaluated2 = false
-		var evaluated3 = false
+		val firstScriptIsValid = ResultLock(true)
+		val evaluatedWithSuccess1 = ResultLock(Pair(first = false, second = false))
+		val evaluatedWithSuccess2 = ResultLock(Pair(first = false, second = false))
 
 		// load script
 		val script = Resources.getResource("asl${File.separator}script${File.separator}test_robot_script.asl").readText()
 
 		// wait till agents are started
-		while (!adminProxy1.isAvailable() && !adminProxy2.isAvailable() && !adminProxy3.isAvailable()) Thread.sleep(50)
+		while (!adminProxy1.isAvailable() || !adminProxy2.isAvailable() || !adminProxy3.isAvailable()) Thread.sleep(50)
 
 		// should respond refusing
-		adminProxy1.execute(script, setOf("?!£$%&/()=")).thenAccept { assertFalse(it).apply { evaluated1 = true } }
+		adminProxy1.execute(script, setOf("?!£$%&/()=")).thenAccept { firstScriptIsValid.tryComplete { it } }
 		// with two correct request, one should succeed and one should fail
-		adminProxy2.execute(script, emptySet()).thenAccept { synchronized(synch) {
-			assert((it && !evaluated3) || (evaluated3 && !it)).apply { evaluated2 = true } } }
-		adminProxy3.execute(script, emptySet()).thenAccept { synchronized(synch) {
-			assert((it && !evaluated2) || (evaluated2 && !it)).apply { evaluated3 = true } } }
+		adminProxy2.execute(script, emptySet()).thenAccept {
+			evaluatedWithSuccess1.withLock { evaluatedWithSuccess1.tryComplete { Pair(true, it) } }
+		}
+		adminProxy3.execute(script, emptySet()).thenAccept {
+			evaluatedWithSuccess1.withLock { evaluatedWithSuccess2.tryComplete { Pair(true, it) } }
+		}
 
-		Thread.sleep(4000)
+		firstScriptIsValid.maxTimeToComplete(4000)
+		evaluatedWithSuccess1.maxTimeToComplete(4000)
+		evaluatedWithSuccess2.maxTimeToComplete(4000)
 
-		assert(evaluated1)
-		assert(evaluated2)
-		assert(evaluated3)
+		assertFalse(firstScriptIsValid.result)
+		assert(evaluatedWithSuccess1.result.first)
+		assert(evaluatedWithSuccess2.result.first)
+		assert(evaluatedWithSuccess1.result.second != evaluatedWithSuccess2.result.second)
+
+		// wait some time to let the script end it's execution
+		if (executedTests > 0) Thread.sleep(2000)
 	}
 
 	@Test fun testScriptResponseTimeout() {
+		--executedTests
+
 		// Start agent
 		var fakeAdminAgent: FakeAdminAgent? = null
 		AgentUtils.startAgent(FakeAdminAgent::class.java, FakeAminProxy { fakeAdminAgent = it as FakeAdminAgent })
 
 		// create test variables
-		var evaluated1 = false
-		var evaluated2 = false
+		val requestAccepted = ResultLock(false)
+		val acceptanceExpired = ResultLock(false)
 
 		// load script
 		val script = Resources.getResource("asl${File.separator}script${File.separator}test_robot_script.asl").readText()
@@ -80,17 +95,20 @@ class TestRobot {
 		fakeAdminAgent!!.executeButNotRespond(script, Function {
 			return@Function it != null && it.performative == ACLMessage.PROPOSE
 		}).thenAccept {
-			assert(it).apply { evaluated1 = true }
-			evaluated2 = fakeAdminAgent!!.waitMsg()
+			requestAccepted.tryComplete { it }
+			acceptanceExpired.tryComplete { fakeAdminAgent!!.waitMsg() }
 		}
 
-		Thread.sleep(4000)
+		requestAccepted.maxTimeToComplete(4000)
+		acceptanceExpired.maxTimeToComplete(4000)
 
-		assert(evaluated1)
-		assert(evaluated2)
+		assert(requestAccepted.result)
+		assert(acceptanceExpired.result)
 	}
 
 	@Test fun itemPicking() {
+		--executedTests
+
 		// Start agents
 		var fakeAgent1: FakeOrderManagerAgent? = null
 		AgentUtils.startAgent(FakeOrderManagerAgent::class.java, FakeOrderManagerProxy {
@@ -100,9 +118,8 @@ class TestRobot {
 			fakeAgent2 = it as FakeOrderManagerAgent })
 
 		// create test variables
-		val synch = Any()
-		var evaluated1 = false
-		var evaluated2 = false
+		val evaluatedWithSuccess1 = ResultLock(Pair(first = false, second = false))
+		val evaluatedWithSuccess2 = ResultLock(Pair(first = false, second = false))
 
 		// wait till agents are started
 		while (fakeAgent1 == null || fakeAgent2 == null) Thread.sleep(50)
@@ -110,26 +127,34 @@ class TestRobot {
 		val message = "retrieve(id(Id), item(item(Item)[todo]))"
 
 		// with two correct request, one should succeed and one should fail
-		fakeAgent1!!.retrieveItem(message).thenAccept { synchronized(synch) {
-			assert((it && !evaluated2) || (evaluated2 && !it)).apply { evaluated1 = true } } }
-		fakeAgent1!!.retrieveItem(message).thenAccept { synchronized(synch) {
-			assert((it && !evaluated1) || (evaluated1 && !it)).apply { evaluated2 = true } } }
+		fakeAgent1!!.retrieveItem(message).thenAccept {
+			evaluatedWithSuccess1.withLock { evaluatedWithSuccess1.tryComplete { Pair(true, it) } }
+		}
+		fakeAgent1!!.retrieveItem(message).thenAccept {
+			evaluatedWithSuccess1.withLock { evaluatedWithSuccess2.tryComplete { Pair(true, it) } }
+		}
+		evaluatedWithSuccess1.maxTimeToComplete(4000)
+		evaluatedWithSuccess2.maxTimeToComplete(4000)
 
-		Thread.sleep(4000)
+		assert(evaluatedWithSuccess1.result.first)
+		assert(evaluatedWithSuccess2.result.first)
+		assert(evaluatedWithSuccess1.result.second != evaluatedWithSuccess2.result.second)
 
-		assert(evaluated1)
-		assert(evaluated2)
+		// wait some time to let the picking end it's execution
+		if (executedTests > 0) Thread.sleep(2000)
 	}
 
 	@Test fun testItemPickingResponseTimeout() {
-		/// Start agents
+		--executedTests
+
+		// Start agents
 		var fakeAgent: FakeOrderManagerAgent? = null
 		AgentUtils.startAgent(FakeOrderManagerAgent::class.java, FakeOrderManagerProxy {
 			fakeAgent = it as FakeOrderManagerAgent })
 
 		// create test variables
-		var evaluated1 = false
-		var evaluated2 = false
+		val requestAccepted = ResultLock(false)
+		val acceptanceExpired = ResultLock(false)
 
 		val message = "retrieve(id(Id), item(item(Item)[todo]))"
 
@@ -140,17 +165,20 @@ class TestRobot {
 		fakeAgent!!.retrieveButNotRespond(message, Function {
 			return@Function it != null &&  it.performative == ACLMessage.PROPOSE
 		}).thenAccept {
-			assert(it).apply { evaluated1 = true }
-			evaluated2 = fakeAgent!!.waitMsg()
+			requestAccepted.tryComplete { it }
+			acceptanceExpired.tryComplete { fakeAgent!!.waitMsg() }
 		}
 
-		Thread.sleep(4000)
+		requestAccepted.maxTimeToComplete(4000)
+		acceptanceExpired.maxTimeToComplete(4000)
 
-		assert(evaluated1)
-		assert(evaluated2)
+		assert(requestAccepted.result)
+		assert(acceptanceExpired.result)
 	}
 
 	@Test fun commandExecution() {
+		--executedTests
+
 		// Start agents
 		val adminProxy1 = AdminProxy()
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy1)
@@ -160,39 +188,35 @@ class TestRobot {
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy3)
 
 		// create test variables
-		val synch = Any()
-		var evaluated1 = false
-		var evaluated2 = false
-		var evaluated3 = false
-
-		var res2 = false
-		var res3 = false
+		val firstCommandIsValid = ResultLock(true)
+		val evaluatedWithSuccess1 = ResultLock(Pair(first = false, second = false))
+		val evaluatedWithSuccess2 = ResultLock(Pair(first = false, second = false))
 
 		// wait till agents are started
-		while (!adminProxy1.isAvailable() && !adminProxy2.isAvailable() && !adminProxy3.isAvailable()) Thread.sleep(50)
+		while (!adminProxy1.isAvailable() || !adminProxy2.isAvailable() || !adminProxy3.isAvailable()) Thread.sleep(50)
 
 		// should respond refusing
 		adminProxy1.execute("?!£$%&").thenAccept {
-			assertFalse(it).apply { evaluated1 = true }
+			firstCommandIsValid.tryComplete { it }
 			// with two correct request, one should succeed and one should fail
 			adminProxy2.execute("Command1").thenAccept {
-				synchronized(synch) {
-					res2 = it
-					evaluated2 = true
-				}
+				evaluatedWithSuccess1.withLock { evaluatedWithSuccess1.tryComplete { Pair(true, it) } }
 			}
 			adminProxy3.execute("Command1").thenAccept {
-				synchronized(synch) {
-					res3 = it
-					evaluated3 = true
-				}
+				evaluatedWithSuccess1.withLock { evaluatedWithSuccess2.tryComplete { Pair(true, it) } }
 			}
 		}
 
-		Thread.sleep(4000)
+		firstCommandIsValid.maxTimeToComplete(4000)
+		evaluatedWithSuccess1.maxTimeToComplete(4000)
+		evaluatedWithSuccess2.maxTimeToComplete(4000)
 
-		assert(evaluated1)
-		assert(evaluated2 && evaluated3)
-		assert((res2 && !res3) || (!res2 && res3))
+		assertFalse(firstCommandIsValid.result)
+		assert(evaluatedWithSuccess1.result.first)
+		assert(evaluatedWithSuccess2.result.first)
+		assert(evaluatedWithSuccess1.result.second != evaluatedWithSuccess2.result.second)
+
+		// wait some time to let the command end it's execution
+		if (executedTests > 0) Thread.sleep(2000)
 	}
 }

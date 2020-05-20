@@ -29,6 +29,7 @@
         !reserve(Items, Positions);                           // try to reserve the items
         !concat(confirmation(order_id(OrderId)), Positions, Msg);
         .send(Sender, confirm, Msg, MsgID).
+
 -!kqml_received(Sender, achieve, retrieve(order_id(OrderId))[_], MsgID)
     <-  .send(Sender, failure, error(order_id(OrderId)), MsgID).
 

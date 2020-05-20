@@ -16,9 +16,7 @@ import org.junit.AfterClass
 import org.junit.Assert.*
 import org.junit.BeforeClass
 import org.junit.Test
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+import util.ResultLock
 
 class TestWarehouseMapper {
 	companion object {
@@ -27,7 +25,7 @@ class TestWarehouseMapper {
 		@BeforeClass @JvmStatic fun init() = absTest.startMAS(masPath)
 		@AfterClass @JvmStatic fun end() = absTest.endContainer()
 
-		private val expected = mutableListOf(
+		private var expected = mutableListOf(
 			Item("\"Item 1\"", 0, listOf(
 				Triple(5, 3, 5),
 				Triple(5, 2, 8),
@@ -44,15 +42,19 @@ class TestWarehouseMapper {
 		val clientProxy = ClientProxy()
 		AgentUtils.startAgent(ClientAgent::class.java, clientProxy)
 
-		val result = ResultLock<Collection<Item>>()
+		val result = ResultLock<Collection<Item>>(emptyList())
 
 		clientProxy.subscribeItems(inlineOnNextObserver { result.tryComplete { it } })
 
-		result.maxTimeToComplete(3500, emptyList())
+		result.maxTimeToComplete(3500)
 
-		assert(result.result.isNotEmpty())
-		assertEquals(result.result.toString() + " " + expected, expected.size, result.result.size)
-		assert(result.result.containsAll(expected), { result.result.toString() + " " + expected })
+		assert(result.result.isNotEmpty()) { "The warehouse must not be empty at the start of test.\n" +
+				absTest.disclaimer }
+		assertEquals("Expected items and result items should have the same size. Check changes of initial " +
+				"belief. Obtained items from the warehouse:\n${result.result}\nExpected items:\n$expected",
+			expected.size, result.result.size)
+		assert(result.result.containsAll(expected)) {"Result items should be equals to expected ones. Check changes " +
+				"of initial belief."}
 	}
 
 	@Test fun retrieveItems() {
@@ -60,8 +62,8 @@ class TestWarehouseMapper {
 		val orderManagerProxy = FakeOrderManagerProxy { agent = it as FakeOrderManagerAgent }
 		AgentUtils.startAgent(FakeOrderManagerAgent::class.java, orderManagerProxy)
 
-		val firstResult = ResultLock<Boolean>()
-		val secondResult = ResultLock<Boolean>()
+		val firstResult = ResultLock(true)
+		val secondResult = ResultLock(false)
 
 		while (!orderManagerProxy.isAvailable() || agent == null) Thread.sleep(50)
 
@@ -83,29 +85,29 @@ class TestWarehouseMapper {
 				}
 			}
 
-		firstResult.maxTimeToComplete(3000, true)
-		secondResult.maxTimeToComplete(3000, false)
+		firstResult.maxTimeToComplete(3000)
+		secondResult.maxTimeToComplete(3000)
 
-		assertFalse(firstResult.result)
-		assert(secondResult.result)
+		assertFalse("The first item is required in too many copy so I expect a failure response.", firstResult.result)
+		assert(secondResult.result) {"I expect the second item to be reserved."}
 	}
 
 	@Test fun addItem() {
 		val adminProxy = AdminProxy()
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
 
-		val successfullyAdded1 = ResultLock<Boolean>()
-		val successfullyAdded2 = ResultLock<Boolean>()
+		val successfullyAdded1 = ResultLock(false)
+		val successfullyAdded2 = ResultLock(false)
 
 		while (!adminProxy.isAvailable()) Thread.sleep(50)
 
-		adminProxy.add("Item 1", 5, 6, 1000).thenAccept { result ->
+		adminProxy.add("Item 1", 5, 6, 500).thenAccept { result ->
 			successfullyAdded1.tryComplete {
 				if (result) {
 					expected.replaceAll {
 						when (it.itemId) {
 							"\"Item 1\"" -> Item(it.itemId, it.reserved, it.positions.toMutableList()
-								.apply { add(Triple(5, 6, 1000)) })
+								.apply { add(Triple(5, 6, 500)) })
 							else -> it
 						}
 					}
@@ -119,33 +121,13 @@ class TestWarehouseMapper {
 			}
 		}
 
-		successfullyAdded1.maxTimeToComplete(2500, false)
-		successfullyAdded2.maxTimeToComplete(2500, false)
+		successfullyAdded1.maxTimeToComplete(3000)
+		successfullyAdded2.maxTimeToComplete(3000)
 
-		assert(successfullyAdded1.result)
-		assert(successfullyAdded2.result)
-	}
-
-	private class ResultLock<T: Any>: ReentrantLock() {
-		private var value: Boolean = false
-		private val lock = newCondition()
-		lateinit var result: T
-
-		fun maxTimeToComplete(maxMillis: Int, alternative: T) = withLock {
-			if (!value) lock.await(maxMillis.toLong(), TimeUnit.MILLISECONDS)
-			if (!value) {
-				result = alternative
-				value = true
-			}
-		}
-
-		fun tryComplete(action: () -> T) = withLock {
-			if (!value) {
-				result = action()
-				value = true
-				lock.signalAll();
-			}
-		}
+		assert(successfullyAdded1.result) { "The addition of a new item is expected to be confirmed.\n" +
+				absTest.disclaimer }
+		assert(successfullyAdded2.result) { "The addition of a new item is expected to be confirmed.\n" +
+				absTest.disclaimer }
 	}
 
 	private fun <T>inlineOnNextObserver(action: (param: T) -> Unit) = object: Observer<T> {

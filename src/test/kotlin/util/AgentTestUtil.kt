@@ -22,6 +22,11 @@ class AgentTestUtil {
 	private lateinit var testStream: ByteArrayOutputStream
 	private lateinit var oldStream: PrintStream
 
+	val disclaimer = "These tests are not perfect. Indeed, due to the nature of the system a response could be very " +
+			"delayed. To determine when a test fails however, we had to set up a 'max-time-to-response' that could " +
+			"make a test fail despite it is only taking too much time. You are suggested to try to re-run the failed " +
+			"tests to check real problems."
+
 	fun startMAS(masPath: String) {
 		val project = mas2j(FileInputStream(masPath)).mas()
 

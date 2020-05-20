@@ -15,6 +15,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.BeforeClass
 import org.junit.Test
+import util.ResultLock
 import java.util.function.Function
 
 class TestCommandManager {
@@ -32,19 +33,19 @@ class TestCommandManager {
 		val adminProxy = AdminProxy()
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
 
-		var evaluated = false
+		val evaluated = ResultLock(false)
 
 		while (!adminProxy.isAvailable()) Thread.sleep(50)
 
 		adminProxy.subscribeCommands(inlineOnNextObserver { c ->
 			assertEquals(expectedCommandsN, c.groupBy { it.id }.count())
 			assertEquals(expectedVariantsN, c.count())
-			evaluated = true
+			evaluated.tryComplete { true }
 		})
 
-		Thread.sleep(2500)
+		evaluated.maxTimeToComplete(3000)
 
-		assert(evaluated)
+		assert(evaluated.result)
 	}
 
 	@Test fun commandRequest() {
@@ -52,28 +53,28 @@ class TestCommandManager {
 		val adminProxy = FakeAminProxy { agent = it as FakeAdminAgent }
 		AgentUtils.startAgent(FakeAdminAgent::class.java, adminProxy)
 
-		var result: String? = ""
+		val result = ResultLock("")
 
 		while (!adminProxy.isAvailable() || agent == null) Thread.sleep(50)
 
-		agent!!.getCommand("Command1", Function { result = it?.content })
+		agent!!.getCommand("Command1", Function { result.tryComplete { it!!.content } })
 
 		val expectedBase = """command("Command1")[variant(v_id("vid0.0.0.1"),requirements["move"],""" +
 				"""script("[  {@l1 +!main <- .println('Executing script ...');.wait(500); !b}, """ +
 				"""{@l2 +!b <- .println('Script executed') }]"))"""
 		val otherTestExecuted = """,variant(v_id("vid0.0.0.2"),requirements["req1","req2"],script("script2"))]"""
 
-		Thread.sleep(50)
+		result.maxTimeToComplete(1000)
 
-		assert("$expectedBase]" == result || (expectedBase + otherTestExecuted) == result) { result!! }
+		assert("$expectedBase]" == result.result || (expectedBase + otherTestExecuted) == result.result) { result.result }
 	}
 
 	@Test fun newCommandAddition() {
 		val adminProxy = AdminProxy()
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
 
-		var evaluated1 = false
-		var evaluated2 = false
+		val evaluated1 = ResultLock(false)
+		val evaluated2 = ResultLock(false)
 
 		while (!adminProxy.isAvailable()) Thread.sleep(50)
 
@@ -82,7 +83,7 @@ class TestCommandManager {
 			Command.Version("idXX", listOf("req1", "req2"), "script2")
 		))).thenAccept {
 			assertFalse(it)
-			evaluated1 = true
+			evaluated1.tryComplete { true }
 		}
 
 		adminProxy.add(Command("idX", "nameX", "descriptionX", listOf(
@@ -90,37 +91,40 @@ class TestCommandManager {
 			Command.Version("idXX", listOf("req1", "req2"), "script2")
 		))).thenAccept {
 			assert(it)
-			evaluated2 = true
+			evaluated2.tryComplete { true }
 			expectedCommandsN++
 			expectedVariantsN += 2
 		}
 
-		Thread.sleep(3000)
+		evaluated1.maxTimeToComplete(3000)
+		evaluated2.maxTimeToComplete(3000)
 
-		assert(evaluated1)
-		assert(evaluated2)
+		assert(evaluated1.result)
+		assert(evaluated2.result)
 	}
 
 	@Test fun newVersionAddition() {
 		val adminProxy = AdminProxy()
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
 
-		var result1 = true
-		var result2 = false
+		val result1 = ResultLock(true)
+		val result2 = ResultLock(false)
 
 		while (!adminProxy.isAvailable()) Thread.sleep(50)
 
-		adminProxy.add("Command1", Command.Version("vid0.0.0.1", listOf("req1", "req2"), "script2")).thenAccept { result1 = it }
+		adminProxy.add("Command1", Command.Version("vid0.0.0.1", listOf("req1", "req2"), "script2"))
+			.thenAccept { result1.tryComplete { it } }
 
 		adminProxy.add("Command1", Command.Version("vid0.0.0.2", listOf("req1", "req2"), "script2")).thenAccept {
-			result2 = it
+			result2.tryComplete { it }
 			expectedVariantsN++
 		}
 
-		Thread.sleep(3000)
+		result1.maxTimeToComplete(3000)
+		result2.maxTimeToComplete(3000)
 
-		assertFalse(result1)
-		assert(result2)
+		assertFalse(result1.result)
+		assert(result2.result)
 	}
 
 	private fun <T>inlineOnNextObserver(action: (param: T) -> Unit) = object: Observer<T> {
