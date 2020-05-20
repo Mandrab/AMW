@@ -31,17 +31,18 @@
         !check_accepted(OrderID).
 
 -!kqml_received(Sender, cfp, point(OrderID), MsgID)
-    <-  .send(Sender, failure, point(OrderID), MsgID);
-        !free(OrderID).
+    <-  .send(Sender, refuse, point(OrderID), MsgID).
 
 ///////////////////////////// POINT ACCEPTED
 
 @accept_proposal[atomic]
-+!kqml_received(_, accept_proposal, point(OrderID), _)
-	<-  -+point(ID)[X, Y, state(reserved)[OrderID]].
++!kqml_received(_, accept_proposal, point(OrderID), _) : point(PointID)[X, Y, state(pending)[OrderID]]
+	<-  -point(PointID)[X, Y, state(pending)[OrderID]];
+	    +point(PointID)[X, Y, state(reserved)[OrderID]].
 
 @free_point[atomic]
-+!kqml_received(_, tell, free(OrderID), _) <- !free(OrderID).   // TODO confirm?
++!kqml_received(_, tell, free(OrderID), _) : point(PointID)[X, Y, state(reserved)[OrderID]]
+    <-  !free(OrderID).   // TODO confirm?
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
 
@@ -49,11 +50,14 @@
 
 @propose[atomic]
 +!reserve(OrderID, X, Y) : point(PointID)[X, Y, state(available)]
-	<-  -+point(PointID)[X, Y, state(pending)[OrderID]].
+	<-  -point(PointID)[X, Y, state(available)];
+	    +point(PointID)[X, Y, state(pending)[OrderID]].
 
 @free[atomic]
-+!free(OrderID) : point(PointID)[_, _, state(pending)[OrderID]]
-    <-  -+point(PointID)[X, Y, state(available)].
++!free(OrderID) : point(PointID)[X, Y, state(_)[OrderID]]
+    <-  -point(PointID)[X, Y, state(_)[OrderID]];
+        +point(PointID)[X, Y, state(available)].
 
 @accepted_proposal[atomic]
-+!check_accepted(OrderID) : point(_)[_, _, state(reserved)[OrderID]].
++!check_accepted(OrderID) : point(PointID)[X, Y, state(reserved)[OrderID]].
+-!check_accepted(OrderID) <- !free(OrderID).
