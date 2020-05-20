@@ -10,6 +10,8 @@ import common.translation.ServiceType.RETRIEVE_ITEM
 import controller.agent.abstracts.TerminalAgent
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.MessageTemplate
+import jason.asSyntax.StringTermImpl
+import jason.asSyntax.Structure
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 
@@ -64,4 +66,23 @@ class FakeOrderManagerAgent: TerminalAgent() {
 	}
 
 	fun waitMsg() = blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.FAILURE)) != null
+
+	fun getCollectionPoint(): CompletableFuture<Boolean> {
+		val result = CompletableFuture<Boolean>()
+
+		MessageSender("management(items)", "info(collection_points)", ACLMessage.CFP,
+			Structure("point").addTerms(StringTermImpl("OrderXYZ"))).require(this) {
+				it ?: result.complete(false)
+				when (it?.performative) {
+					ACLMessage.REFUSE -> result.complete(false)
+					ACLMessage.PROPOSE -> {
+						MessageSender("management(items)", "info(collection_points)",
+							ACLMessage.ACCEPT_PROPOSAL, Structure("point").addTerms(StringTermImpl("OrderXYZ")))
+							.setMsgID(it.inReplyTo).send(this)
+						result.complete(true)
+					}
+				}
+			}
+		return result
+	}
 }
