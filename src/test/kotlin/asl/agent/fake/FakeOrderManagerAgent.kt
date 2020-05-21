@@ -67,7 +67,7 @@ class FakeOrderManagerAgent: TerminalAgent() {
 
 	fun waitMsg() = blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.FAILURE)) != null
 
-	fun getCollectionPoint(): CompletableFuture<Boolean> {
+	fun getCollectionPoint(accept: Boolean = true): CompletableFuture<Boolean> {
 		val result = CompletableFuture<Boolean>()
 
 		MessageSender("management(items)", "info(collection_points)", ACLMessage.CFP,
@@ -76,13 +76,29 @@ class FakeOrderManagerAgent: TerminalAgent() {
 				when (it?.performative) {
 					ACLMessage.REFUSE -> result.complete(false)
 					ACLMessage.PROPOSE -> {
-						MessageSender("management(items)", "info(collection_points)",
-							ACLMessage.ACCEPT_PROPOSAL, Structure("point").addTerms(StringTermImpl("OrderXYZ")))
-							.setMsgID(it.inReplyTo).send(this)
+						if (accept) {
+							MessageSender("management(items)", "info(collection_points)",
+								ACLMessage.ACCEPT_PROPOSAL, Structure("point").addTerms(StringTermImpl("OrderXYZ"))
+							).setMsgID(it.inReplyTo).send(this)
+						}
 						result.complete(true)
 					}
 				}
 			}
+		return result
+	}
+
+	fun freeCollectionPoint(): CompletableFuture<Boolean> {
+		val result = CompletableFuture<Boolean>()
+
+		MessageSender("management(items)", "info(collection_points)", ACLMessage.INFORM,
+			Structure("free").addTerms(StringTermImpl("OrderXYZ"))).require(this) {
+			it ?: result.complete(false)
+			when (it?.performative) {
+				ACLMessage.REFUSE -> result.complete(false)
+				ACLMessage.CONFIRM -> result.complete(true)
+			}
+		}
 		return result
 	}
 }
