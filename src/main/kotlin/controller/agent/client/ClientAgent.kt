@@ -75,10 +75,8 @@ class ClientAgent: ItemUpdater() {
                         .build()
                 }.toTypedArray()
             ).build()*/
-        println("aaa")
-        println(ACCEPT_ORDER.parse(mutableListOf(client, email, address, args)).toString())
-        println("bbb")
-        MessageSender(MANAGEMENT_ORDERS.service, ACCEPT_ORDER.service, ACLMessage.REQUEST, LiteralImpl("")).send(this)
+        MessageSender(MANAGEMENT_ORDERS.service, ACCEPT_ORDER.service, ACLMessage.REQUEST, ACCEPT_ORDER.parse(
+                mutableListOf(client, email, address, args)).toString()).send(this)
 
         return result
     }

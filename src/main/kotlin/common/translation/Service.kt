@@ -39,16 +39,16 @@ enum class ServiceType(
 private val parseOrder: (Any) -> Literal = { it ->
     check(it is MutableList<*> && it.size == 4 && it[0] is String && it[1] is String && it[2] is String
             && it[3] is Array<*> && (it[3] as Array<*>).all { it is Pair<*,*> })
-    val client = it.removeAt(0) as String
-    val email = it.removeAt(0) as String
-    val address = it.removeAt(0) as String
+    val client = StringTermImpl(it.removeAt(0) as String)
+    val email = StringTermImpl(it.removeAt(0) as String)
+    val address = StringTermImpl(it.removeAt(0) as String)
     check((it.first() is Array<*>))
     val items = (it.first() as Array<*>).map {
         check(it is Pair<*,*>)
-        LiteralBuilder("item").setValues(pairTerm("id", (it.first as String)),
+        LiteralBuilder("item").setValues(Structure("id").addTerms(StringTermImpl((it.first as String))),
             pairTerm("quantity", (it.second as Int).toDouble())).build() }
-    LiteralBuilder("order").setValues(pairTerm("client", client), pairTerm("email", email), pairTerm("address", address))
-        .setQueue(*items.toTypedArray()).build()
+    LiteralBuilder("order").setValues(Structure("client").addTerms(client), Structure("email").addTerms(email),
+        Structure("address").addTerms(address)).setQueue(*items.toTypedArray()).build()
 }
 
 private val parseExecCommand: (Any) -> Literal = { check(it is String)
