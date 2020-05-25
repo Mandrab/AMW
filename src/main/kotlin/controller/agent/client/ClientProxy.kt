@@ -23,7 +23,7 @@ class ClientProxy: ItemUpdaterProxy() {
 	}
 
 	/** {@inheritDoc} */
-	override fun isAvailable(): Boolean = this::agent.isInitialized
+	override fun isAvailable() = this::agent.isInitialized
 
 	/**
 	 * Set an observer who will be notified at order-state update
@@ -35,7 +35,8 @@ class ClientProxy: ItemUpdaterProxy() {
 	 */
 	fun dispatchOrder(t: Order) { orderObservers.onEach { it.onNext(t) } }
 
-	fun placeOrder(vararg items: Pair<String, Int>): Future<Boolean> = agent.placeOrder(*items)
+	fun placeOrder(client: String, email: String, address: String, vararg items: Pair<String, Int>) = agent
+			.placeOrder(client, email, address, *items)
 
 	fun stop(): Future<Unit> = agent.shutdown()
 }

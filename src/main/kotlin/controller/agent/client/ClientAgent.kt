@@ -3,14 +3,13 @@ package controller.agent.client
 import jade.core.behaviours.CyclicBehaviour
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.MessageTemplate
-import jason.asSyntax.Literal
-import common.translation.LiteralBuilder
-import common.translation.LiteralBuilder.Companion.pairTerm
 import common.translation.LiteralParser.getValue
 import common.translation.LiteralParser.split
-import common.translation.Service.*
+import common.translation.Service.MANAGEMENT_ORDERS
+import common.translation.ServiceType.ACCEPT_ORDER
 import controller.agent.abstracts.ItemUpdater
 import common.type.Order
+import jason.asSyntax.LiteralImpl
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
@@ -60,12 +59,11 @@ class ClientAgent: ItemUpdater() {
     /**
      * Allows to place an order with submitted elements
      */
-    fun placeOrder(vararg args: Pair<String, Int>): Future<Boolean> {
+    fun placeOrder(client: String, email: String, address: String, vararg args: Pair<String, Int>)
+            : CompletableFuture<Boolean> {
         val result = CompletableFuture<Boolean>()
 
-        TODO()
-        /*val l: MutableList<String> = mutableListOf(*args)
-        val order: Literal = LiteralBuilder("order")
+        /*val order = //: Literal = LiteralBuilder("order")
             .setValues(
                 pairTerm("client", l.removeAt(0)),
                 pairTerm("email", l.removeAt(0)),
@@ -76,8 +74,11 @@ class ClientAgent: ItemUpdater() {
                         .setValues(pairTerm("id", it.key), pairTerm("quantity", "" + it.value.size))
                         .build()
                 }.toTypedArray()
-            ).build()
-        MessageSender(MANAGEMENT_ORDERS.toString(), ACCEPT_ORDER.toString(), ACLMessage.REQUEST, order).send(this)*/
+            ).build()*/
+        println("aaa")
+        println(ACCEPT_ORDER.parse(mutableListOf(client, email, address, args)).toString())
+        println("bbb")
+        MessageSender(MANAGEMENT_ORDERS.service, ACCEPT_ORDER.service, ACLMessage.REQUEST, LiteralImpl("")).send(this)
 
         return result
     }

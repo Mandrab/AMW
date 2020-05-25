@@ -68,7 +68,14 @@ class ControllerImpl(user: User = User.DEBUG, retryConnection: Boolean = true): 
 			}
 			Request.EXEC_COMMAND -> { adminProxy?.execute((t.second as Array<Any>)[0] as String) }
 			Request.EXEC_SCRIPT -> TODO()
-			Request.PLACE_ORDER -> clientProxy?.placeOrder(*(t.second as Array<Pair<String, Int>>))
+			Request.PLACE_ORDER -> {
+				val data = t.second as MutableList<*>
+				check(data.size == 4 && data[0] is String && data[1] is String && data[2] is String)
+				check(data[3] is Array<*> && (data[3] as Array<*>).all { it is Pair<*,*> })
+				clientProxy?.placeOrder(data[0] as String, data[1] as String, data[2] as String,
+						*data[3] as Array<out Pair<String, Int>>
+				)
+			}
 		}
 	}
 }
