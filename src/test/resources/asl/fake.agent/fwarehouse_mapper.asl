@@ -27,11 +27,11 @@
 	<-  !is_set(Items);
 	    !sufficient(Items);                           // check if all the elements exists (in quantity)
         !reserve(Items, Positions);                           // try to reserve the items
-        !concat(confirmation(order_id(OrderId)), Positions, Msg);
+        !concat(order_id(OrderId), Positions, Msg);
         .send(Sender, confirm, Msg, MsgID).
 
 -!kqml_received(Sender, achieve, retrieve(order_id(OrderId))[_], MsgID)
-    <-  .send(Sender, failure, error(order_id(OrderId)), MsgID).
+    <-  .send(Sender, failure, order_id(OrderId), MsgID).
 
 +!kqml_received(Sender, achieve, add(Item), MsgID) <- !add(Item); .send(Sender, confirm, Msg, MsgID).
 -!kqml_received(Sender, achieve, add(Item), MsgID) <- .send(Sender, failure, error(add(Item)), MsgID).
