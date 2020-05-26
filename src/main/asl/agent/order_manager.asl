@@ -1,11 +1,10 @@
 /***********************************************************************************************************************
- Initial beliefs and rules
-***********************************************************************************************************************/
+ Pre-Processing Directives
+ **********************************************************************************************************************/
 
-set(false).                                                       // at start is not yet set
-
-
-
+{ include("literal.asl") }
+{ include("communication.asl") }
+{ include("module/order_manager/id_generator.asl") }
 
 /***********************************************************************************************************************
  Initial goals
@@ -13,24 +12,14 @@ set(false).                                                       // at start is
 
 !setup.                                                             // start setup
 
-
-
-
 /***********************************************************************************************************************
  Plans
 ***********************************************************************************************************************/
 
 ///////////////////////////// AGENT SETUP
 
-@setup[atomic] +!setup                                              // setup the agent
-	:   set(false)
-	<-  .df_register("management(orders)", "accept(order)");  // register service as order acceptor
-		.include("asl/util/literal.asl");                            // include string utils plans
-		.include("asl/util/communication.asl");                      // include communication utils plans
-		-+set(true).                                              // set process ended
-
-
-
+@setup[atomic]
++!setup : not set <- .df_register("management(orders)", "accept(order)"); +set. // register service as order acceptor
 
 //////////////////////////////////////////////////// ORDER REQUEST /////////////////////////////////////////////////////
 
@@ -38,221 +27,130 @@ set(false).                                                       // at start is
 
 +!kqml_received(Sender, achieve, Content, MsgID)                  // receive an order                                 // KQML achieve = ACL request: http://jason.sourceforge.net/doc/faq.html TODO remove
 	:   Content = order(client(Client), email(Email), address(Address))[ [] | Items ]
-	<-  !new_order_id(OrderID);                                   // generate an id for the order
-		ClientInfo = client(name(Client), address(Address), email(Email))[ aid(Sender) ];
-		+order(id(OrderID), ClientInfo, status(checking_items),
-				items(Items));                                   // save order's info (status=checking for validity)
-		.df_search("management(items)", "retrieve(item)",
-				Providers);                                        // search the agent(s) that manages the warehouse
-        .nth(0, Providers, Provider);                             // get the first (agent)
+	<-  !new_ID(order, OrderID);                                   // generate an id for the order
+		+order(id(OrderID), status(checking_items), client(name(Client), address(Address), email(Email)), items(Items));                                   // save order's info (status=checking for validity)
+		!random_agent("management(items)", "retrieve(item)", Provider);
 		!concat(retrieve(order_id(OrderID)), Items, Res);
         .send(Provider, achieve, Res).                            // ask for items reservation and positions
 
-
-
-
 ////////////////////////////////////////////////// WAREHOUSE RESPONSE //////////////////////////////////////////////////
-
-///////////////////////////// ERROR
-
-+!kqml_received(Sender, failure, Content, MsgID)                  // manage error from items retrieve
-	:   Content = error(order_id(OrderID), error_code(ErrorCode))
-	&   order(id(OrderID), status(checking_items), client(_, _, email(Email))[ aid(Client) ], items(Items))
-	<-	-order(id(OrderID), _, _, _);
-		.send(Client, failure, order(id(OrderID), items(Items))[ err_code(ErrorCode) ]);
-		.//!!send_feedback(Email, ErrorCode).         // send failure mail TODO commentato
 
 ///////////////////////////// CONFIRMATION
 
-+!kqml_received(Sender, confirm, Content, MsgID)                  // receive items position and reservation confirm
-	:   Content = confirmation(order_id(OrderID))[ [] | Positions ]
-	<-  -order(id(OrderID), ClientInfo, status(checking_items), items(Items));
-		fuse(Items, Positions, Fused);
-        +order(id(OrderID), ClientInfo, status(checking_gather_point), items(Fused));
+// receive items position and reservation confirm
++!kqml_received(Sender, confirm, Content, MsgID) : Content = order_id(OrderID)[ [] | Positions ]
+	&   order(id(OrderID), status(checking_items), ClientInfo, items(Items))
+	<-  !reshape_items(Items, Positions, Reshaped);
+	    -+order(id(OrderID), status(checking_gather_point), ClientInfo, items(Reshaped));
         !gather(OrderID).                                         // gather items
 
+-!kqml_received(Sender, confirm, Content, MsgID) : Content = order_id(OrderID)[ [] | Positions ].//TODO
 
-
+///////////////////////////// ERROR
+// TODO implementare update periodico da parte del client
++!kqml_received(Sender, failure, order_id(OrderID), MsgID)                  // manage error from items retrieve
+	:   order(id(OrderID),status(checking_items),ClientInfo,Items)
+	<-	-+order(id(OrderID),status(refused),ClientInfo,Items).
 
 ////////////////////////////////////////// COLLECTION POINTS MANAGER RESPONSE //////////////////////////////////////////
 
 ///////////////////////////// PROPOSAL ACCEPT
+// TODO ONE EVENT FOR REASONING CYCLE. NO EVENT GENERATED IN CONCURRENT PART. -> NO NEED OF ATOMIC
++!kqml_received(Sender,propose,Content,MsgID)                    // receive items position and reservation confirm
+	:   Content = point(OrderID)[x(XPos),y(YPos)]
+	&   order(id(OrderID),status(checking_gather_point),ClientInfo,items(Items))
+	<-  -+order(id(OrderID),status(retrieving),ClientInfo,items(Items));
+        .send(Sender,accept_proposal,point(OrderID),MsgID);
+        !mark_items(OrderID,Items,RIDs);
+        !retrieve(OrderID,RIDs).                                 // retrieve all the items
 
-+!kqml_received(Sender, propose, Content, MsgID)                  // receive items position and reservation confirm
-	:   Content = order_id(OrderID)[ x(XPos), y(YPos) ]
-	<-  !item_of_order(OrderID, Result);
-		if (not Result = false) {
-			.send(Sender, accept_proposal, Content, MsgID);
-            //send_feedback(Email, 202, OrderId, Result);    //TODO non voglio intasare di mail
-            !retrieve(OrderID, Result);                                // retrieve all the items
-        }.
-
-@item_of_order[atomic]
-+!item_of_order(OrderID, Items)
-	:   order(id(OrderID), ClientInfo, status(checking_gather_point), items(Items))
-	<-  -order(id(OrderID), _, _, _);
-		+order(id(OrderID), ClientInfo, status(accepted), items(Items)).
-
-@item_of_order_fail[atomic]
-+!item_of_order(OrderID, false)
-:  order(id(OrderID), ClientInfo, status(S), items(Items))<-.println(S).
-
-
-+!kqml_received(Sender, failure, Content, MsgID).                 // it will automatically retry
-
-// TODO refuse proposal
-
-
-
++!kqml_received(Sender,propose,Content,MsgID) : Content = point(OrderID)[x(_),y(_)] <- .send(Sender,tell,free(OrderID),MsgID).
++!kqml_received(Sender,refuse,Content,MsgID) : Content = point(OrderID).      // 'gather' will automatically retry
 
 //////////////////////////////////////////////////// ROBOT RESPONSE ////////////////////////////////////////////////////
 
 ///////////////////////////// PROPOSAL ACCEPT
 
 @retrieve_proposal[atomic]
-+!kqml_received(Sender, propose, Content, MsgID)
-	:   Content = retrieve(ID)
-	&   retrieve(ID)[ order(OrderID), state(unaccepted), flat(F) ]
-	<-  -retrieve(ID)[ order(OrderID), state(unaccepted), flat(F) ];
-		+retrieve(ID)[ order(OrderID), state(accepted), flat(F) ];
-		.send(Sender, accept_proposal, Content).
++!kqml_received(Sender,propose,retrieve(ID),MsgID) : retrieve(ID)[_,_,accepted(A),remaining(Q)] & A < Q
+	<-  -retrieve(ID)[order(OrderID),Item,accepted(A),Remaining];
+	    +retrieve(ID)[order(OrderID),Item,accepted(A+1),Remaining];
+	    .send(Sender,accept_proposal,retrieve(ID),MsgID).
 
-///////////////////////////// PROPOSAL REFUSE
-
-@retrieve_unasked_proposal[atomic]
-+!kqml_received(Sender, propose, retrieve(ID), MsgID)
-	:   not retrieve(ID)[ order(_), state(unaccepted), flat(_) ]
-	<-  .send(Sender, reject_proposal, retrieve(ID)).
-
-///////////////////////////// REFUSE CFP
-
-+!kqml_received(Sender, refuse, Content, MsgID)
-	:   Content = retrieve(ID)
-	&   retrieve(ID)[ order(_), state(unaccepted), flat(ReshapedItem) ]
-	<-  !random_agent("executor(item_picker)", "retrieve(item)",
-                Provider);                                                     // get a random agent to contact
-		.send(Provider, cfp, retrieve(id(ID), item(ReshapedItem))).
-
-+!kqml_received(Sender, refuse, Content, MsgID)
-	:   Content = retrieve(ID)
-	&   not retrieve(ID)[ order(OrderID), state(unaccepted), flat(ReshapedItem) ].
++!kqml_received(Sender,propose,retrieve(ID),MsgID) <- .send(Sender,reject_proposal,retrieve(ID)).
++!kqml_received(_,refuse,retrieve(ID),_).                               // managed by timeout
 
 ///////////////////////////// FAILURE
 
-+!kqml_received(Sender, failure, Content, MsgID)
-	:   Content = retrieve(Item)
-	&   retrieve(ItemID)[ _, state(unaccepted), _ ]
-	<-  !random_agent("executor(item_picker)", "retrieve(item)",
-                Provider);                                                     // get a random agent to contact
-        .send(Provider, cfp, retrieve(id(ID), item(ReshapedItem))).
+@fail_retrieve[atomic]
++!kqml_received(Sender,failure,retrieve(RID),MsgID) : retrieve(RID)[order(OrderID),_,accepted(A),_]
+	<-  -retrieve(RID)[order(OrderID),Item,accepted(A),Quantity];
+        +retrieve(RID)[order(OrderID),Item,accepted(A-1),Quantity];.println(aa);
+        !retrieve(OrderID, [RID]).
 
 ///////////////////////////// COMPLETED
 
-+!kqml_received(Sender, complete, Content, MsgID)
-	:   Content = retrieve(Item)
-	<-  -retrieve(Item);
-		+retrieve(Item)[ order(OrderID), state(completed), flat(ReshapedItem) ];
+@complete_retrieve[atomic]
++!kqml_received(Sender,complete,retrieve(RID),MsgID)
+	<-  -retrieve(RID)[order(OrderID),Item,accepted(A),remaining(Q)];
+		+retrieve(RID)[order(OrderID),Item,accepted(A),remaining(Q-1)];
 		!check_missing(OrderID).
-
-
 
 /***********************************************************************************************************************
  Utils
  **********************************************************************************************************************/
 
-//////////////////////////////////////////////////// ID GENERATION /////////////////////////////////////////////////////
-
-///////////////////////////// GENERATE (SIMPLE) ORDER ID
-
-@first_order_id[atom]
-+!new_order_id("o0")                                                          // generate an order ID
-	:   not last_order_id(N) <- +last_order_id(0).
-
-@next_order_id[atom]
-+!new_order_id(S)                                                             // generate an order ID
-	:   last_order_id(N)
-	<-  -+last_order_id(N + 1);
-		.concat(o, N + 1, S).
-
-///////////////////////////// GENERATE (SIMPLE) ITEM ID
-
-@next_item_id[atom]
-+!new_item_id("i0")                                                           // generate an ID for a item retrieve
-	:   not last_item_id(N) <- +last_item_id(0).
-
-@first_item_id[atom]
-+!new_item_id(S)                                                              // generate an ID for a item retrieve
-	:   last_item_id(N)
-	<-  -+last_item_id(N + 1);
-		.concat(i, N + 1, S).
-
 //////////////////////////////////////////////// ORDER'S ITEMS GATHERING ///////////////////////////////////////////////
+
+///////////////////////////// RESHAPE
+
++!reshape_item(item(id(ID),quantity(Q)),[PH|_],Reshaped) : PH = item(id(ID))[[] | Positions]
+    <-  !concat(item(id(ID),quantity(Q)),Positions,Reshaped).
++!reshape_item(item(id(ID),quantity(Q)),[_|PT],Reshaped) <- !reshape_item(item(id(ID),quantity(Q)),PT,Reshaped).
++!reshape_items([],_,[]).
++!reshape_items([IH|IT],Positions,[R1|R2]) <- !reshape_item(IH,Positions,R1); !reshape_items(IT,Positions,R2).
 
 ///////////////////////////// GATHER
 
-+!gather(OrderID)
-	<-  !require_gather_point(OrderID);
-        .wait(5000);
-        !verify_obtainment(OrderID, Result);
-        if (not Result) { !gather(OrderID); }.
++!gather(OID) <- !require_gather_point(OID); .wait(5000); ? not order(id(OrderID),status(checking_gather_point),_,_).
+-!gather(OrderID) <- !gather(OrderID).
 
-@require_gather_point[atomic] +!require_gather_point(OrderID)
-	:   order(id(OrderID), _, _, _)
-	<-  !random_agent("management(items)", "info(collection_points)", Provider);
-        .send(Provider, cfp, collection_point(OrderID)).
-
-+!verify_obtainment(OrderID, true) : order(id(OrderID), _, status(accepted), _).
-
-+!verify_obtainment(OrderID, false) : not order(id(OrderID), _, status(accepted), _).
+@require_gather_point[atomic]
++!require_gather_point(OrderID) : order(id(OrderID),_,_,_)
+	<-  !random_agent("management(items)","info(collection_points)",Provider);
+        .send(Provider,cfp,point(OrderID)).
 
 ///////////////////////////// RETRIEVE
 
-+!retrieve(OrderID, Item, RetrieveID)
-	:   Item = item(id(ItemID), quantity(1))[ [] | Positions ]
-	<-  !random_agent("executor(item_picker)", "retrieve(item)",
-                Provider);                                                     // get a random agent to contact
-        !concat(item(ItemID), Positions, ReshapedItem);
-        +retrieve(RetrieveID)[ order(OrderID), state(unaccepted), flat(ReshapedItem) ];
-        .send(Provider, cfp, retrieve(id(RetrieveID), item(ReshapedItem))); // ask item retrieve
-        !!start_timer(RetrieveID, Item).
++!retrieve(OrderID,RID) : retrieve(RID)[order(OrderID),item(Item),accepted(A),remaining(R)]
+    <-  for(.range(_,1,R-A)) {
+            !random_agent("executor(item_picker)","retrieve(item)",Provider);                                                     // get a random agent to contact
+            !concat(item(ItemID),Positions,ReshapedItem);
+            .send(Provider,cfp,retrieve(id(RetrieveID),item(ReshapedItem))); // ask item retrieve
+        };
+        .wait(5000);
+        ? retrieve(RID)[_,_,accepted(K),remaining(J)] & J < K.
+-!retrieve(OrderID,[RID]) <- !retrieve(OrderID,RID).
 
-+!retrieve(OrderID, [ Item | [] ])
-	:   Item = item(id(ItemID), quantity(1))[ [] | Positions ]
-	<-  !new_item_id(RetrieveID);
-		!retrieve(OrderID, Item, RetrieveID).
++!retrieve(OrderID,[I]) <- !retrieve(OrderID,I).
++!retrieve(OrderID,[IH|IT]) <- !!retrieve(OrderID,IH); !retrieve(OrderID,IT).
 
-+!retrieve(OrderID, [ Item | [] ])
-	:   Item = item(id(ItemID), quantity(Quantity))[ [] | Positions ] & Quantity > 1
-	<-  !retrieve(OrderID, [ item(id(ItemID), quantity(1))[ [] | Positions ] ]);
-		!retrieve(OrderID, [ item(id(ItemID), quantity(Quantity -1))[ [] | Positions ] ]).
-
-+!retrieve(OrderID, [ Head | Tail ])
-	<-  !retrieve(OrderID, [ Head ]);
-		!retrieve(OrderID, Tail).
-
-///////////////////////////// START RETRIEVE TIMER (HANDLE NO RESPONSE)
-
-+!start_timer(RetrieveID, Item)
-	:   retrieve(RetrieveID)[ order(_), state(unaccepted), flat(ReshapedItem) ]
-	<-  .wait(5000);
-		!check_acceptance(RetrieveID, Item).
-
-+!check_acceptance(RetrieveID, Item)
-    :   retrieve(RetrieveID)[ order(OrderID), state(unaccepted), flat(_) ]
-    <-  !retrieve(OrderID, Item, RetrieveID).
-
-+!check_acceptance(RetrieveID, Item)
-    :   not retrieve(RetrieveID)[ order(_), state(unaccepted), flat(_) ].
++!mark_items(OrderID,Item,RID) : Item = item(_,quantity(Q))[_|_]
+    <-  !new_ID(item,RID); +retrieve(RID)[order(OrderID),item(Item),accepted(0),remaining(Q)].
++!mark_items(OrderID,[Item],[RID]) <- !mark_items(OrderID,Item,RID).
++!mark_items(OrderID,[IH|IT],[R1|R2]) <- !mark_items(OrderID,IH,R1); !mark_items(OrderID,IT,R2).
 
 ///////////////////////////// CHECK IF ANY ITEM HAS NOT BEEN RETRIEVED
 
 @checking_all_retrieved[atomic]
-+!check_missing(OrderID)
-	:   order(id(OrderID), client(_, _, email(Email)), status(_), items(Items))
-	<-  .findall(ID, retrieve(ID)[ order(OrderID), state(unaccepted), flat(F) ]
-				| retrieve(ID)[ order(OrderID), state(accepted), flat(F) ], I);
-		.length(I, L);
-		if (L == 0) {
-			//!!send_feedback(Email, 200, OrderID, Items);
-			// TODO
-		}.
++!check_missing(OrderID) : order(id(OrderID),status(_),_,_)
+	<-  .findall(Q,retrieve(ID)[order(OrderID),_,_,remaining(Q)], L);
+	    !all_zero(L);
+	    -order(id(OrderID),_,ClientInfo,Items);
+        +order(id(OrderID),status(completed),ClientInfo,Items);
+        .println("picking ended").
+-!check_missing(OrderID).
++!check_missing(OrderID).
+
++!all_zero([0]).
++!all_zero([0|T]) <- !all_zero(T).

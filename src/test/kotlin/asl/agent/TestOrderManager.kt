@@ -32,7 +32,7 @@ class TestOrderManager {
 
 		while (!clientProxy.isAvailable()) Thread.sleep(50)
 
-		clientProxy.placeOrder("client", "email", "address", Pair("Item1", 5), Pair("Item2", 6))
+		clientProxy.placeOrder("client", "email", "address", Pair("Item1", 5), Pair("Item2", 1), Pair("Item3", 1))
 			.thenAccept {
 
 		}
