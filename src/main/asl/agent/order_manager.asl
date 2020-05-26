@@ -93,7 +93,7 @@
 @complete_retrieve[atomic]
 +!kqml_received(Sender,complete,retrieve(RID),MsgID)
 	<-  -retrieve(RID)[order(OrderID),Item,accepted(A),remaining(Q)];
-		+retrieve(RID)[order(OrderID),Item,accepted(A),remaining(Q-1)];
+		+retrieve(RID)[order(OrderID),Item,accepted(A-1),remaining(Q-1)];
 		!check_missing(OrderID).
 
 /***********************************************************************************************************************
@@ -128,9 +128,9 @@
             !concat(item(ItemID),Positions,ReshapedItem);
             .send(Provider,cfp,retrieve(id(RetrieveID),item(ReshapedItem))); // ask item retrieve
         };
-        .wait(5000);
-        ? retrieve(RID)[_,_,accepted(K),remaining(J)] & J < K.
--!retrieve(OrderID,[RID]) <- !retrieve(OrderID,RID).
+        .wait(2000);
+        ? retrieve(RID)[_,_,accepted(K),remaining(J)] & J <= K.
+-!retrieve(OrderID,RID) <- !retrieve(OrderID,RID);.
 
 +!retrieve(OrderID,[I]) <- !retrieve(OrderID,I).
 +!retrieve(OrderID,[IH|IT]) <- !!retrieve(OrderID,IH); !retrieve(OrderID,IT).
