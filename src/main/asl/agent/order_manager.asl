@@ -24,11 +24,10 @@
 //////////////////////////////////////////////////// ORDER REQUEST /////////////////////////////////////////////////////
 
 ///////////////////////////// ORDER RECEPTION
-
-+!kqml_received(Sender, achieve, Content, MsgID)                  // receive an order                                 // KQML achieve = ACL request: http://jason.sourceforge.net/doc/faq.html TODO remove
-	:   Content = order(client(Client), email(Email), address(Address))[ [] | Items ]
+// KQML achieve = ACL request: http://jason.sourceforge.net/doc/faq.html TODO remove
++!kqml_received(Sender,achieve,Content,MsgID) : Content = order(client(Client),email(Email),address(Address))[[]|Items]
 	<-  !new_ID(order, OrderID);                                   // generate an id for the order
-		+order(id(OrderID), status(checking_items), client(name(Client), address(Address), email(Email)), items(Items));                                   // save order's info (status=checking for validity)
+		+order(id(OrderID), status(checking_items), client(name(Client), address(Address), email(Email)), items(Items));// save order's info (status=checking for validity)
 		!random_agent("management(items)", "retrieve(item)", Provider);
 		!concat(retrieve(order_id(OrderID)), Items, Res);
         .send(Provider, achieve, Res).                            // ask for items reservation and positions
@@ -48,8 +47,7 @@
 
 ///////////////////////////// ERROR
 // TODO implementare update periodico da parte del client
-+!kqml_received(Sender, failure, order_id(OrderID), MsgID)                  // manage error from items retrieve
-	:   order(id(OrderID),status(checking_items),ClientInfo,Items)
++!kqml_received(Sender, failure, order_id(OrderID), MsgID) : order(id(OrderID),status(checking_items),ClientInfo,Items)
 	<-	-+order(id(OrderID),status(refused),ClientInfo,Items).
 
 ////////////////////////////////////////// COLLECTION POINTS MANAGER RESPONSE //////////////////////////////////////////
@@ -112,22 +110,23 @@
 
 ///////////////////////////// GATHER
 
-+!gather(OID) <- !require_gather_point(OID); .wait(5000); ? not order(id(OrderID),status(checking_gather_point),_,_).
++!gather(OID)
+    <-  !random_agent("management(items)","info(collection_points)",Provider);
+        .send(Provider,cfp,point(OrderID));
+        .wait(5000);
+        ? not order(id(OrderID),status(checking_gather_point),_,_).
 -!gather(OrderID) <- !gather(OrderID).
-
-@require_gather_point[atomic]
-+!require_gather_point(OrderID) : order(id(OrderID),_,_,_)
-	<-  !random_agent("management(items)","info(collection_points)",Provider);
-        .send(Provider,cfp,point(OrderID)).
 
 ///////////////////////////// RETRIEVE
 
++!retrieve(_,_,0).
++!retrieve(RID,Item,Times)
+    <-  !random_agent("executor(item_picker)","retrieve(item)",Provider);
+        .send(Provider,cfp,retrieve(id(RetrieveID),item(ReshapedItem)));
+        !retrieve(RID,Item,Times-1).
 +!retrieve(OrderID,RID) : retrieve(RID)[order(OrderID),item(Item),accepted(A),remaining(R)]
-    <-  for(.range(_,1,R-A)) {
-            !random_agent("executor(item_picker)","retrieve(item)",Provider);                                                     // get a random agent to contact
-            !concat(item(ItemID),Positions,ReshapedItem);
-            .send(Provider,cfp,retrieve(id(RetrieveID),item(ReshapedItem))); // ask item retrieve
-        };
+    <-  !concat(item(ItemID),Positions,ReshapedItem);
+        !retrieve(RID,ReshapedItem,R-A);
         .wait(2000);
         ? retrieve(RID)[_,_,accepted(K),remaining(J)] & J <= K.
 -!retrieve(OrderID,RID) <- !retrieve(OrderID,RID);.
