@@ -4,6 +4,7 @@ MAS amw {
 	agents:
 	    robot;
 	    fcommand_manager;
+	    fwarehouse_mapper;
 
     classpath:
         ;//TODO

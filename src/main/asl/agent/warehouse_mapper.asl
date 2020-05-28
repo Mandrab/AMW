@@ -31,17 +31,17 @@
 -!kqml_received(Sender,achieve,remove(Item),MsgID) <- .send(Sender,failure,error(remove(Item)),MsgID).
 
 @reserveItems[atomic]
-+!kqml_received(Sender,achieve,Content,MsgID)                  // receive the intention of pick item(s)
++!kqml_received(Sender,achieve,Content,MsgID)                       // receive the intention of pick item(s)
 	:   Content = retrieve(order_id(OrderId))[[] | Items]
 	<-  !is_set(Items);
-	    !sufficient(Items);                           // check if all the elements exists (in quantity)
-        !reserve(Items,Positions);                           // try to reserve the items
+	    !sufficient(Items);                                         // check if all the elements exists (in quantity)
+        !reserve(Items,Positions);                                  // try to reserve the items
         !concat(order_id(OrderId),Positions,Msg);
         .send(Sender,confirm,Msg,MsgID).
 -!kqml_received(Sender,achieve,retrieve(order_id(OrderId))[_],MsgID) <- .send(Sender,failure,order_id(OrderId),MsgID).
 
 @infoItems[atomic]
-+!kqml_received(Sender, achieve, info(warehouse), MsgID)         // send the warehouse state (items info & position)
++!kqml_received(Sender, achieve, info(warehouse), MsgID)            // send the warehouse state (items info & position)
     <-  .findall(item(id(ItemId),quantity(QT),reserved(R))[position(rack(RK),shelf(S),quantity(Q))],
                 item(id(ItemId),quantity(QT),reserved(R))[position(rack(RK),shelf(S),quantity(Q))], L);
         !reshape(L, Res);

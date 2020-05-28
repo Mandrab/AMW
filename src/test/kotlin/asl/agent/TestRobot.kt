@@ -124,7 +124,10 @@ class TestRobot {
 		// wait till agents are started
 		while (fakeAgent1 == null || fakeAgent2 == null) Thread.sleep(50)
 
-		val message = "retrieve(id(Id), item(item(Item)[todo]))"
+		val message = "retrieve(id(Id), item(item(id(\"Item 1\")) [" +
+				"position(rack(5),shelf(3),quantity(5))," +
+				"position(rack(5),shelf(2),quantity(8))," +
+				"position(rack(6),shelf(3),quantity(7))]))"
 
 		// with two correct request, one should succeed and one should fail
 		fakeAgent1!!.retrieveItem(message).thenAccept {

@@ -2,7 +2,10 @@
 
 !setup.                                                             // setup
 
-+!setup : not set <- .df_register("management(items)", "retrieve(item)"); +set.
++!setup : not set
+    <-  .df_register("management(items)","retrieve(item)");
+        .df_register("management(items)","remove(item)");
+        +set.
 
 @processOrder[atomic]
 +!kqml_received(Sender, achieve, Content, MsgID)
@@ -12,3 +15,6 @@
 
 -!kqml_received(Sender, achieve, retrieve(order_id(OrderID))[_], MsgID)
     <-  .send(Sender, failure, order_id(OrderID), MsgID).
+
+@removeItem[atomic]
++!kqml_received(Sender,achieve,remove(Item),MsgID) <- .send(Sender,confirm,Msg,MsgID).

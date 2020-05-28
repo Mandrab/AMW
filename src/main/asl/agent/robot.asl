@@ -46,10 +46,12 @@
 
 ///////////////////////////// PICKING
 
-+!work : activity(picking)[ client(Client), item(Item) ]            // only if picking
-	<-  .println("Picking ...");
-        .wait(1000);                                                // fake execution time
-		.send(Client, complete, retrieve(Item));                    // confirm task completion
++!work : activity(picking)[client(Client),item(id(ID),item(Item))]  // only if picking
+	<-  Item = item(id(IID))[H|T];                                  // TODO docu che in teoria potrebbe non esserci l'oggetto e nel caso dovrebbe cercare da qualche altra parte
+	    .println("Picking ...");
+	    !!remove(item(IID),_);                                      // TODO la posizione non è spacificata perchè non è implementata la ricerca di cui sopra
+	    .wait(1000);                                                // fake execution time
+		.send(Client,complete,retrieve(Item));                      // confirm task completion
         -+activity(default);                                        // setup default activity
         -+state(available);                                         // set as available to achieve unordinary operations
         !work.                                                      // restart to work
