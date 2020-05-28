@@ -1,7 +1,7 @@
 package asl.agent
 
 import asl.agent.fake.FakeAdminAgent
-import asl.agent.fake.FakeAminProxy
+import asl.agent.fake.FakeAdminProxy
 import asl.agent.fake.FakeOrderManagerAgent
 import asl.agent.fake.FakeOrderManagerProxy
 import com.google.common.io.Resources
@@ -79,7 +79,7 @@ class TestRobot {
 
 		// Start agent
 		var fakeAdminAgent: FakeAdminAgent? = null
-		AgentUtils.startAgent(FakeAdminAgent::class.java, FakeAminProxy { fakeAdminAgent = it as FakeAdminAgent })
+		AgentUtils.startAgent(FakeAdminAgent::class.java, FakeAdminProxy { fakeAdminAgent = it as FakeAdminAgent })
 
 		// create test variables
 		val requestAccepted = ResultLock(false)

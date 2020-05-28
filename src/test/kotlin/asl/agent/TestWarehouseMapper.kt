@@ -1,5 +1,7 @@
 package asl.agent
 
+import asl.agent.fake.FakeAdminAgent
+import asl.agent.fake.FakeAdminProxy
 import asl.agent.fake.FakeOrderManagerAgent
 import asl.agent.fake.FakeOrderManagerProxy
 import com.google.common.io.Resources
@@ -152,6 +154,31 @@ class TestWarehouseMapper {
 					} else it
 				}; result
 			}
+		}
+
+		failRemoved1.maxTimeToComplete(3000)
+		failRemoved2.maxTimeToComplete(3000)
+		successfullyRemoved.maxTimeToComplete(3000)
+
+		assertFalse("The removal of an illegitimate quantity of an item is expected to fail.\n$absTest.disclaimer", failRemoved1.result)
+		assertFalse("The removal of an illegitimate quantity of an item is expected to fail.\n$absTest.disclaimer", failRemoved2.result)
+		assert(successfullyRemoved.result) { "The removal of an item is expected to be confirmed.\n$absTest.disclaimer" }
+	}
+
+	@Test fun removeReservedItem() {
+		var agent: FakeAdminAgent? = null
+		AgentUtils.startAgent(FakeAdminAgent::class.java, FakeAdminProxy { agent = it as FakeAdminAgent })
+
+		val failRemoved1 = ResultLock(true)
+		val failRemoved2 = ResultLock(true)
+		val successfullyRemoved = ResultLock(false)
+
+		while (agent == null) Thread.sleep(50)
+
+		agent!!.removeReserved("Item XXX", 5, 6, 500).thenAccept { failRemoved1.tryComplete { it } }
+		agent!!.removeReserved("Item 1", 5, 6, 50000).thenAccept { failRemoved2.tryComplete { it } }
+		agent!!.removeReserved("Item 2", 2, 4, 1).thenAccept { result ->
+			successfullyRemoved.tryComplete { if (result) expected.removeIf { it.itemId == "\"Item 2\"" }; result }
 		}
 
 		failRemoved1.maxTimeToComplete(3000)

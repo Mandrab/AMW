@@ -2,8 +2,12 @@
  Pre-Processing Directives
  **********************************************************************************************************************/
 
-{ include("literal.asl") }                                          // include utilities for works on literals
-{ include("state/warehouse.asl") }
+{ include("literal.asl") }                                          // utilities for works on literals
+{ include("state/warehouse.asl") }                                  // initial state of the warehouse
+{ include("module/warehouse_mapper/add.asl") }                      // plans for items addition
+{ include("module/warehouse_mapper/remove.asl") }                   // plans for items removal
+{ include("module/warehouse_mapper/reserve.asl") }                  // plans for items reservation
+{ include("module/warehouse_mapper/info.asl") }                     // info of the warehouse
 
 /***********************************************************************************************************************
  Initial goals
@@ -16,102 +20,8 @@
  **********************************************************************************************************************/
 
 +!setup : not set
-	<-  .df_register("management(items)", "info(warehouse)");       // register as warehouse's infos dispatcher
-		.df_register("management(items)", "store(item)");           // register for acquire information about items TODO
-		.df_register("management(items)", "remove(item)");          // register for acquire information about items TODO
-		.df_register("management(items)", "retrieve(item)");        // register for remove infos at item removal
+	<-  .df_register("management(items)", "info(warehouse)");       // register as warehouse's info dispatcher
+		.df_register("management(items)", "store(item)");           // register for store new items in the warehouse
+		.df_register("management(items)", "remove(item)");          // register for remove items from the warehouse
+		.df_register("management(items)", "retrieve(item)");        // register for reserve items of the warehouse
 		+set.                                                       // set setup-process ended
-
-@addItem[atomic]
-+!kqml_received(Sender,achieve,add(Item),MsgID) <- !add(Item); .send(Sender,confirm,Msg,MsgID).
--!kqml_received(Sender,achieve,add(Item),MsgID) <- .send(Sender,failure,error(add(Item)),MsgID).
-
-@removeItem[atomic]
-+!kqml_received(Sender,achieve,remove(Item),MsgID) <- !remove(Item); .send(Sender,confirm,Msg,MsgID).
--!kqml_received(Sender,achieve,remove(Item),MsgID) <- .send(Sender,failure,error(remove(Item)),MsgID).
-
-@reserveItems[atomic]
-+!kqml_received(Sender,achieve,Content,MsgID)                       // receive the intention of pick item(s)
-	:   Content = retrieve(order_id(OrderId))[[] | Items]
-	<-  !is_set(Items);
-	    !sufficient(Items);                                         // check if all the elements exists (in quantity)
-        !reserve(Items,Positions);                                  // try to reserve the items
-        !concat(order_id(OrderId),Positions,Msg);
-        .send(Sender,confirm,Msg,MsgID).
--!kqml_received(Sender,achieve,retrieve(order_id(OrderId))[_],MsgID) <- .send(Sender,failure,order_id(OrderId),MsgID).
-
-@infoItems[atomic]
-+!kqml_received(Sender, achieve, info(warehouse), MsgID)            // send the warehouse state (items info & position)
-    <-  .findall(item(id(ItemId),quantity(QT),reserved(R))[position(rack(RK),shelf(S),quantity(Q))],
-                item(id(ItemId),quantity(QT),reserved(R))[position(rack(RK),shelf(S),quantity(Q))], L);
-        !reshape(L, Res);
-        .send(Sender, tell, Res, MsgID).
-
-/***********************************************************************************************************************
- Utils
- **********************************************************************************************************************/
-
-+!add(item(id(ID),position(rack(Rack),shelf(S),quantity(NewQ)))) : item(id(ID),quantity(Q),reserved(ReservedQ))
-    <-  -item(id(ID),_,_)[source(self) | Positions];
-        +item(id(ID),quantity(Q + NewQ),reserved(ReservedQ))[position(rack(Rack),shelf(S),quantity(NewQ)) | Positions].
-
-+!add(item(id(ItemId),position(rack(Rack),shelf(Shelf),quantity(Quantity)))) : not item(id(ItemId),_,_)
-    <-  +item(id(ItemId),quantity(Quantity),reserved(0))[position(rack(Rack),shelf(Shelf),quantity(Quantity))].
-
-+!remove(item(id(ID),position(rack(R),shelf(S),quantity(Removed))))
-    <-  ? item(id(ID),quantity(Q),reserved(Res))[source(self) | Positions];
-        !remove(position(rack(R),shelf(S),quantity(Removed)),Positions,Result);
-        -item(id(ID),_,_);
-        +item(id(ID),quantity(Q-Removed),reserved(Res))[[] | Result].
-+!remove(position(R,S,quantity(Q1)),[position(R,S,quantity(Q2))|T],[position(R,S,quantity(Q2-Q1))|T]) : Q1 < Q2.
-+!remove(P,[P|T],T).
-+!remove(P,[H|T],[H|R]) <- !remove(P,T,R).
-
-///////////////////////////// TODO
-
-+!release(Item) : Item = item(id(ItemId), quantity(RequiredQ))
-	&   item(id(ItemId), quantity(Quantity), reserved(ReservedQ))
-    <-  -+item(id(ItemId), quantity(Quantity), reserved(ReservedQ - RequiredQ)).
-
-///////////////////////////// CHECK SET OF ITEMS
-
-+!not_in(A,[]).
-+!not_in(A,[B|C]) <- !different(A, B); !not_in(A,C).
-
-+!is_set([]).
-+!is_set([_]).
-+!is_set([A|B]) <- !not_in(A,B); !is_set(B).
-
-+!different(item(id(ItemID1),_), item(id(ItemID2),_)) <- .eval(false, ItemID1 == ItemID2).
-
-/////////////////////////////
-
-+!sufficient(item(id(ItemID), quantity(RequiredQ))) : item(id(ItemID), quantity(StoredQ), reserved(ReservedQ))
-    <-  .eval(true, RequiredQ <= StoredQ - ReservedQ).
-+!sufficient([]).
-+!sufficient([H | []]) <- !sufficient(H).
-+!sufficient([H | T]) <- !sufficient(H); !sufficient(T).
-
-/////////////////////////////
-
-+!reserve(item(id(ItemID), quantity(RequiredQ)), Output) : item(id(ItemID),_,_)[source(self) | Positions]
-    <-  !concat(item(id(ItemID)), Positions, Output);
-        -item(id(ItemID), quantity(StoredQ), reserved(ReservedQ))[source(self) | Positions];
-        +item(id(ItemID), quantity(StoredQ), reserved(ReservedQ + RequiredQ))[source(self) | Positions].
-// TODO? reserve([], []).
-+!reserve([H | []], [Output]) <- !reserve(H, Output).
-+!reserve([H | T], [Output1 | Output2]) <- !reserve(H, Output1); !reserve(T, Output2).
-
-/////////////////////////////
-/* TODO
-+!reshape([Head], [item(id(ItemId),reserved(ReservedNumber))[Pos]])
-    :   Head = item(id(ItemId),quantity(Quantity),reserved(ReservedNumber))[ Pos ].
-
-+!reshape([Head | Tail], [item(id(ItemId),reserved(ReservedNumber))[Pos] | Res])
-    :   Head = item(id(ItemId),quantity(Quantity),reserved(ReservedNumber))[ Pos ]
-    <-  !reshape(Tail,Res).*/
-
-+!reshape([Head | Tail], Result) : Head = item(id(ItemId),quantity(Quantity),reserved(ReservedNumber))[ Pos ]
-	<-  if (not .empty(Tail)) { !reshape(Tail,Res); }
-		else { Res = []; }
-		Result = [item(id(ItemId),reserved(ReservedNumber))[Pos] | Res].

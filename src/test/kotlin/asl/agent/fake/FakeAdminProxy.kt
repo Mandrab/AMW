@@ -3,7 +3,7 @@ package asl.agent.fake
 import controller.agent.AgentProxy
 import jade.core.Agent
 
-class FakeAminProxy(val action: (Agent) -> Unit) : AgentProxy {
+class FakeAdminProxy(val action: (Agent) -> Unit) : AgentProxy {
 
 	override fun setAgent(agent: Agent) = action(agent)
 

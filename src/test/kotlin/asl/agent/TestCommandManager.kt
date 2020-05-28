@@ -1,7 +1,7 @@
 package asl.agent
 
 import asl.agent.fake.FakeAdminAgent
-import asl.agent.fake.FakeAminProxy
+import asl.agent.fake.FakeAdminProxy
 import com.google.common.io.Resources
 import common.type.Command
 import controller.agent.AgentUtils
@@ -50,7 +50,7 @@ class TestCommandManager {
 
 	@Test fun commandRequest() {
 		var agent: FakeAdminAgent? = null
-		val adminProxy = FakeAminProxy { agent = it as FakeAdminAgent }
+		val adminProxy = FakeAdminProxy { agent = it as FakeAdminAgent }
 		AgentUtils.startAgent(FakeAdminAgent::class.java, adminProxy)
 
 		val result = ResultLock("")
