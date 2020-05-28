@@ -30,6 +30,7 @@ enum class ServiceType(
     INFO_WAREHOUSE("info(warehouse)"),
     EXEC_COMMAND("exec(command)", parseExecCommand),
     EXEC_SCRIPT("exec(command)", parseExecScript),
+    REMOVE_ITEM("remove(item)", parseRemoveItem),
     RETRIEVE_ITEMS("retrieve(item)", parseRetrieveItems),
     RETRIEVE_ITEM("retrieve(item)"), // TODO
     STORE_ITEM("store(item)", parseStoreItem);
@@ -64,6 +65,19 @@ private val parseExecScript: (Any) -> Literal = {
     check(it is Pair<*,*> && it.first is String && it.second is Set<*> && (it.second as Set<*>).all { e -> e is String })
     LiteralBuilder("execute").setValues(LiteralBuilder("script").setValues(StringTermImpl(it.first as String))
         .setQueue(*(it.second as Set<*>).map { r -> StringTermImpl(r as String) }.toTypedArray()).build()).build()
+}
+
+private val parseRemoveItem: (Any) -> Literal = {
+    check(it is Pair<*,*> && it.first is String && it.second is Array<*>)
+    Structure("remove").addTerms(LiteralBuilder("item").setValues(
+        LiteralBuilder("id").setValues(StringTermImpl(it.first as String)).build(), Structure("position")
+            .addTerms(
+                LiteralBuilder("rack").setValues(NumberTermImpl(((it.second as Array<*>)[0] as Int).toDouble()))
+                    .build(),
+                LiteralBuilder("shelf").setValues(NumberTermImpl(((it.second as Array<*>)[1] as Int).toDouble()))
+                    .build(),
+                LiteralBuilder("quantity").setValues(NumberTermImpl(((it.second as Array<*>)[2] as Int).toDouble()))
+                    .build())).build())
 }
 
 private val parseRetrieveItems: (Any) -> Literal = {

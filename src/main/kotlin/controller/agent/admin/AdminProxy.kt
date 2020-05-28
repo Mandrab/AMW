@@ -38,6 +38,8 @@ class AdminProxy: ItemUpdaterProxy() {
 
 	fun add(itemID: String, rack: Int, shelf: Int, quantity: Int) = agent.add(itemID, rack, shelf, quantity)
 
+	fun remove(itemID: String, rack: Int, shelf: Int, quantity: Int) = agent.remove(itemID, rack, shelf, quantity)
+
 	fun add(command: Command) = agent.add(command)
 
 	fun add(commandID: String, version: Command.Version) = agent.add(commandID, version)

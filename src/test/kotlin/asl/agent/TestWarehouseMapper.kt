@@ -54,7 +54,7 @@ class TestWarehouseMapper {
 				"belief. Obtained items from the warehouse:\n${result.result}\nExpected items:\n$expected",
 			expected.size, result.result.size)
 		assert(result.result.containsAll(expected)) {"Result items should be equals to expected ones. Check changes " +
-				"of initial belief."}
+				"of initial belief." + expected.joinToString() +"\n"+ result.result.joinToString()}
 	}
 
 	@Test fun retrieveItems() {
@@ -128,6 +128,39 @@ class TestWarehouseMapper {
 				absTest.disclaimer }
 		assert(successfullyAdded2.result) { "The addition of a new item is expected to be confirmed.\n" +
 				absTest.disclaimer }
+	}
+
+	@Test fun removeItem() {
+		val adminProxy = AdminProxy()
+		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
+
+		val failRemoved1 = ResultLock(true)
+		val failRemoved2 = ResultLock(true)
+		val successfullyRemoved = ResultLock(false)
+
+		while (!adminProxy.isAvailable()) Thread.sleep(50)
+
+		adminProxy.remove("Item XXX", 5, 6, 500).thenAccept { failRemoved1.tryComplete { it } }
+		adminProxy.remove("Item 1", 5, 6, 50000).thenAccept { failRemoved2.tryComplete { it } }
+		adminProxy.remove("Item 1", 5, 3, 2).thenAccept { result ->
+			successfullyRemoved.tryComplete {
+				if (result) expected.replaceAll { it ->
+					if (it.itemId == "\"Item 1\"") {
+						Item(it.itemId, it.reserved, it.positions.map {
+							if (it.first == 5 && it.second == 3) Triple(it.first, it.second, it.third - 2) else it
+						})
+					} else it
+				}; result
+			}
+		}
+
+		failRemoved1.maxTimeToComplete(3000)
+		failRemoved2.maxTimeToComplete(3000)
+		successfullyRemoved.maxTimeToComplete(3000)
+
+		assertFalse("The removal of an illegitimate quantity of an item is expected to fail.\n$absTest.disclaimer", failRemoved1.result)
+		assertFalse("The removal of an illegitimate quantity of an item is expected to fail.\n$absTest.disclaimer", failRemoved2.result)
+		assert(successfullyRemoved.result) { "The removal of an item is expected to be confirmed.\n$absTest.disclaimer" }
 	}
 
 	private fun <T>inlineOnNextObserver(action: (param: T) -> Unit) = object: Observer<T> {

@@ -18,31 +18,32 @@
 +!setup : not set
 	<-  .df_register("management(items)", "info(warehouse)");       // register as warehouse's infos dispatcher
 		.df_register("management(items)", "store(item)");           // register for acquire information about items TODO
+		.df_register("management(items)", "remove(item)");          // register for acquire information about items TODO
 		.df_register("management(items)", "retrieve(item)");        // register for remove infos at item removal
 		+set.                                                       // set setup-process ended
 
-+!kqml_received(Sender, achieve, add(Item), MsgID) <- !add(Item); .send(Sender, confirm, Msg, MsgID).
--!kqml_received(Sender, achieve, add(Item), MsgID) <- .send(Sender, failure, error(add(Item)), MsgID).
+@addItem[atomic]
++!kqml_received(Sender,achieve,add(Item),MsgID) <- !add(Item); .send(Sender,confirm,Msg,MsgID).
+-!kqml_received(Sender,achieve,add(Item),MsgID) <- .send(Sender,failure,error(add(Item)),MsgID).
 
-@processOrder[atomic]
-+!kqml_received(Sender, achieve, Content, MsgID)                  // receive the intention of pick item(s)
-	:   Content = retrieve(order_id(OrderId))[ [] | Items ]
+@removeItem[atomic]
++!kqml_received(Sender,achieve,remove(Item),MsgID) <- !remove(Item); .send(Sender,confirm,Msg,MsgID).
+-!kqml_received(Sender,achieve,remove(Item),MsgID) <- .send(Sender,failure,error(remove(Item)),MsgID).
+
+@reserveItems[atomic]
++!kqml_received(Sender,achieve,Content,MsgID)                  // receive the intention of pick item(s)
+	:   Content = retrieve(order_id(OrderId))[[] | Items]
 	<-  !is_set(Items);
 	    !sufficient(Items);                           // check if all the elements exists (in quantity)
-        !reserve(Items, Positions);                           // try to reserve the items
-        !concat(order_id(OrderId), Positions, Msg);
-        .send(Sender, confirm, Msg, MsgID).
-
+        !reserve(Items,Positions);                           // try to reserve the items
+        !concat(order_id(OrderId),Positions,Msg);
+        .send(Sender,confirm,Msg,MsgID).
 -!kqml_received(Sender,achieve,retrieve(order_id(OrderId))[_],MsgID) <- .send(Sender,failure,order_id(OrderId),MsgID).
-
-+!kqml_received(Sender, achieve, retrieved(Item), MsgID) <- !remove(Item); .send(Sender, confirm, Msg, MsgID).
 
 @infoItems[atomic]
 +!kqml_received(Sender, achieve, info(warehouse), MsgID)         // send the warehouse state (items info & position)
-    <-  .findall(item(id(ItemId), quantity(QT), reserved(R))
-                [ position(rack(RK), shelf(S), quantity(Q)) ],
-                item(id(ItemId), quantity(QT), reserved(R))
-                [ position(rack(RK), shelf(S), quantity(Q)) ], L);
+    <-  .findall(item(id(ItemId),quantity(QT),reserved(R))[position(rack(RK),shelf(S),quantity(Q))],
+                item(id(ItemId),quantity(QT),reserved(R))[position(rack(RK),shelf(S),quantity(Q))], L);
         !reshape(L, Res);
         .send(Sender, tell, Res, MsgID).
 
@@ -50,24 +51,24 @@
  Utils
  **********************************************************************************************************************/
 
-@add[atomic]
-+!add(item(id(ItemId), position(rack(Rack), shelf(Shelf), quantity(NewQuantity))))
-    :   item(id(ItemId), quantity(Quantity), reserved(ReservedQ))
-    <-  -item(id(ItemId), _, _)[source(self)|Positions];
-        +item(id(ItemId), quantity(Quantity + NewQuantity), reserved(ReservedQ))
-            [position(rack(Rack), shelf(Shelf), quantity(NewQuantity)) | Positions].
++!add(item(id(ID),position(rack(Rack),shelf(S),quantity(NewQ)))) : item(id(ID),quantity(Q),reserved(ReservedQ))
+    <-  -item(id(ID),_,_)[source(self) | Positions];
+        +item(id(ID),quantity(Q + NewQ),reserved(ReservedQ))[position(rack(Rack),shelf(S),quantity(NewQ)) | Positions].
 
-@addNew[atomic]
-+!add(item(id(ItemId), position(rack(Rack), shelf(Shelf), quantity(Quantity)))) : not item(id(ItemId), _, _)
-    <-  +item(id(ItemId), quantity(Quantity), reserved(0))[position(rack(Rack), shelf(Shelf), quantity(Quantity))].
++!add(item(id(ItemId),position(rack(Rack),shelf(Shelf),quantity(Quantity)))) : not item(id(ItemId),_,_)
+    <-  +item(id(ItemId),quantity(Quantity),reserved(0))[position(rack(Rack),shelf(Shelf),quantity(Quantity))].
 
-@remove[atomic]
-+!remove(item(id(ID), position(rack(R), shelf(S), quantity(Removed))))
-    <-  ?item(id(ID), quantity(Quantity), reserved(ReservedQ))[source(self)|position(rack(R), shelf(S), quantity(Removed))|Positions]
++!remove(item(id(ID),position(rack(R),shelf(S),quantity(Removed))))
+    <-  ? item(id(ID),quantity(Q),reserved(Res))[source(self) | Positions];
+        !remove(position(rack(R),shelf(S),quantity(Removed)),Positions,Result);
+        -item(id(ID),_,_);
+        +item(id(ID),quantity(Q-Removed),reserved(Res))[[] | Result].
++!remove(position(R,S,quantity(Q1)),[position(R,S,quantity(Q2))|T],[position(R,S,quantity(Q2-Q1))|T]) : Q1 < Q2.
++!remove(P,[P|T],T).
++!remove(P,[H|T],[H|R]) <- !remove(P,T,R).
 
 ///////////////////////////// TODO
 
-@remove[atomic]
 +!release(Item) : Item = item(id(ItemId), quantity(RequiredQ))
 	&   item(id(ItemId), quantity(Quantity), reserved(ReservedQ))
     <-  -+item(id(ItemId), quantity(Quantity), reserved(ReservedQ - RequiredQ)).
@@ -102,9 +103,15 @@
 +!reserve([H | T], [Output1 | Output2]) <- !reserve(H, Output1); !reserve(T, Output2).
 
 /////////////////////////////
+/* TODO
++!reshape([Head], [item(id(ItemId),reserved(ReservedNumber))[Pos]])
+    :   Head = item(id(ItemId),quantity(Quantity),reserved(ReservedNumber))[ Pos ].
 
-+!reshape([ Head | Tail ], Result)
-	:   Head = item(id(ItemId), quantity(Quantity), reserved(ReservedNumber))[ Pos ]
-	<-  if (not .empty(Tail)) { !reshape(Tail, Res); }
++!reshape([Head | Tail], [item(id(ItemId),reserved(ReservedNumber))[Pos] | Res])
+    :   Head = item(id(ItemId),quantity(Quantity),reserved(ReservedNumber))[ Pos ]
+    <-  !reshape(Tail,Res).*/
+
++!reshape([Head | Tail], Result) : Head = item(id(ItemId),quantity(Quantity),reserved(ReservedNumber))[ Pos ]
+	<-  if (not .empty(Tail)) { !reshape(Tail,Res); }
 		else { Res = []; }
-		Result = [ item(id(ItemId), reserved(ReservedNumber))[ Pos ] | Res ].
+		Result = [item(id(ItemId),reserved(ReservedNumber))[Pos] | Res].

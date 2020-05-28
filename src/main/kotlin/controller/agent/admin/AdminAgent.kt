@@ -6,8 +6,8 @@ import common.translation.ServiceType.ADD_VERSION
 import common.translation.ServiceType.EXEC_COMMAND
 import common.translation.ServiceType.EXEC_SCRIPT
 import common.translation.ServiceType.STORE_ITEM
+import common.translation.ServiceType.REMOVE_ITEM
 import common.translation.LiteralBuilder
-import common.translation.LiteralParser.getValue
 import jade.core.behaviours.CyclicBehaviour
 import jade.lang.acl.ACLMessage
 import java.util.*
@@ -62,6 +62,22 @@ class AdminAgent: ItemUpdater() {
                     ACLMessage.CONFIRM -> result.complete(true)
                 }
             }
+
+        return result
+    }
+
+    fun remove(itemID: String, rack: Int, shelf: Int, quantity: Int): CompletableFuture<Boolean> {
+        val result = CompletableFuture<Boolean>()
+
+        println(REMOVE_ITEM.parse(Pair(itemID, arrayOf(rack, shelf, quantity))))
+        MessageSender(MANAGEMENT_ITEMS.service, REMOVE_ITEM.service, ACLMessage.REQUEST,
+            REMOVE_ITEM.parse(Pair(itemID, arrayOf(rack, shelf, quantity)))).require(this) {
+            it ?: result.complete(false)
+            when (it?.performative) {
+                ACLMessage.FAILURE -> result.complete(false)
+                ACLMessage.CONFIRM -> result.complete(true)
+            }
+        }
 
         return result
     }
