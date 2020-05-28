@@ -25,8 +25,9 @@ enum class ServiceType(
     ACCEPT_ORDER("accept(order)", parseOrder),
     ADD_COMMAND("add(command)", parseCommand),
     ADD_VERSION("add(version)", parseVersionPair),
-    INFO_WAREHOUSE("info(warehouse)"),
     INFO_COMMANDS("info(commands)"),
+    INFO_ORDERS("info(orders)", parseOrderInfo),
+    INFO_WAREHOUSE("info(warehouse)"),
     EXEC_COMMAND("exec(command)", parseExecCommand),
     EXEC_SCRIPT("exec(command)", parseExecScript),
     RETRIEVE_ITEMS("retrieve(item)", parseRetrieveItems),
@@ -49,6 +50,10 @@ private val parseOrder: (Any) -> Literal = { it ->
             pairTerm("quantity", (it.second as Int).toDouble())).build() }
     LiteralBuilder("order").setValues(Structure("client").addTerms(client), Structure("email").addTerms(email),
         Structure("address").addTerms(address)).setQueue(*items.toTypedArray()).build()
+}
+
+private val parseOrderInfo: (Any) -> Literal = { it -> check(it is Array<*> && it.size >= 2 && it.all { it is String })
+    LiteralBuilder("info").setValues(StringTermImpl(it[0] as String), StringTermImpl(it[1] as String)).build()
 }
 
 private val parseExecCommand: (Any) -> Literal = { check(it is String)

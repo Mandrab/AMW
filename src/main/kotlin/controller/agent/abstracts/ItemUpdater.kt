@@ -6,7 +6,6 @@ import common.translation.ServiceType.INFO_WAREHOUSE
 import common.type.Item
 import jade.core.behaviours.CyclicBehaviour
 import jade.lang.acl.ACLMessage
-import jason.asSyntax.Structure
 import java.util.*
 
 /**
@@ -16,8 +15,6 @@ import java.util.*
  * @author Paolo Baldini
  */
 open class ItemUpdater: TerminalAgent() {
-	private var lastUpdate: Long = 0                                // last items update
-
 	open val proxy: ItemUpdaterProxy by lazy { arguments[0] as ItemUpdaterProxy }
 	open val updateTime: Long = 5000                                // update period time
 
@@ -27,6 +24,8 @@ open class ItemUpdater: TerminalAgent() {
 	override fun setup() = apply { super.setup() }.addBehaviour(updateItems())
 
 	private fun updateItems() = object: CyclicBehaviour() {
+		private var lastUpdate: Long = 0                            // last items update
+
 		override fun action() {                                     // update warehouse (items) info
 			MessageSender(Service.MANAGEMENT_ITEMS.service, INFO_WAREHOUSE.service, ACLMessage.REQUEST, INFO_WAREHOUSE.literal)
 				.require(agent).thenAccept { message ->

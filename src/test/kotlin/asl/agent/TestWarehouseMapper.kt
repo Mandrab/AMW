@@ -40,7 +40,7 @@ class TestWarehouseMapper {
 	@Test fun infoWarehouse() {
 		// Start agent
 		val clientProxy = ClientProxy()
-		AgentUtils.startAgent(ClientAgent::class.java, clientProxy)
+		AgentUtils.startAgent(ClientAgent::class.java, clientProxy, true, "client", "client@mail")
 
 		val result = ResultLock<Collection<Item>>(emptyList())
 

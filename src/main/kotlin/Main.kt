@@ -9,5 +9,5 @@ import controller.ControllerImpl
  * @author Paolo Baldini
  */
 fun main(args: Array<String>) {
-    ControllerImpl(User.DEBUG, args.isNotEmpty() && args[0] == "retry")
+    ControllerImpl(User.DEBUG, args.isNotEmpty() && args[0] == "retry", args.copyOfRange(1, args.size))
 }

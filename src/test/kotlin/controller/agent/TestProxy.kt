@@ -37,9 +37,9 @@ class TestProxy {
 		val proxyC2: AgentProxy = ClientProxy()
 
 		AgentUtils.startAgent(AdminAgent::class.java, proxyA1)
-		AgentUtils.startAgent(ClientAgent::class.java, proxyA2)
+		AgentUtils.startAgent(ClientAgent::class.java, proxyA2, true, "client", "client@mail")
 		AgentUtils.startAgent(AdminAgent::class.java, proxyC1)
-		AgentUtils.startAgent(ClientAgent::class.java, proxyC2)
+		AgentUtils.startAgent(ClientAgent::class.java, proxyC2, true, "client", "client@mail")
 
 		Thread.sleep(50)
 
@@ -60,7 +60,7 @@ class TestProxy {
 		adminProxy.subscribeItems(inlineOnNextObserver { adminI.tryComplete { true } })
 
 		val clientProxy = ClientProxy()
-		AgentUtils.startAgent(ClientAgent::class.java, clientProxy)
+		AgentUtils.startAgent(ClientAgent::class.java, clientProxy, true, "client", "client@mail")
 		clientProxy.subscribeItems(inlineOnNextObserver { clientI.tryComplete { true } })
 
 		adminC.maxTimeToComplete(2000)
@@ -78,7 +78,7 @@ class TestProxy {
 		val clientProxy = ClientProxy()
 
 		AgentUtils.startAgent(AdminAgent::class.java, adminProxy)
-		AgentUtils.startAgent(ClientAgent::class.java, clientProxy)
+		AgentUtils.startAgent(ClientAgent::class.java, clientProxy, true, "client", "client@mail")
 
 		val admin = AtomicInteger()
 		val client = AtomicInteger()

@@ -22,7 +22,7 @@ import view.ViewImpl
  *
  * @author Paolo Baldini
  */
-class ControllerImpl(user: User = User.DEBUG, retryConnection: Boolean = true): Consumer<Pair<Request, *>> {
+class ControllerImpl(user: User = User.DEBUG, retryConnection: Boolean = true, vararg other: Any): Consumer<Pair<Request, *>> {
 	private var clientProxy: ClientProxy? = null
 	private var adminProxy: AdminProxy? = null
 
@@ -33,7 +33,12 @@ class ControllerImpl(user: User = User.DEBUG, retryConnection: Boolean = true): 
 		// start client agent
 		if (user == User.CLIENT || user == User.DEBUG) {
 			clientProxy = ClientProxy()
-			AgentUtils.startAgent(ClientAgent::class.java, clientProxy, retryConnection)
+			if (user == User.DEBUG)
+				AgentUtils.startAgent(ClientAgent::class.java, clientProxy, retryConnection, true, "client", "client@mail")
+			else {
+				check(other.size > 2)
+				AgentUtils.startAgent(ClientAgent::class.java, clientProxy, retryConnection, true, other[0], other[1])
+			}
 
 			clientProxy!!.subscribeItems(inlineOnNextObserver { model.items = it.toSet() })
 			clientProxy!!.subscribeOrder(inlineOnNextObserver { model.addOrder(it) })
