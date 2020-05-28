@@ -40,7 +40,7 @@ implements[ "item_picker" ].
 
 +!remove(item(ID),position(rack(R),shelf(S),quantity(_)))
     <-  !random_agent("management(items)","remove(item)",Provider);
-        .send(Provider,achieve,remove(item(id(ID),position(rack(R),shelf(S),quantity(1)))));
+        .send(Provider,achieve,remove_reserved(item(id(ID),position(rack(R),shelf(S),quantity(1)))));
         ? not error(remove(ID)).
 
 -!remove(item(ID),position(rack(R),shelf(S),quantity(_))) <- !remove(item(ID),position(rack(R),shelf(S),quantity(1))).

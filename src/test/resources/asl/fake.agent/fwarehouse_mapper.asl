@@ -17,4 +17,4 @@
     <-  .send(Sender, failure, order_id(OrderID), MsgID).
 
 @removeItem[atomic]
-+!kqml_received(Sender,achieve,remove(Item),MsgID) <- .send(Sender,confirm,Msg,MsgID).
++!kqml_received(Sender,achieve,remove_reserved(Item),MsgID) <- .send(Sender,confirm,Msg,MsgID).
