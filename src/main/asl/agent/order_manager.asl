@@ -19,7 +19,23 @@
 ///////////////////////////// AGENT SETUP
 
 @setup[atomic]
-+!setup : not set <- .df_register("management(orders)", "accept(order)"); +set. // register service as order acceptor
++!setup : not set
+    <-  .df_register("management(orders)", "accept(order)");
+        .df_register("management(orders)", "info(orders)");
+        +set.// register service as order acceptor
+
+/////////////////////////////
+
++!kqml_received(Sender,achieve,info(Client,Email),MsgID)
+    <-  .findall(order(id(O),status(S),items(I)),order(id(O),status(S),client(name(Client),_,email(Email)),items(I)),L);
+        !reshape(L,R);
+        .send(Sender,tell,R,MsgID).
+
++!reshape(item(id(I),quantity(Q))[_|_],item(id(I),quantity(Q))).
++!reshape(order(id(O),status(S),items(I)),order(id(O),status(S),items(R))) <- !reshape(I,R).
++!reshape([],[]).
++!reshape([H|[]],[R]) <- !reshape(H,R).
++!reshape([H|T],[R1|R2]) <- !reshape(H,R1); !reshape(T,R2).
 
 //////////////////////////////////////////////////// ORDER REQUEST /////////////////////////////////////////////////////
 
