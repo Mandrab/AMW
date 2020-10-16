@@ -3,7 +3,7 @@ plugins {
     id "com.palantir.docker-run" version "0.25.0"
 }
 
-group = "dev.mandrab.university.magister.distributedsystems.amw:robot_picker"
+group = "dev.mandrab.university.magister.distributedsystems.amw"
 version = "1.0"
 
 docker {

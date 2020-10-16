@@ -1,2 +1,6 @@
 rootProject.name = "Agent-Managed Warehouse"
-include 'robot_picker'
+
+include "warehouse:command_manager"
+include "warehouse:order_manager"
+include "warehouse:robot_picker"
+include "warehouse:warehouse_mapper"
