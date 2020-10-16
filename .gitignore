@@ -1,2 +1,9 @@
-amw/testmaillogin
-TODO_LIST
+.gradle
+.idea
+.stop___MAS
+bin
+build
+project
+target
+APDescription.txt
+MTPs-Main-Container.txt
