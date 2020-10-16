@@ -1,9 +1,9 @@
 .gradle
 .idea
-.stop___MAS
+**/.stop___MAS
 bin
 **/build
 project
 target
-APDescription.txt
-MTPs-Main-Container.txt
+**/APDescription.txt
+**/MTPs-Main-Container.txt
