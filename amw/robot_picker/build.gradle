@@ -1,7 +1,22 @@
-//**********************************************************************************************************************
-//  IMPORTS
-//**********************************************************************************************************************
+plugins {
+    id "com.palantir.docker" version "0.25.0"
+    id "com.palantir.docker-run" version "0.25.0"
+}
 
+group = "dev.mandrab.university.magister.distributedsystems.amw:robot_picker"
+version = "1.0"
+
+docker {
+    name "amw:${project.name}-${project.version}"
+    dockerfile file("Dockerfile")
+}
+
+dockerRun {
+    name "robot_picker"
+    image "amw:${project.name}-${project.version}"
+}
+
+/*
 import java.io.*
 import java.util.Arrays
 import java.util.LinkedList
@@ -80,8 +95,8 @@ dependencies {
 
 task<JavaExec>( "config" ) {
 
-    val antPath = jason.asPath.split( ":" ).firstOrNull { s -> s.contains( ".*/ant-.*".toRegex( ) ) }
-    val jadePath = jason.asPath.split( ":" ).firstOrNull { s -> s.contains( ".*/jade-.*".toRegex( ) ) }
+    val antPath = jason.asPath.split( ":" ).firstOrNull { s -> s.contains( ".* /ant-.*".toRegex( ) ) }
+    val jadePath = jason.asPath.split( ":" ).firstOrNull { s -> s.contains( ".* /jade-.*".toRegex( ) ) }
 
     group = "jason"
     sourceSets {                                                    // set cli path in which call the cmd
@@ -167,7 +182,7 @@ fun setupLibraryClasspath( cleanClasspath: Boolean = false, excluded: List<Regex
 
     dependencies.forEach { conf -> conf.asPath                      // get all the path to the libraries
             .split ( ":" )
-            .filter { path -> excluded == null                      // if there isn't excluded paths, then do nothing
+            .filter { path -> excluded == null                      // if there isn"t excluded paths, then do nothing
                     || excluded.stream( )                           // else, check if i should exclude the path
                     .filter { e -> path.contains( e )  }
                     .findAny( )
@@ -201,4 +216,4 @@ fun setupLibraryClasspath( cleanClasspath: Boolean = false, excluded: List<Regex
     out.write( output.joinToString( "\n" ) )
     out.flush( )
     out.close( )
-}
+}*/
