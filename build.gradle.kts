@@ -16,8 +16,8 @@ group = "dev.mandrab.uni.magistrale.sistemidistribuiti.amw"                     
 version = "1.0-SNAPSHOT"                                                            // version
 
 java { // TODO
-    sourceCompatibility = JavaVersion.toVersion("14")
-    targetCompatibility = JavaVersion.toVersion("14")
+    sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
 }
 
 ///////////////////////////// KOTLIN PLUGINS
