@@ -1,2 +1,3 @@
-amw/testmaillogin
-TODO_LIST
+amw/**/build
+amw/.gradle
+amw/.idea
