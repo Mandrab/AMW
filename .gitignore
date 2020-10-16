@@ -1,3 +1,9 @@
-amw/**/build
-amw/.gradle
-amw/.idea
+.gradle
+.idea
+.stop___MAS
+bin
+**/build
+project
+target
+APDescription.txt
+MTPs-Main-Container.txt
