@@ -4,15 +4,18 @@
 In this application some agent would cooperate to achieve the goal of manage a warehouse. Furthermore, we want the agents to be able to auto-acquire some (procedural) knowledge from a remote repository of abilities.</br></br>
 Below are present a usefull list of commands to run the system.
 
-<h2>Commands</h2>
-This paragraph contains a list of commands used to run the demo via gradle.<br/><br/>
+<h2>Docker commands</h2>
+This paragraph contains a list of commands used to run the demo via gradle and docker.<br/><br/>
 
-`./gradlew config` setup the Jason's config file</br>
-`./gradlew reset_mas2j` clean the classpath specified in the .mas2j  (project config) file</br>
->   <sub>Due to a locality of the gradle's cached libraries, the command is useful to git a cleaner and more correct version of the file that doesn't contains any local path. Anyway, the system automatically check the classpath at every startup, so this command is not strictly necessarely</sub>
+Initialization of the system:
+0. `./gradlew docker` to create the images of the agents
+1. `docker network create amw` to create the virtual network of the system
 
-`./gradlew run_system` run the .mas2j (Jason) project over JADE</br> 
-`./gradlew run_terminal` run the human interface to the system (the control "terminal"). Require a JADE environment yet running</br>
->   <sub>At startup is usual to see throwed some Exceptions. That's caused by the "terminal" that try to connect to a JADE system that hasn't yet started. Anyway, when this last one will finally starts, the Exceptions will (hopefully) stop</sub>
+To run the system:
+0. `./gradlew start_main_container` to start the JADE main container
+1. `./gradlew dockerRun` to start all the agents of the system
 
-`./gradlew run [-Pall]` run the .mas2j (Jason) project over JADE in detached mode. Specifing <i>-Pall</i> flag, also the terminal will start.</br>
+Other useful commands:
+- `docker images` see all the installed images
+- `docker run --network amw IMAGE` run the agent on the amw virtual network
+- `docker rmi -f (docker images -a -q)` **WARNING** remove ***ALL*** the images in your OS!
