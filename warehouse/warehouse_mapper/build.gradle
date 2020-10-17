@@ -8,10 +8,11 @@ version = "1.0"
 
 docker {
     name "amw:${project.name}-${project.version}"
-    dockerfile file("Dockerfile")
+    noCache true
 }
 
 dockerRun {
-    name "robot_picker"
+    name "warehouse_mapper"
     image "amw:${project.name}-${project.version}"
+    arguments '--network="host"'
 }
