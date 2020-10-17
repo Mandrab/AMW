@@ -14,5 +14,5 @@ docker {
 dockerRun {
     name "order_manager"
     image "amw:${project.name}-${project.version}"
-    arguments '--network="host"'
+    arguments "--network=amw"
 }
