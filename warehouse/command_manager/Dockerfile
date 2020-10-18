@@ -39,4 +39,4 @@ ENV CLASSPATH=jason/libs/jade-4.3.jar
 EXPOSE 3000
 
 # start the agent
-CMD java jade.Boot -container -host 127.0.0.1 "agent:jason.infra.jade.JadeAgArch(agent.asl)"
+CMD java jade.Boot -container -host main_container "agent:jason.infra.jade.JadeAgArch(agent.asl)"

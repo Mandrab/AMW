@@ -14,5 +14,5 @@ docker {
 dockerRun {
     name "command_manager"
     image "amw:${project.name}-${project.version}"
-    arguments "--network=amw"
+    arguments "--network=amw", "--add-host=main_container:172.17.0.1"
 }
