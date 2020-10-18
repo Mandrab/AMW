@@ -2,8 +2,8 @@
  Pre-Processing Directives
  **********************************************************************************************************************/
 
-{ include("literal.asl") }
-{ include("communication.asl") }
+{ include("utilities/literal.asl") }
+{ include("utilities/communication.asl") }
 { include("module/order_manager/id_generator.asl") }
 
 /***********************************************************************************************************************

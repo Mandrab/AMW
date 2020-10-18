@@ -1,4 +1,4 @@
-{ include("literal.asl") }                                 // include communication utils plans
+{ include("utilities/literal.asl") }                                // include communication utils plans
 
 ///////////////////////////// REMOVE SCRIPT'S PLANS
 

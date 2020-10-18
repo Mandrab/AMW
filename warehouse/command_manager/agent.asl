@@ -2,7 +2,7 @@
  Pre-Processing Directives
  **********************************************************************************************************************/
 
-{ include("literal.asl") }                                          // include utilities for works on literals
+{ include("utilities/literal.asl") }                                // include utilities for works on literals
 { include("state/commands.asl") }
 
 /***********************************************************************************************************************

@@ -2,12 +2,12 @@
  Pre-Processing Directives
  **********************************************************************************************************************/
 
-{ include("literal.asl") }                                          // utilities for works on literals
+{ include("utilities/literal.asl") }                                // utilities for works on literals
 { include("state/warehouse.asl") }                                  // initial state of the warehouse
-{ include("module/warehouse_mapper/add.asl") }                      // plans for items addition
-{ include("module/warehouse_mapper/remove.asl") }                   // plans for items removal
-{ include("module/warehouse_mapper/reserve.asl") }                  // plans for items reservation
-{ include("module/warehouse_mapper/info.asl") }                     // info of the warehouse
+{ include("action/add.asl") }                                       // plans for items addition
+{ include("action/remove.asl") }                                    // plans for items removal
+{ include("action/reserve.asl") }                                   // plans for items reservation
+{ include("action/info.asl") }                                      // info of the warehouse
 
 /***********************************************************************************************************************
  Initial goals

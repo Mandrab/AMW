@@ -6,6 +6,8 @@ WORKDIR $WORKING_DIR
 RUN mkdir -p $WORKING_DIR
 
 COPY jason-2.6/libs ./jason/libs
+COPY utilities ./utilities
+COPY *.asl ./
 
 # set jade in classpath
 ENV CLASSPATH=jason/libs/jade-4.3.jar:jason/libs/jason-2.6.jar

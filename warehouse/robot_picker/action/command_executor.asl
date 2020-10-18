@@ -2,7 +2,7 @@
 
 { include("check_acceptance.asl") }
 { include("plans_remover.asl") }
-{ include("communication.asl") }                           // include communication utils plans
+{ include("utilities/communication.asl") }                          // include communication utils plans
 { include("usable_version_finder.asl") }
 
 ///////////////////////////// COMMAND EXECUTION
