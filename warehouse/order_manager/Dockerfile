@@ -8,7 +8,7 @@ RUN mkdir -p $WORKING_DIR
 COPY jason-2.6/libs ./jason/libs
 
 # set jade in classpath
-ENV CLASSPATH=jason/libs/jade-4.3.jar
+ENV CLASSPATH=jason/libs/jade-4.3.jar:jason/libs/jason-2.6.jar
 
 # TODO
 # ricordo che devo rendere accessibile dall'esterno del container
