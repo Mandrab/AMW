@@ -1,103 +1,70 @@
 /***********************************************************************************************************************
- Initial beliefs and rules
-***********************************************************************************************************************/
+ Pre-Processing Directives
+ **********************************************************************************************************************/
 
-set( false ).                                                       // at start is not yet set
+{ include("module/robot/item_picker.asl") }                          // include plans for items picking
+{ include("module/robot/script_executor.asl") }                      // include plans for scripts execution
+{ include("module/robot/command_executor.asl") }                     // include plans for commands execution
+{ include("module/robot/move.asl") }                                // include plans for motion
+{ include("module/robot/geo-localization.asl") }
+
+/***********************************************************************************************************************
+ Initial beliefs and rules
+ **********************************************************************************************************************/
+
+//TODO pick item
 
 /***********************************************************************************************************************
  Initial goals
-***********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 !setup.                                                             // setup
 
 /***********************************************************************************************************************
  Plans
-***********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 ///////////////////////////// AGENT SETUP
 
-+!setup
-	:   set( false )
-	<-  .df_register( "executor( item_picker )", "retrieve( item )" );  // register for pick items
-		.df_register( "executor( command )", "exec( command )" );   // register for pick items
-		-+set( true );                                              // set process ended
-		+activity( default );                                        // setup default activity
-        +state( available );                                        // set as available to achieve unordinary operations
++!setup : not set
+	<-  .df_register("executor(item_picker)", "retrieve(item)");    // register for pick items
+		.df_register("executor(command)", "exec(command)");         // register for pick items
+		+activity(default);                                         // setup default activity
+        +state(available);                                          // set as available to achieve unordinary operations
+        +set;                                                       // set process ended
 		!work.                                                      // start working
 
+///////////////////////////////////////////////////////// JOBS /////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////// WORK /////////////////////////////////////////////////////////
+///////////////////////////// DEFAULT
 
-///////////////////////////// DEFAULT JOB
-
-+!work
-	:   activity( default )                                         // only if achieving default activity
-	<-  .println( "Doing stuffs ..." );
-		.wait( 5000 );                                              // fake execution time
++!work : activity(default)                                          // only if achieving default activity
+	<-  !move_by(5, 6);
+	    .println("Doing stuffs ...");
+		.wait(1000);                                                // fake execution time
 		!work.                                                      // restart to work
 
-///////////////////////////// PICKING JOB
+///////////////////////////// PICKING
 
-+!work
-	:   activity( picking )[ client( Client ), item( Item ) ]       // only if picking
-	<-  .println( "Picking ..." );
-		.wait( 5000 );                                              // fake execution time
-		.send( Client, complete, retrieve( Item ) );                // confirm task completion
-        -+activity( default );                                      // setup default activity
-        -+state( available );                                       // set as available to achieve unordinary operations
++!work : activity(picking)[client(Client),item(id(ID),item(Item))]  // only if picking
+	<-  Item = item(id(IID))[H|T];                                  // TODO docu che in teoria potrebbe non esserci l'oggetto e nel caso dovrebbe cercare da qualche altra parte
+	    .println("Picking ...");
+	    !!remove(item(IID),_);                                      // TODO la posizione non è spacificata perchè non è implementata la ricerca di cui sopra
+	    .wait(1000);                                                // fake execution time
+		.send(Client,complete,retrieve(Item));                      // confirm task completion
+        -+activity(default);                                        // setup default activity
+        -+state(available);                                         // set as available to achieve unordinary operations
         !work.                                                      // restart to work
 
-+!work : activity( _ ).
+///////////////////////////// SCRIPT EXECUTION
 
-//////////////////////////////////////////////////// COMMUNICATION /////////////////////////////////////////////////////
++!work : activity(executing)[ client(Client), script(Script) ]      // only if executing script
+	<-  !main[source(script)];                                      // run the main intention of the script
+		!remove_plans(0);                                           // remove all plans with label in the form of "lN"
+		-+activity(default);                                        // at end, setup default activity
+        -+state(available);                                         // set as available to achieve unordinary operations
+        !work.                                                      // restart to work
 
-///////////////////////////// PICKING REQUEST:      OP #15 in purchase sequence schema
+///////////////////////////// IDLE
 
-+!kqml_received( Sender, cfp, Content, MsgId )                      // request of item picking
-	:   Content = retrieve( id( Id ), item( item( Item )[ [] | Positions ] ) )
-    <-  !propose_retrieve( Sender, Id );                            // propose to retrieve the item
-        .wait( 5000 );                                              // max time to wait for confirm
-        !check_acceptance( Sender, Id ).                            // check if an acceptance has came
-
--!kqml_received( Sender, cfp, Content, MsgId )                      // failure of plan (e.g. when no available)
-	:   Content = retrieve( id( Id ), item( item( Item )[ [] | Positions ] ) )
-	<-  .send( Sender, refuse, retrieve( Id ) ).                    // refuse to retrieve item
-
-///////////////////////////// PROPOSE TO PICK:      OP #17 in purchase sequence schema
-
-@propose_retrieve[atomic]
-+!propose_retrieve( Sender, Id )                                    // propose to retrieve item
-	:   state( available )                                          // if i'm not doing other unstoppable things
-	<-  -+state( pending );                                         // update state to wait confirm
-		.send( Sender, propose, retrieve( Id ) ).                   // propose to accept the work
-
-///////////////////////////// NO RESPONSE:          OP #19 in purchase sequence schema
-
-@check_accepted[atomic]
-+!check_acceptance( Sender, Id )                                    // the propose has been accepted
-	:   not state( pending ).                                       // do nothing here
-
-@check_unaccepted[atomic]
-+!check_acceptance( Sender, Id )                                    // the propose hasn't been accepted
-	:   state( pending )                                            // if i got no response ...
-	<-  -+state( available )                                        // ... stop waiting and reset as available
-        .send( Sender, failure, retrieve( Id )
-                [ cause( request_timeout ) ] ).                     // send timeout failure
-
-///////////////////////////// REFUSED PROPOSAL:     OP #21 in purchase sequence schema
-
-@client_reject[atomic]
-+!kqml_received( Sender, reject_proposal, Content, MsgId )          // clients refuse proposal
-	:   Content = retrieve( Item )
-	&   state( pending )
-    <-  -+state( available ).                                       // become available again
-
-///////////////////////////// ACCEPTED PROPOSAL:    OP #24 in purchase sequence schema
-
-@client_accept[atomic]
-+!kqml_received( Sender, accept_proposal, Content, MsgId )          // receive confirm of item picking
-	:   Content = retrieve( Item )
-	&   state( pending )
-    <-  -+state( unavailable );                                     // set as unavailable for tasks
-        -activity( _ );
-        +activity( picking )[ client( Sender ), item( Item ) ].     // pick item for client
++!work : activity(_).

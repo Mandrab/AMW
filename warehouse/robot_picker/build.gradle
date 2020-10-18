@@ -13,7 +13,7 @@ docker {
 }
 
 dockerRun {
-    name "robot_picker"
+    name project.name
     image "amw:${project.name}-${project.version}"
     arguments "--network=amw", "--add-host=main_container:172.17.0.1"
 }
