@@ -4,6 +4,7 @@
 bin
 **/build
 project
+res/docker
 target
 **/APDescription.txt
 **/MTPs-Main-Container.txt
