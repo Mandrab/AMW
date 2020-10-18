@@ -1,31 +1,11 @@
-FROM ubuntu:xenial
+FROM openjdk:14-alpine
 
 ENV WORKING_DIR=/root/agent
 
 WORKDIR $WORKING_DIR
 RUN mkdir -p $WORKING_DIR
 
-# install all the needed packages
-RUN apt-get -y update &&                            \
-    apt-get -y install apt-utils &&                 \
-    apt-get -y install wget &&                      \
-    apt-get -y install unzip &&                     \
-    apt-get -y install openjdk-8-jdk &&             \
-    apt-get -y install ant &&                       \
-    apt-get -y install ca-certificates-java &&      \
-    apt-get clean
-
-# fix certificate issues
-RUN update-ca-certificates -f
-
-# setup JAVA_HOME
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-RUN export JAVA_HOME
-
-# download jason interpreter
-RUN wget sourceforge.net/projects/jason/files/jason/version2.6/jason-2.6.zip && \
-    unzip -q jason-2.6.zip -d jason &&              \
-    rm jason-2.6.zip
+COPY jason-2.6/libs ./jason/libs
 
 # set jade in classpath
 ENV CLASSPATH=jason/libs/jade-4.3.jar

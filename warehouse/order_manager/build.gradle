@@ -8,6 +8,7 @@ version = "1.0"
 
 docker {
     name "amw:${project.name}-${project.version}"
+    files "../../res/docker"
     noCache true
 }
 
