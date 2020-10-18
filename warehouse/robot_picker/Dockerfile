@@ -6,8 +6,8 @@ WORKDIR $WORKING_DIR
 RUN mkdir -p $WORKING_DIR
 
 COPY jason-2.6/libs ./jason/libs
-COPY utilities ./utilities
-COPY *.asl ./
+COPY utilities $WORKING_DIR/utilities
+COPY agent.asl $WORKING_DIR
 
 # set jade in classpath
 ENV CLASSPATH=jason/libs/jade-4.3.jar:jason/libs/jason-2.6.jar
@@ -21,4 +21,4 @@ ENV CLASSPATH=jason/libs/jade-4.3.jar:jason/libs/jason-2.6.jar
 EXPOSE 3000
 
 # start the agent
-CMD java jade.Boot -container -host main_container "agent:jason.infra.jade.JadeAgArch(agent.asl)"
+CMD java jade.Boot -container -host main_container "agent:jason.infra.jade.JadeAgArch(${WORKING_DIR}/agent.asl)"
