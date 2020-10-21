@@ -18,6 +18,15 @@ To run the system:
 1. `./gradlew dockerRun` to start all the agents of the system
 
 Other useful commands:
-- `docker images` see all the installed images
-- `docker run --network amw IMAGE` run the agent on the amw virtual network
-- `docker rmi -f (docker images -a -q)` **WARNING** remove ***ALL*** the images in your OS!
+- Gradle:
+    - `./gradlew start_agent [-Pp=PATH/TO] -Pf=MAIN_FILE.asl [-Pn=AGENT_NAME]` start and *asl* agent. Needs a main JADE container running.
+- Docker:
+    - `docker images` see all the installed images
+    - `docker run --network amw IMAGE` run the agent on the amw virtual network
+    - `docker logs CONTAINER` print the container CLI
+    - `docker stop -f (docker images -aq)` **WARNING** stop ***ALL*** the container in your OS!
+    - `docker rm -f (docker images -aq)` **WARNING** remove ***ALL*** the container in your OS!
+    - `docker rmi -f (docker images -aq)` **WARNING** remove ***ALL*** the images in your OS!
+- JADE:
+    - `java -cp path/to/JADE_JAR jade.Boot -gui` start JADE main container from CLI
+    - `java -cp path/to/JADE_&_JASON_JAR jade.Boot -container "agent2:jason.infra.jade.JadeAgArch(ASL_AGENT_NAME)"` start an asl agent by CLI
