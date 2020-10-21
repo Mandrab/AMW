@@ -4,7 +4,7 @@
 
 { include("utilities/literal.asl") }
 { include("utilities/communication.asl") }
-{ include("module/order_manager/id_generator.asl") }
+{ include("action/id_generator.asl") }
 
 /***********************************************************************************************************************
  Initial goals

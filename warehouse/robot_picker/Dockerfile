@@ -5,20 +5,11 @@ ENV WORKING_DIR=/root/agent
 WORKDIR $WORKING_DIR
 RUN mkdir -p $WORKING_DIR
 
-COPY jason-2.6/libs ./jason/libs
+# 'import' all the required files
+COPY jason-2.4/libs ./jason/libs
 COPY utilities $WORKING_DIR/utilities
+COPY action $WORKING_DIR/action
 COPY agent.asl $WORKING_DIR
 
-# set jade in classpath
-ENV CLASSPATH=jason/libs/jade-4.3.jar:jason/libs/jason-2.6.jar
-
-# TODO
-# ricordo che devo rendere accessibile dall'esterno del container
-# la porta 3000 su cui nodejs rimane in attesa di connessioni
-# da parte dei client
-# Occhio, non espongo la porta, questa EXPOSE è solo una nota per
-# ricordare che devo esporre la porta quando eseguo il container.
-EXPOSE 3000
-
 # start the agent
-CMD java jade.Boot -container -host main_container "agent:jason.infra.jade.JadeAgArch(${WORKING_DIR}/agent.asl)"
+CMD java -cp "jason/libs/*" jade.Boot -container -host main_container "$NAME:jason.infra.jade.JadeAgArch($WORKING_DIR/agent.asl)"

@@ -15,5 +15,6 @@ docker {
 dockerRun {
     name project.name
     image "amw:${project.name}-${project.version}"
+    env "NAME": project.name
     arguments "--network=amw", "--add-host=main_container:172.17.0.1"
 }
