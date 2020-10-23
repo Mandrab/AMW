@@ -1,5 +1,8 @@
 package controller
 
+import controller.admin.Controller as AdminController
+import controller.user.Controller as UserController
+
 object Controller {
 
     interface Controller {
@@ -18,13 +21,13 @@ object Controller {
         fun executeScript()
     }
 
-    interface Client: Controller {
+    interface User: Controller {
 
         fun placeOrder()
     }
 
-    operator fun invoke(roles: SystemRoles, retryConnection: Boolean = true): Nothing = when (roles) {
-        SystemRoles.ADMIN -> TODO()
-        else -> TODO()
+    operator fun invoke(roles: SystemRoles, retryConnection: Boolean = true) = when (roles) {
+        SystemRoles.ADMIN -> AdminController(retryConnection)
+        else -> UserController(retryConnection)
     }
 }
