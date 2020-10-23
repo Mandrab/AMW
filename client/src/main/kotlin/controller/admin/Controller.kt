@@ -1,6 +1,9 @@
 package controller.admin
 
 import controller.Controller.Admin
+import controller.admin.agent.Agent
+import controller.agent.Agents
+import controller.admin.agent.Proxy
 
 /**
  * Main class of the application that creates agent and manage main data flow
@@ -10,24 +13,19 @@ import controller.Controller.Admin
  * @author Paolo Baldini
  */
 class Controller(retryConnection: Boolean = true): Admin {
+    private val proxy = Proxy()
 
-    override fun addCommand() {
-        TODO("Not yet implemented")
+    init {
+        Agents.start(retryConnection)(arrayOf(Proxy(), "user", "user@mail"))(Agent::class.java)
     }
 
-    override fun addVersion() {
-        TODO("Not yet implemented")
-    }
+    override fun addCommand() = proxy.addCommand()
 
-    override fun executeCommand() {
-        TODO("Not yet implemented")
-    }
+    override fun addVersion() = proxy.addVersion()
 
-    override fun executeScript() {
-        TODO("Not yet implemented")
-    }
+    override fun executeCommand() = proxy.executeCommand()
 
-    override fun stopSystem() {
-        TODO("Not yet implemented")
-    }
+    override fun executeScript() = proxy.executeScript()
+
+    override fun stopSystem() = proxy.shutdown()
 }
