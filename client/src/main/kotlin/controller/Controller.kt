@@ -26,7 +26,7 @@ object Controller {
         fun placeOrder()
     }
 
-    operator fun invoke(roles: SystemRoles, retryConnection: Boolean = true) = when (roles) {
+    operator fun invoke(role: SystemRoles, retryConnection: Boolean = true) = when (role) {
         SystemRoles.ADMIN -> AdminController(retryConnection)
         else -> UserController(retryConnection)
     }

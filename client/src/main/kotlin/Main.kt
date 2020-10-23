@@ -1,4 +1,4 @@
-import controller.ControllerImpl
+import controller.Controller
 import controller.SystemRoles
 
 /**
@@ -9,7 +9,7 @@ import controller.SystemRoles
  * @author Paolo Baldini
  */
 fun main(args: Array<String>) {
-    ControllerImpl(
+    Controller(
         role = SystemRoles.USER,
         retryConnection = args.isNotEmpty() && args[0] == "retry"
     )
