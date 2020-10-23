@@ -1,6 +1,6 @@
-package controller.user.agent
+package controller.admin.agent
 
-import controller.user.agent.Proxy.Proxy
+import controller.admin.agent.Proxy.Proxy
 import jade.core.Agent as JadeAgent
 
 /**
@@ -21,8 +21,11 @@ class Agent: JadeAgent() {
 
     fun shutdown() = super.takeDown()
 
-    /**
-     * Allows to place an order with submitted elements
-     */
-    fun placeOrder() { TODO() }
+    fun addCommand() { TODO() }
+
+    fun addVersion() { TODO() }
+
+    fun executeCommand() { TODO() }
+
+    fun executeScript() { TODO() }
 }

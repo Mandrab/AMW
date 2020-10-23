@@ -8,15 +8,20 @@ import jade.core.Agent
  *
  * @author Paolo Baldini
  */
-interface AgentProxy {
+interface AgentProxy<T: Agent> {
 
 	/**
 	 * Set agent to be the proxy
 	 */
-	fun setAgent(agent: Agent)
+	fun setAgent(agent: T)
 
 	/**
 	 * Says if proxy is set and available
 	 */
 	fun isAvailable(): Boolean
+
+	/**
+	 * Shutdown the agent
+	 */
+	fun shutdown()
 }
