@@ -1,6 +1,10 @@
 package controller.user
 
 import controller.Controller.User
+import controller.agent.Agents
+import controller.user.agent.ClientAgent
+import controller.user.agent.ClientProxy
+import controller.user.agent.Proxy
 
 /**
  * Main class of the application that creates agent and manage main data flow
@@ -10,12 +14,13 @@ import controller.Controller.User
  * @author Paolo Baldini
  */
 class Controller(retryConnection: Boolean = true): User {
+    private val proxy = Proxy()
 
-    override fun placeOrder() {
-        TODO("Not yet implemented")
+    init {
+        Agents.start(retryConnection)(arrayOf(ClientProxy(), "user", "user@mail"))(ClientAgent::class.java)
     }
 
-    override fun stopSystem() {
-        TODO("Not yet implemented")
-    }
+    override fun placeOrder() = proxy.placeOrder()
+
+    override fun stopSystem() = proxy.shutdown()
 }
