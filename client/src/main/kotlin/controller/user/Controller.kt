@@ -2,8 +2,7 @@ package controller.user
 
 import controller.Controller.User
 import controller.agent.Agents
-import controller.user.agent.ClientAgent
-import controller.user.agent.ClientProxy
+import controller.user.agent.Agent
 import controller.user.agent.Proxy
 
 /**
@@ -17,7 +16,7 @@ class Controller(retryConnection: Boolean = true): User {
     private val proxy = Proxy()
 
     init {
-        Agents.start(retryConnection)(arrayOf(ClientProxy(), "user", "user@mail"))(ClientAgent::class.java)
+        Agents.start(retryConnection)(arrayOf(Proxy(), "user", "user@mail"))(Agent::class.java)
     }
 
     override fun placeOrder() = proxy.placeOrder()

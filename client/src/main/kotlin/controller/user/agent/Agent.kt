@@ -9,7 +9,7 @@ import controller.agent.abstracts.ItemUpdater
  *
  * @author Paolo Baldini
  */
-class ClientAgent: ItemUpdater() {
+class Agent: ItemUpdater() {
     private val client: String by lazy { arguments[1] as String }
     private val clientMail: String by lazy { arguments[2] as String }
 
