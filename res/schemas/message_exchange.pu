@@ -1,0 +1,34 @@
+@startuml
+A -> A: wait response to ID
+A -> B: message(ID)
+B -> B: save response(ID)
+note right: possibily, remove\nit after some time
+B -> A: response(ID)
+A -> A: stop wait response for ID
+@enduml
+
+@startuml
+A -> A: wait response to ID
+A -> B: message(ID)
+A -> B: message(ID)
+note left: timeout for A is elapsed\n(network problems or A\nfaster than B)
+B -> B: save response(ID)
+note right: possibily, remove\nit after some time
+B -> A: response(ID)
+A -> A: stop wait response for ID
+B -> A: response(ID)
+note left: ignore response
+note right: resend saved response
+@enduml
+
+@startuml
+A -> A: wait response to ID
+A -> B: message(ID)
+B -> B: save response(ID)
+note right: possibily, remove\nit after some time
+B ->x A: response(ID)
+A -> B: message(ID)
+B -> A: response(ID)
+note right: resend saved response
+A -> A: stop wait response for ID
+@enduml
