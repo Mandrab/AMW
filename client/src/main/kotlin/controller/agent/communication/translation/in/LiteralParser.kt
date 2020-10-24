@@ -11,6 +11,8 @@ object LiteralParser {
 
     fun String.value() = getValue(this)
 
+    fun String.value(pattern: String) = getValue(this, pattern)
+
     fun String.struct() = splitStructAndList(this).first
 
     fun String.queue() = splitStructAndList(this).second
