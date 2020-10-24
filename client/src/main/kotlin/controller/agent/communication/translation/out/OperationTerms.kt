@@ -1,4 +1,4 @@
-package controller.agent.communication.translation
+package controller.agent.communication.translation.out
 
 import common.ontology.dsl.operation.AddCommand.AddCommand
 import common.ontology.dsl.operation.AddItem.AddItem
@@ -9,10 +9,10 @@ import common.ontology.dsl.operation.Order.Order
 import common.ontology.dsl.operation.OrderInfo.OrderInfo
 import common.ontology.dsl.operation.RemoveItem.RemoveItem
 import common.ontology.dsl.operation.RetrieveOrder.RetrieveOrder
-import controller.agent.communication.Literals.get
-import controller.agent.communication.Literals.invoke
-import controller.agent.communication.Literals.toTerm
-import controller.agent.communication.translation.AbstractionTerms.term
+import controller.agent.communication.translation.out.Literals.get
+import controller.agent.communication.translation.out.Literals.invoke
+import controller.agent.communication.translation.out.Literals.toTerm
+import controller.agent.communication.translation.out.AbstractionTerms.term
 import jason.asSyntax.Literal
 
 object OperationTerms {

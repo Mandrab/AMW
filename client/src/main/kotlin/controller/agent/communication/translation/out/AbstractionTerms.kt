@@ -1,4 +1,4 @@
-package controller.agent.communication.translation
+package controller.agent.communication.translation.out
 
 import common.ontology.dsl.abstraction.Address.Address
 import common.ontology.dsl.abstraction.Client.Client
@@ -16,9 +16,9 @@ import common.ontology.dsl.abstraction.Requirement.Requirement
 import common.ontology.dsl.abstraction.Script.Script
 import common.ontology.dsl.abstraction.Shelf.Shelf
 import common.ontology.dsl.abstraction.Variant.Variant
-import controller.agent.communication.Literals.get
-import controller.agent.communication.Literals.invoke
-import controller.agent.communication.Literals.toTerm
+import controller.agent.communication.translation.out.Literals.get
+import controller.agent.communication.translation.out.Literals.invoke
+import controller.agent.communication.translation.out.Literals.toTerm
 import jason.asSyntax.Literal
 
 object AbstractionTerms {

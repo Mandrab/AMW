@@ -1,4 +1,4 @@
-package controller.agent.communication
+package controller.agent.communication.translation.out
 
 import jason.asSyntax.*
 

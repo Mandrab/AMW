@@ -1,4 +1,4 @@
-package controller.agent.communication.translation
+package controller.agent.communication.translation.out
 
 import common.ontology.Services.ServiceSupplier.*
 import common.ontology.Services.ServiceType.*
@@ -19,7 +19,7 @@ import common.ontology.dsl.operation.RemoveItem.remove
 import common.ontology.dsl.operation.RetrieveOrder.retrieve
 import controller.agent.communication.Messages.message
 import controller.agent.communication.Messages.receiver
-import controller.agent.communication.translation.OperationTerms.term
+import controller.agent.communication.translation.out.OperationTerms.term
 import jade.lang.acl.ACLMessage
 import jason.asSyntax.*
 
