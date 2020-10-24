@@ -32,21 +32,21 @@ object Messages {
             set(value) { message.contentObject = value }
 
         fun receivers(init: Receiver.() -> Unit) {
-            message.addReceiver(receiver(Receiver().apply(init)).name)
+            message.addReceiver(descriptor(Receiver().apply(init)).name)
         }
 
-        private fun receiver(receiver: Receiver) =
+        private fun descriptor(receiver: Receiver) =
             DFAgentDescription().apply {
                 addServices(ServiceDescription().apply {
-                    name = receiver.name
-                    type = receiver.type
+                    name = receiver.supplier
+                    type = receiver.service
                 })
             }
     }
 
     class Receiver {
-        lateinit var name: String
-        lateinit var type: String
+        lateinit var supplier: String
+        lateinit var service: String
     }
 
     fun message(init: Message.() -> Unit): ACLMessage = Message().apply(init).message

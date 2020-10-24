@@ -1,6 +1,12 @@
 package controller.user.agent
 
+import common.Item.ShopItem
+import common.User.User
+import controller.agent.communication.Messages.message
+import controller.agent.communication.Messages.receiver
+import controller.agent.communication.ontology.Ontology.AcceptOrder
 import controller.user.agent.Proxy.Proxy
+import jade.lang.acl.ACLMessage.*
 import jade.core.Agent as JadeAgent
 
 /**
@@ -24,5 +30,16 @@ class Agent: JadeAgent() {
     /**
      * Allows to place an order with submitted elements
      */
-    fun placeOrder() { TODO() }
+    fun placeOrder(user: User, elements: List<ShopItem>) = send(
+        message {
+            performative = REQUEST
+            payloadObject = AcceptOrder.parse(user, elements)
+            receivers {
+                receiver {
+                    supplier = AcceptOrder.serviceSupplier
+                    service = AcceptOrder.serviceType
+                }
+            }
+        }
+    )
 }
