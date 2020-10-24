@@ -2,7 +2,7 @@ package controller.user.agent
 
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.User.User
-import controller.agent.communication.translation.Services.AcceptOrder
+import controller.agent.communication.translation.out.Services.AcceptOrder
 import controller.user.agent.Proxy.Proxy
 import jade.core.Agent as JadeAgent
 
