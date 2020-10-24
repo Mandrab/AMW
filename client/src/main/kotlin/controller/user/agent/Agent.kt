@@ -17,15 +17,13 @@ import jade.core.Agent as JadeAgent
  * @author Paolo Baldini
  */
 class Agent: JadeAgent() {
-    private val client: String by lazy { arguments[1] as String }
-    private val clientMail: String by lazy { arguments[2] as String }
 
     override fun setup() {
         super.setup()
         (arguments[0] as Proxy).setAgent(this)
     }
 
-    fun shutdown() = super.takeDown()
+    fun shutdown() = takeDown()
 
     /**
      * Allows to place an order with submitted elements
