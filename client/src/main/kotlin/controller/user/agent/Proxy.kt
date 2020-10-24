@@ -1,12 +1,14 @@
 package controller.user.agent
 
+import common.ontology.dsl.abstraction.Item.QuantityItem
+import common.ontology.dsl.abstraction.User.User
 import controller.agent.AgentProxy
 
 object Proxy {
 
     interface Proxy: AgentProxy<Agent> {
 
-        fun placeOrder()
+        fun placeOrder(user: User, elements: List<QuantityItem>)
     }
 
     operator fun invoke(): Proxy = ClientProxy()
@@ -20,6 +22,6 @@ object Proxy {
 
         override fun shutdown() = agent.shutdown()
 
-        override fun placeOrder() = agent.placeOrder()
+        override fun placeOrder(user: User, elements: List<QuantityItem>) = agent.placeOrder(user, elements)
     }
 }
