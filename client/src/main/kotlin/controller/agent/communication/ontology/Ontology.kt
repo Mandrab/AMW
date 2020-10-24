@@ -39,56 +39,50 @@ object Ontology {
 
     open class Service constructor(val serviceSupplier: String, val serviceType: String)
 
-    val AcceptOrder = object: Service(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id) {
+    object AcceptOrder: Service(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id) {
         fun parse(user: User, elements: List<ShopItem>): Literal =
             order(client(user.client()), email(user.email()), address(user.address()))[
                     elements.map { item(id(it.id()), quantity(it.quantity())) }
             ].term()
     }
-    val AddCommand = object: Service(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id) {
+    object AddCommand: Service(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id) {
         fun parse(command: Command) =
             AddCommand(command(id(command.id), name(command.name), description(command.description))).term()
     }
-    val AddVersion = object: Service(MANAGEMENT_COMMANDS.id, ADD_VERSION.id) {
+    object AddVersion: Service(MANAGEMENT_COMMANDS.id, ADD_VERSION.id) {
         fun parse(commandId: String, version: Command.Version) =
             AddVersion(
                     commandId,
                     variant(v_id(version.id), script(version.script), version.requirements.map { i -> requirement(i) })
             ).term()
     }
-    val InfoCommands = object: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id) {
-
-    }
-    val InfoOrders = object: Service(MANAGEMENT_ORDERS.id, INFO_ORDERS.id) {
+    object InfoCommands: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id)
+    object InfoOrders: Service(MANAGEMENT_ORDERS.id, INFO_ORDERS.id) {
         fun parse(user: User) = info(user.client(), user.email()).term()
     }
-    val InfoWarehouse = object: Service(TODO(), INFO_WAREHOUSE.id) {
-
-    }
-    val ExecuteCommand = object: Service(EXECUTOR_COMMAND.id, EXEC_COMMAND.id) {
+    object InfoWarehouse: Service(TODO(), INFO_WAREHOUSE.id)
+    object ExecuteCommand: Service(EXECUTOR_COMMAND.id, EXEC_COMMAND.id) {
         fun parse(commandId: String) = execute(command_id(commandId)).term()
     }
-    val ExecuteScript = object: Service(EXECUTOR_SCRIPT.id, EXEC_SCRIPT.id) {
+    object ExecuteScript: Service(EXECUTOR_SCRIPT.id, EXEC_SCRIPT.id) {
         fun parse(script: Script) = execute(script(script.script())[
                 script.requirements().map { requirement(it) }
         ]).term()
     }
-    val RemoveItem = object: Service(TODO(), REMOVE_ITEM.id) {
+    object RemoveItem: Service(TODO(), REMOVE_ITEM.id) {
         fun parse(item: WarehouseItem) =
             remove(item(
                     id(item.id()),
                     position(rack(item.rack()), shelf(item.shelf()), quantity(item.quantity()))
             )).term()
     }
-    val RetrieveItems = object: Service(TODO(), RETRIEVE_ITEMS.id) {
+    object RetrieveItems: Service(TODO(), RETRIEVE_ITEMS.id) {
         fun parse(orderId: String, elements: List<ShopItem>) = retrieve(order_id(orderId))[
                 elements.map { item(id(it.id()), quantity(it.quantity())) }
         ].term()
     }
-    val RetrieveItem = object: Service(TODO(), RETRIEVE_ITEM.id) {
-
-    }
-    val StoreItem = object: Service(TODO(), STORE_ITEM.id) {
+    object RetrieveItem: Service(TODO(), RETRIEVE_ITEM.id)
+    object StoreItem: Service(TODO(), STORE_ITEM.id) {
         fun parse(item: WarehouseItem) =
             AddItem(item(
                     id(item.id()),
