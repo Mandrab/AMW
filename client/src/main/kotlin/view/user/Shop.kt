@@ -5,6 +5,7 @@ import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Item.sameId
 import common.ontology.dsl.abstraction.Quantity.quantity
 import view.utilities.swing.Grid.constraint
+import view.utilities.swing.Label.label
 import view.utilities.swing.List.list
 import view.utilities.swing.List.List
 import view.utilities.swing.List.clean
@@ -13,9 +14,7 @@ import view.utilities.swing.List.minusAssign
 import view.utilities.swing.List.plusAssign
 import view.utilities.swing.List.render
 import view.utilities.swing.Swing.button
-import view.utilities.swing.Swing.label
 import java.awt.GridBagLayout
-import java.util.*
 import javax.swing.JPanel
 
 class Shop(
@@ -56,7 +55,7 @@ class Shop(
     }
 
     fun refresh() {
-        items.setListData(Vector(itemsSupplier()))
+        items.elements = itemsSupplier()
         selectedItems.clean()
     }
 

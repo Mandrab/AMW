@@ -4,8 +4,6 @@ import controller.SystemRoles
 /**
  * Launch application through start of controller.
  *
- * TODO: allow other cli interaction to specify more possibilities
- *
  * @author Paolo Baldini
  */
 fun main(args: Array<String>) {
