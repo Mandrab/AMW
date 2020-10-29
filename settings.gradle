@@ -2,8 +2,6 @@ rootProject.name = "Agent-Managed Warehouse"
 
 include "client"
 
-include "warehouse:main_container"
-
 include "warehouse:collection_point_manager"
 include "warehouse:command_manager"
 include "warehouse:order_manager"

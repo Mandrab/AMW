@@ -24,7 +24,7 @@ object Agents {
      * @param agentClass the class to instantiate and start
      * @param others objects to pass to the agent
      */
-    val start = { retry: Boolean -> { others: Array<Any> -> { agentClass: Class<*> -> {
+    val start = { retry: Boolean -> { others: Array<Any> -> { agentClass: Class<*> ->
         val agentName = "interface-ag%.10f".format(Math.random())
         val agentClassName = agentClass.canonicalName
 
@@ -37,7 +37,7 @@ object Agents {
 
         // if an error occurred and need to retry, recur
         startAgent() ?: if (retry) startAgent() else throw Exception("Failed to initialize the agent")
-    } } } }
+    } } }
 
     fun oneShotBehaviour(operation: (behaviour: Behaviour) -> Unit) = object: OneShotBehaviour() {
         override fun action() = operation(this)

@@ -20,21 +20,18 @@ import view.View
  * @author Paolo Baldini
  */
 class Controller(retryConnection: Boolean = true): Controller.User {
-    private val client = "user"
-    private val email = "user@email"
-    private val address = "address"
+    private val user = user(client("user"), email("user@email"), address("address"))
 
     private val proxy = Proxy()
 
     init {
-        Agents.start(retryConnection)(arrayOf(Proxy(), client, email))(Agent::class.java)
+        Agents.start(retryConnection)(arrayOf(Proxy()))(Agent::class.java)
         View(this)
     }
 
     override fun shopItems(): Collection<QuantityItem> = emptyList()
 
-    override fun placeOrder(items: Collection<QuantityItem>) =
-            proxy.placeOrder(user(client(client), email(email), address(address)), items)
+    override fun placeOrder(items: Collection<QuantityItem>) = proxy.placeOrder(user, items)
 
     override fun orders(): Collection<Order> = emptyList()
 
