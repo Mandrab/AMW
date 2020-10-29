@@ -46,8 +46,8 @@ object Services {
     }
 
     object AcceptOrder {
-        fun build(user: User, elements: List<QuantityItem>) = object: Service(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id) {
-            override fun parse(): Literal = order(user.client, user.email, user.address)[elements].term()
+        fun build(user: User, items: Collection<QuantityItem>) = object: Service(MANAGEMENT_ORDERS.id,ACCEPT_ORDER.id) {
+            override fun parse(): Literal = order(user.client, user.email, user.address)[items].term()
         }
     }
 

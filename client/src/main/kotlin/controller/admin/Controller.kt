@@ -4,6 +4,7 @@ import controller.Controller.Admin
 import controller.admin.agent.Agent
 import controller.agent.Agents
 import controller.admin.agent.Proxy
+import view.View
 
 /**
  * Main class of the application that creates agent and manage main data flow
@@ -17,6 +18,7 @@ class Controller(retryConnection: Boolean = true): Admin {
 
     init {
         Agents.start(retryConnection)(arrayOf(Proxy(), "user", "user@mail"))(Agent::class.java)
+        View(this)
     }
 
     override fun addCommand() = proxy.addCommand()

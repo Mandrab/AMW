@@ -8,5 +8,5 @@ object View {
 
     operator fun invoke(controller: Controller.Admin): View = TODO()
 
-    operator fun invoke(controller: Controller.User): View = TODO()
+    operator fun invoke(controller: Controller.User) = view.user.View(controller)
 }

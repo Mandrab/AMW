@@ -8,7 +8,7 @@ object Proxy {
 
     interface Proxy: AgentProxy<Agent> {
 
-        fun placeOrder(user: User, elements: List<QuantityItem>)
+        fun placeOrder(user: User, elements: Collection<QuantityItem>)
     }
 
     operator fun invoke(): Proxy = ClientProxy()
@@ -22,6 +22,6 @@ object Proxy {
 
         override fun shutdown() = agent.shutdown()
 
-        override fun placeOrder(user: User, elements: List<QuantityItem>) = agent.placeOrder(user, elements)
+        override fun placeOrder(user: User, elements: Collection<QuantityItem>) = agent.placeOrder(user, elements)
     }
 }

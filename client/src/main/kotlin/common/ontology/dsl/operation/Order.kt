@@ -7,11 +7,11 @@ import common.ontology.dsl.abstraction.Item.QuantityItem
 
 object Order {
 
-    data class Order(val client: Client, val email: Email, val address: Address, var items: List<QuantityItem>) {
+    data class Order(val client: Client, val email: Email, val address: Address, var items: Collection<QuantityItem>) {
 
         operator fun get(vararg items: QuantityItem) = get(items.toList())
 
-        operator fun get(items: List<QuantityItem>) = apply { this.items = items }
+        operator fun get(items: Collection<QuantityItem>) = apply { this.items = items }
 
         operator fun plusAssign(item: QuantityItem) { items += item }
     }

@@ -25,5 +25,5 @@ class Agent: JadeAgent() {
     /**
      * Allows to place an order with submitted elements
      */
-    fun placeOrder(user: User, elements: List<QuantityItem>) = send(AcceptOrder.build(user, elements).message())
+    fun placeOrder(user: User, elements: Collection<QuantityItem>) = send(AcceptOrder.build(user, elements).message())
 }
