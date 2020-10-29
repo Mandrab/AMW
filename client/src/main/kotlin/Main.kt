@@ -10,7 +10,7 @@ import controller.SystemRoles
  */
 fun main(args: Array<String>) {
     Controller(
-        role = SystemRoles.USER,
-        retryConnection = args.isNotEmpty() && args[0] == "retry"
+        role = if (args.any { it == "admin" }) SystemRoles.ADMIN else SystemRoles.USER,
+        retryConnection = args.any { it == "retry" }
     )
 }
