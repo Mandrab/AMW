@@ -39,6 +39,13 @@ dependencies {
     implementation "org.jason-lang:jason:2.4"
 }
 
+// start jade main container
+task start_main_container(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = "jade.Boot"
+    args "-gui"
+}
+
 // start agent specifying path, file and name
 task start_agent(type: JavaExec) {
     if (!project.hasProperty("f")) {
