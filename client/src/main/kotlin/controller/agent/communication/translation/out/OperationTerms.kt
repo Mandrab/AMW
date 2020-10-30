@@ -6,7 +6,7 @@ import common.ontology.dsl.operation.AddVersion.AddVersion
 import common.ontology.dsl.operation.Execute.ExecuteScript
 import common.ontology.dsl.operation.Execute.ExecuteCommand
 import common.ontology.dsl.operation.Order.Order
-import common.ontology.dsl.operation.OrderInfo.OrderInfo
+import common.ontology.dsl.operation.Order.OrderInfo
 import common.ontology.dsl.operation.RemoveItem.RemoveItem
 import common.ontology.dsl.operation.RetrieveOrder.RetrieveOrder
 import controller.agent.communication.translation.out.Literals.get

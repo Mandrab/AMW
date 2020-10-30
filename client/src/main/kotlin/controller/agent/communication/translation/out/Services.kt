@@ -13,8 +13,8 @@ import common.ontology.dsl.operation.AddCommand.add
 import common.ontology.dsl.operation.AddVersion.add
 import common.ontology.dsl.operation.AddItem.add
 import common.ontology.dsl.operation.Execute.execute
+import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
-import common.ontology.dsl.operation.OrderInfo.info
 import common.ontology.dsl.operation.RemoveItem.remove
 import common.ontology.dsl.operation.RetrieveOrder.retrieve
 import controller.agent.communication.Messages.message
