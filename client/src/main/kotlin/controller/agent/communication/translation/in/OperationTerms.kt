@@ -29,9 +29,9 @@ object OperationTerms {
     }
 
     fun AddVersion.parse(string: String): AddVersion.AddVersion {
-        val pattern = """add\((.*),variant\((.*)\)\)""".toRegex()
+        val pattern = """add\((.*), ?variant\((.*)\)\)""".toRegex()
         val results = pattern.find(string.trim())!!
-        return add(results[0], Variant.parse(results[1]))
+        return add(results[0], Variant.parse("variant(${results[1]})"))
     }
 
     fun Execute.parseCommand(string: String): Execute.ExecuteCommand  {
@@ -45,7 +45,7 @@ object OperationTerms {
     }
 
     fun Order.parseOrder(string: String): Order.Order {
-        val pattern = """order\(client\((.*)\),email\((.*)\),address\((.*)\)\)\[(.*)]""".toRegex()
+        val pattern = """order\(client\((.*)\), ?email\((.*)\), ?address\((.*)\)\)\[(.*)]""".toRegex()
         val results = pattern.find(string.trim())!!
         return order(client(results[0]), email(results[1]), address(results[2]))[
                 results[3].asList().map { Item.parseQuantityItem(it) }
@@ -53,7 +53,7 @@ object OperationTerms {
     }
 
     fun Order.parseInfo(string: String): Order.OrderInfo {
-        val pattern = """order\(client\((.*)\),email\((.*)\)\)""".toRegex()
+        val pattern = """info\(client\((.*)\), ?email\((.*)\)\)""".toRegex()
         val results = pattern.find(string.trim())!!
         return info(client(results[0]), email(results[1]))
     }

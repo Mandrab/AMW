@@ -17,7 +17,7 @@ object LiteralParser {
 
     fun String.queue() = splitStructAndList(this).second
 
-    fun String.asList() = split(this)
+    fun String.asList() = this@LiteralParser.split(this)
 
     /**
      * Get value contained between parenthesis of element. E.g.:
