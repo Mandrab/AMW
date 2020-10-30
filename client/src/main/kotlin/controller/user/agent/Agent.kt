@@ -2,9 +2,14 @@ package controller.user.agent
 
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.User.User
+import common.ontology.dsl.operation.Order
+import controller.agent.Communicator
+import controller.agent.communication.translation.`in`.LiteralParser.asList
+import controller.agent.communication.translation.`in`.OperationTerms.parseOrder
+import controller.agent.communication.translation.out.Services.InfoOrders
 import controller.agent.communication.translation.out.Services.AcceptOrder
 import controller.user.agent.Proxy.Proxy
-import jade.core.Agent as JadeAgent
+import java.util.concurrent.Future
 
 /**
  * Agent for client-side application.
@@ -13,7 +18,7 @@ import jade.core.Agent as JadeAgent
  *
  * @author Paolo Baldini
  */
-class Agent: JadeAgent() {
+class Agent: Communicator() {
 
     override fun setup() {
         super.setup()
@@ -22,8 +27,14 @@ class Agent: JadeAgent() {
 
     fun shutdown() = takeDown()
 
+    fun shopItems(): Collection<QuantityItem> = TODO()
+
     /**
      * Allows to place an order with submitted elements
      */
     fun placeOrder(user: User, elements: Collection<QuantityItem>) = send(AcceptOrder.build(user, elements).message())
+
+    fun orders(user: User): Future<Collection<Order.Order>> = sendMessage(InfoOrders.build(user).message()) {
+        it.content.asList().map { order -> Order.parseOrder(order) }
+    }
 }

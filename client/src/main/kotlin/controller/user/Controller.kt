@@ -29,11 +29,11 @@ class Controller(retryConnection: Boolean = true): Controller.User {
         View(this)
     }
 
-    override fun shopItems(): Collection<QuantityItem> = emptyList()
+    override fun shopItems() = proxy.shopItems()
 
     override fun placeOrder(items: Collection<QuantityItem>) = proxy.placeOrder(user, items)
 
-    override fun orders(): Collection<Order> = emptyList()
+    override fun orders() = proxy.orders(user)
 
     override fun stopSystem() = proxy.shutdown()
 }

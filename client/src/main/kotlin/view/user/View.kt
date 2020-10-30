@@ -14,7 +14,7 @@ object View {
 
         add(tabs {
             add("Shop", Shop({ controller.shopItems() }, { controller.placeOrder(it) }))
-            add("History", History { controller.orders() })
+            add("History", History { controller.orders().get() })   // TODO make smarter
             addChangeListener {
                 when (selectedComponent) {
                     is Shop -> (selectedComponent as Shop).refresh()

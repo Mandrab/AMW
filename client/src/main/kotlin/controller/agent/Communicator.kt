@@ -1,14 +1,15 @@
 package controller.agent
 
 import controller.agent.Agents.cyclicBehaviour
-import controller.agent.Agents.matchContent
 import controller.agent.Agents.receiveContent
 import controller.agent.Agents.receiveId
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 abstract class Communicator: Agent() {
-    private var waitingConfirm = emptyList<ACLMessage>()
+    private var waitingConfirm = emptyList<ResponseMessage>()
 
     override fun setup() {
         super.setup()
@@ -21,33 +22,47 @@ abstract class Communicator: Agent() {
      */
     private fun checkMessages() = cyclicBehaviour { agent ->
         // gather all the messages that obtained a response
-        val confirmedMessages = waitingConfirm.map { Pair(it, receiveId(it.inReplyTo)) }.filter { it.second != null }
+        val responses = waitingConfirm.map { Pair(it, receiveId(it.message.inReplyTo)) }.filter { it.second != null }
 
         // drop all the confirmed messages
-        waitingConfirm = waitingConfirm.filterNot { confirmedMessages.any { (message, _) -> message == it } }
+        waitingConfirm = waitingConfirm.filterNot { responses.any { (message, _) -> message == it } }
 
-        // restore all the messages that have a content different from a simple "received"
-        confirmedMessages.filterNot { it.second!!.matchContent("received") }.forEach { putBack(it.second) }
+        // complete future for all the received messages
+        responses.forEach { it.first.response.complete(it.second) }
 
-        // drop "received" messages that are not expected
+        // drop "received" messages that are not expected TODO: maybe fare che droppo tutto ciò che non è in waitConfirm
         generateSequence { receiveContent("received") }
 
         agent.block()
     }
 
     /**
+     * Send a message expecting a response
+     */
+    fun sendMessage(message: ACLMessage) = sendMessage(message) { it }
+
+    /**
+     * Send a message expecting a response.
+     * When the response arrives, extract needed information from it
+     */
+    fun <T> sendMessage(message: ACLMessage, mapTo: (ACLMessage) -> T): Future<T> = CompletableFuture<T>()
+            .completeAsync {
+                ResponseMessage(message).apply {
+                    waitingConfirm += this
+                    send(message)
+                }.response.get().let(mapTo)
+            }
+
+    /**
      * Periodically resend messages that need a response
      */
     private fun requestConfirmations() = cyclicBehaviour { agent ->
-        waitingConfirm.forEach { send(it) }
+        waitingConfirm.forEach { send(it.message) }
         agent.block()
     }
 
-    /**
-     * Send a message expecting a response
-     */
-    fun sendMessage(message: ACLMessage) {
-        waitingConfirm = waitingConfirm + message
-        send(message)
-    }
+    private data class ResponseMessage(
+        val message: ACLMessage,
+        val response: CompletableFuture<ACLMessage> = CompletableFuture()
+    )
 }
