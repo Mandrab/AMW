@@ -16,5 +16,9 @@ object Order {
         operator fun plusAssign(item: QuantityItem) { items += item }
     }
 
+    data class OrderInfo(val client: Client, val email: Email)
+
     fun order(client: Client, email: Email, address: Address) = Order(client, email, address, emptyList())
+
+    fun info(client: Client, email: Email) = OrderInfo(client, email)
 }
