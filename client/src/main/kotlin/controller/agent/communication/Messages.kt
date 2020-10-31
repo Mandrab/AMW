@@ -12,7 +12,7 @@ object Messages {
 
         val message: ACLMessage = ACLMessage().apply {
             performative = ACLMessage.INFORM
-            replyWith = Date().toString()
+            replyWith = Date().time.toString()
         }
 
         var performative: Int
@@ -31,8 +31,8 @@ object Messages {
             get() = message.contentObject
             set(value) { message.contentObject = value }
 
-        fun receivers(init: Receiver.() -> Unit) {
-            message.addReceiver(descriptor(Receiver().apply(init)).name)
+        fun receivers(vararg receivers: Receiver) {
+            receivers.forEach { message.addReceiver(descriptor(it).name) }
         }
 
         private fun descriptor(receiver: Receiver) =
