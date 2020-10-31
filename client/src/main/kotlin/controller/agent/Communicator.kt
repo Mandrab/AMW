@@ -5,10 +5,12 @@ import controller.agent.Agents.receiveContent
 import controller.agent.Agents.receiveId
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
 abstract class Communicator: Agent() {
+    private val updateTime = 2500L
     private var waitingConfirm = emptyList<ResponseMessage>()
 
     override fun setup() {
@@ -33,7 +35,7 @@ abstract class Communicator: Agent() {
         // drop "received" messages that are not expected TODO: maybe fare che droppo tutto ciò che non è in waitConfirm
         generateSequence { receiveContent("received") }
 
-        agent.block()
+        agent.block(updateTime)
     }
 
     /**
@@ -47,7 +49,7 @@ abstract class Communicator: Agent() {
      */
     fun <T> sendMessage(message: ACLMessage, mapTo: (ACLMessage) -> T): Future<T> = CompletableFuture<T>()
             .completeAsync {
-                ResponseMessage(message).apply {
+                ResponseMessage(message.apply { inReplyTo = inReplyTo ?: let { Date().time.toString() } }).apply {
                     waitingConfirm += this
                     send(message)
                 }.response.get().let(mapTo)
@@ -58,7 +60,7 @@ abstract class Communicator: Agent() {
      */
     private fun requestConfirmations() = cyclicBehaviour { agent ->
         waitingConfirm.forEach { send(it.message) }
-        agent.block()
+        agent.block(updateTime)
     }
 
     private data class ResponseMessage(
