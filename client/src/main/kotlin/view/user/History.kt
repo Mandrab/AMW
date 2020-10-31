@@ -1,6 +1,6 @@
 package view.user
 
-import common.ontology.dsl.operation.Order.Order
+import common.ontology.dsl.operation.Order.PlaceOrder
 import view.utilities.swing.Grid.constraint
 import view.utilities.swing.List.list
 import java.awt.GridBagLayout
@@ -10,9 +10,9 @@ import javax.swing.JList
 import javax.swing.JPanel
 
 class History(
-    private val ordersSupplier: () -> Collection<Order>
+    private val ordersSupplier: () -> Collection<PlaceOrder>
 ): JPanel() {
-    private val orders: JList<Order>
+    private val orders: JList<PlaceOrder>
 
     init {
         layout = GridBagLayout()
