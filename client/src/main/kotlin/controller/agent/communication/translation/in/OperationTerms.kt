@@ -4,13 +4,22 @@ import common.ontology.dsl.abstraction.*
 import common.ontology.dsl.abstraction.Address.address
 import common.ontology.dsl.abstraction.Client.client
 import common.ontology.dsl.abstraction.Email.email
-import common.ontology.dsl.operation.AddCommand
-import common.ontology.dsl.operation.AddItem
-import common.ontology.dsl.operation.AddVersion
-import common.ontology.dsl.operation.Execute
-import common.ontology.dsl.operation.Order
-import common.ontology.dsl.operation.RemoveItem
-import common.ontology.dsl.operation.RetrieveOrder
+import common.ontology.dsl.operation.Command.AddCommand
+import common.ontology.dsl.operation.Command.ExecuteCommand
+import common.ontology.dsl.operation.Command.execute
+import common.ontology.dsl.operation.Command.add
+import common.ontology.dsl.operation.Item.AddItem
+import common.ontology.dsl.operation.Item.RemoveItem
+import common.ontology.dsl.operation.Item.remove
+import common.ontology.dsl.operation.Item.add
+import common.ontology.dsl.operation.Version.AddVersion
+import common.ontology.dsl.operation.Version.add
+import common.ontology.dsl.operation.Order.PlaceOrder
+import common.ontology.dsl.operation.Order.InfoOrders
+import common.ontology.dsl.operation.Order.info
+import common.ontology.dsl.operation.Order.order
+import common.ontology.dsl.operation.Script.ExecuteScript
+import common.ontology.dsl.operation.Script.execute
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
 import controller.agent.communication.translation.`in`.AbstractionTerms.parseQuantityItem
 import controller.agent.communication.translation.`in`.AbstractionTerms.parseWarehouseItem
@@ -18,33 +27,33 @@ import controller.agent.communication.translation.`in`.LiteralParser.asList
 
 object OperationTerms {
 
-    fun AddCommand.parse(string: String): AddCommand.AddCommand {
+    fun AddCommand.Companion.parse(string: String): AddCommand {
         val pattern = """add\((.*)\)""".toRegex()
         return add(Command.parse(pattern.find(string.trim())!![0]))
     }
 
-    fun AddItem.parse(string: String): AddItem.AddItem {
+    fun AddItem.Companion.parse(string: String): AddItem {
         val pattern = """add\((.*)\)""".toRegex()
         return add(Item.parseWarehouseItem(pattern.find(string.trim())!![0]))
     }
 
-    fun AddVersion.parse(string: String): AddVersion.AddVersion {
+    fun AddVersion.Companion.parse(string: String): AddVersion {
         val pattern = """add\((.*), ?variant\((.*)\)\)""".toRegex()
         val results = pattern.find(string.trim())!!
         return add(results[0], Variant.parse("variant(${results[1]})"))
     }
 
-    fun Execute.parseCommand(string: String): Execute.ExecuteCommand  {
+    fun ExecuteCommand.Companion.parse(string: String): ExecuteCommand {
         val pattern = """execute\((.*)\)""".toRegex()
         return execute(ID.parse(pattern.find(string.trim())!![0], "command_id"))
     }
 
-    fun Execute.parseScript(string: String): Execute.ExecuteScript {
+    fun ExecuteScript.Companion.parse(string: String): ExecuteScript {
         val pattern = """execute\((.*)\)""".toRegex()
         return execute(Script.parse(pattern.find(string.trim())!![0]))
     }
 
-    fun Order.parseOrder(string: String): Order.Order {
+    fun PlaceOrder.Companion.parse(string: String): PlaceOrder {
         val pattern = """order\(client\((.*)\), ?email\((.*)\), ?address\((.*)\)\)\[(.*)]""".toRegex()
         val results = pattern.find(string.trim())!!
         return order(client(results[0]), email(results[1]), address(results[2]))[
@@ -52,23 +61,15 @@ object OperationTerms {
         ]
     }
 
-    fun Order.parseInfo(string: String): Order.OrderInfo {
+    fun InfoOrders.Companion.parse(string: String): InfoOrders {
         val pattern = """info\(client\((.*)\), ?email\((.*)\)\)""".toRegex()
         val results = pattern.find(string.trim())!!
         return info(client(results[0]), email(results[1]))
     }
 
-    fun RemoveItem.parse(string: String): RemoveItem.RemoveItem {
+    fun RemoveItem.Companion.parse(string: String): RemoveItem {
         val pattern = """remove\((.*)\)""".toRegex()
         return remove(Item.parseWarehouseItem(pattern.find(string.trim())!![0]))
-    }
-
-    fun RetrieveOrder.parse(string: String): RetrieveOrder.RetrieveOrder {
-        val pattern = """retrieve\((.*)\)\[(.*)]""".toRegex()
-        val results = pattern.find(string.trim())!!
-        return retrieve(ID.parse(results[0], "order_id"))[
-                results[1].asList().map { Item.parseQuantityItem(it) }
-        ]
     }
 
     private operator fun MatchResult.get(index: Int) = this.groupValues[index + 1]
