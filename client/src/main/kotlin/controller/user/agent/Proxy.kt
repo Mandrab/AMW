@@ -2,7 +2,7 @@ package controller.user.agent
 
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.User.User
-import common.ontology.dsl.operation.Order.Order
+import common.ontology.dsl.operation.Order.PlaceOrder
 import controller.agent.AgentProxy
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
@@ -13,9 +13,9 @@ object Proxy {
 
         fun shopItems(): Collection<QuantityItem>
 
-        fun placeOrder(user: User, elements: Collection<QuantityItem>)
+        fun placeOrder(user: User, items: Collection<QuantityItem>)
 
-        fun orders(user: User): Future<Collection<Order>>
+        fun orders(user: User): Future<Collection<PlaceOrder>>
     }
 
     operator fun invoke(): Proxy = ClientProxy()
@@ -31,8 +31,7 @@ object Proxy {
 
         override fun shopItems() = agent?.shopItems() ?: emptyList()
 
-        override fun placeOrder(user: User, elements: Collection<QuantityItem>) =
-                agent?.placeOrder(user, elements) ?: Unit
+        override fun placeOrder(user: User, items: Collection<QuantityItem>) = agent?.placeOrder(user, items) ?: Unit
 
         override fun orders(user: User) = agent?.orders(user) ?: CompletableFuture.completedFuture(emptyList())
     }
