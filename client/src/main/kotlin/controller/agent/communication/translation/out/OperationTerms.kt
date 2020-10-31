@@ -1,18 +1,18 @@
 package controller.agent.communication.translation.out
 
-import common.ontology.dsl.operation.AddCommand.AddCommand
-import common.ontology.dsl.operation.AddItem.AddItem
-import common.ontology.dsl.operation.AddVersion.AddVersion
-import common.ontology.dsl.operation.Execute.ExecuteScript
-import common.ontology.dsl.operation.Execute.ExecuteCommand
-import common.ontology.dsl.operation.Order.Order
-import common.ontology.dsl.operation.Order.OrderInfo
-import common.ontology.dsl.operation.RemoveItem.RemoveItem
-import common.ontology.dsl.operation.RetrieveOrder.RetrieveOrder
+import common.ontology.dsl.operation.Command.AddCommand
+import common.ontology.dsl.operation.Item.AddItem
+import common.ontology.dsl.operation.Version.AddVersion
+import common.ontology.dsl.operation.Script.ExecuteScript
+import common.ontology.dsl.operation.Command.ExecuteCommand
+import common.ontology.dsl.operation.Order.PlaceOrder
+import common.ontology.dsl.operation.Item.RemoveItem
+import common.ontology.dsl.operation.Order.InfoOrders
+import common.ontology.dsl.operation.Warehouse
+import controller.agent.communication.translation.out.AbstractionTerms.term
 import controller.agent.communication.translation.out.Literals.get
 import controller.agent.communication.translation.out.Literals.invoke
 import controller.agent.communication.translation.out.Literals.toTerm
-import controller.agent.communication.translation.out.AbstractionTerms.term
 import jason.asSyntax.Literal
 
 object OperationTerms {
@@ -27,13 +27,11 @@ object OperationTerms {
 
     fun ExecuteScript.term(): Literal = "execute"(script.term())
 
-    fun Order.term(): Literal = "order"(client.term(), email.term(), address.term())
-            .get(*items.map { it.term() }.toTypedArray())
+    fun PlaceOrder.term(): Literal = "order"(client.term(), email.term(), address.term())[items.map { it.term() }]
 
-    fun OrderInfo.term(): Literal = "info"(client.term(), email.term())
+    fun InfoOrders.term(): Literal = "info"(client.term(), email.term())
 
     fun RemoveItem.term(): Literal = "remove"(item.term())
 
-    fun RetrieveOrder.term(): Literal = "retrieve"(orderId.term("order_id"))
-            .get(*items.map { it.term() }.toTypedArray())
+    fun Warehouse.Info.term(): Literal = "info"(target.name.toLowerCase())
 }

@@ -9,26 +9,30 @@ import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.User.User
 import common.ontology.dsl.abstraction.Script.Script
 import common.ontology.dsl.abstraction.Variant.Variant
-import common.ontology.dsl.operation.AddCommand.add
-import common.ontology.dsl.operation.AddVersion.add
-import common.ontology.dsl.operation.AddItem.add
-import common.ontology.dsl.operation.Execute.execute
+import common.ontology.dsl.operation.Command.add
+import common.ontology.dsl.operation.Command.execute
+import common.ontology.dsl.operation.Version.add
+import common.ontology.dsl.operation.Item.add
+import common.ontology.dsl.operation.Script.execute
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
-import common.ontology.dsl.operation.RemoveItem.remove
-import common.ontology.dsl.operation.RetrieveOrder.retrieve
+import common.ontology.dsl.operation.Item.remove
+import common.ontology.dsl.operation.Warehouse.Target.WAREHOUSE
+import common.ontology.dsl.operation.Warehouse.info
 import controller.agent.communication.Messages.message
 import controller.agent.communication.Messages.receiver
 import controller.agent.communication.translation.out.OperationTerms.term
 import jade.lang.acl.ACLMessage
+import jade.lang.acl.ACLMessage.REQUEST
+import jade.lang.acl.ACLMessage.INFORM
 import jason.asSyntax.*
 
 object Services {
 
     abstract class Service constructor(
-            val serviceSupplier: String,
-            val serviceType: String,
-            val servicePerformative: Int = TODO()
+        private val serviceSupplier: String,
+        private val serviceType: String,
+        private val servicePerformative: Int = INFORM
     ) {
         abstract fun parse(): Literal
 
@@ -36,12 +40,12 @@ object Services {
             message {
                 performative = servicePerformative
                 payloadObject = parse()
-                receivers {
+                receivers(
                     receiver {
                         supplier = serviceSupplier
                         service = serviceType
                     }
-                }
+                )
             }
     }
 
@@ -71,7 +75,11 @@ object Services {
         }
     }
 
-    object InfoWarehouse//: Service(TODO(), INFO_WAREHOUSE.id)
+    object InfoWarehouse {
+        fun build() = object: Service(MANAGEMENT_ITEMS.id, INFO_WAREHOUSE.id, REQUEST) {
+            override fun parse(): Literal = info(WAREHOUSE).term()
+        }
+    }
 
     object ExecuteCommand {
         fun build(commandId: ID) = object: Service(EXECUTOR_COMMAND.id, EXEC_COMMAND.id) {
@@ -88,12 +96,6 @@ object Services {
     object RemoveItem {
         fun build(item: WarehouseItem) = object: Service(TODO(), REMOVE_ITEM.id) {
             override fun parse(): Literal = remove(item).term()
-        }
-    }
-
-    object RetrieveItems {
-        fun build(orderId: ID, elements: List<QuantityItem>) = object: Service(TODO(), RETRIEVE_ITEMS.id) {
-            override fun parse(): Literal = retrieve(orderId)[elements].term()
         }
     }
 
