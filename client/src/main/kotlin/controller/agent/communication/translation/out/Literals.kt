@@ -56,7 +56,7 @@ object Literals {
 	/**
 	 * Converts a string to a term
 	 */
-	fun String.toTerm() = StringTermImpl(this) // TODO Atom instead StringTermImpl ?
+	fun String.toTerm() = Atom(this)
 
 	/**
 	 * Set string(s) as 'queue' of the literal. A queue is meant as:

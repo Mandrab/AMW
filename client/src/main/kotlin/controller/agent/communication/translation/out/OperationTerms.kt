@@ -33,5 +33,5 @@ object OperationTerms {
 
     fun RemoveItem.term(): Literal = "remove"(item.term())
 
-    fun Warehouse.Info.term(): Literal = "info"(target.name.toLowerCase())
+    fun Warehouse.Info.term(): Literal = "info"(target.name.toLowerCase().toTerm())
 }
