@@ -17,6 +17,8 @@ repositories {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jason-lang:jason:2.4"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0"
+    implementation "commons-codec:commons-codec:1.15"   // avoid "Missing support for Base64 conversions" error
 
     testImplementation "junit:junit:4.12"
 }

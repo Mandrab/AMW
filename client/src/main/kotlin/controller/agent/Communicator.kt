@@ -24,7 +24,7 @@ abstract class Communicator: Agent() {
      */
     private fun checkMessages() = cyclicBehaviour { agent ->
         // gather all the messages that obtained a response
-        val responses = waitingConfirm.map { Pair(it, receiveId(it.message.inReplyTo)) }.filter { it.second != null }
+        val responses = waitingConfirm.map { Pair(it, receiveId(it.message.replyWith)) }.filter { it.second != null }
 
         // drop all the confirmed messages
         waitingConfirm = waitingConfirm.filterNot { responses.any { (message, _) -> message == it } }
@@ -35,7 +35,7 @@ abstract class Communicator: Agent() {
         // drop "received" messages that are not expected TODO: maybe fare che droppo tutto ciò che non è in waitConfirm
         generateSequence { receiveContent("received") }
 
-        agent.block(updateTime)
+        agent.block()
     }
 
     /**
@@ -49,7 +49,7 @@ abstract class Communicator: Agent() {
      */
     fun <T> sendMessage(message: ACLMessage, mapTo: (ACLMessage) -> T): Future<T> = CompletableFuture<T>()
             .completeAsync {
-                ResponseMessage(message.apply { inReplyTo = inReplyTo ?: let { Date().time.toString() } }).apply {
+                ResponseMessage(message.apply { replyWith = replyWith ?: let { Date().time.toString() } }).apply {
                     waitingConfirm += this
                     send(message)
                 }.response.get().let(mapTo)
