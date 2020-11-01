@@ -5,6 +5,7 @@ import controller.agent.Agents.receiveContent
 import controller.agent.Agents.receiveId
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
+import jade.lang.acl.ACLMessage.FAILURE
 import java.util.Date
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
@@ -23,8 +24,9 @@ abstract class Communicator: Agent() {
      * Periodically check if a response messages has come
      */
     private fun checkMessages() = cyclicBehaviour { agent ->
-        // gather all the messages that obtained a response
+        // gather all the messages that obtained a valid response
         val responses = waitingConfirm.map { Pair(it, receiveId(it.message.replyWith)) }.filter { it.second != null }
+            .filter { it.second?.performative != FAILURE || !it.first.retryOnFailure }
 
         // drop all the confirmed messages
         waitingConfirm = waitingConfirm.filterNot { responses.any { (message, _) -> message == it } }
@@ -47,9 +49,12 @@ abstract class Communicator: Agent() {
      * Send a message expecting a response.
      * When the response arrives, extract needed information from it
      */
-    fun <T> sendMessage(message: ACLMessage, mapTo: (ACLMessage) -> T): Future<T> = CompletableFuture<T>()
-            .completeAsync {
-                ResponseMessage(message.apply { replyWith = replyWith ?: let { Date().time.toString() } }).apply {
+    fun <T> sendMessage(message: ACLMessage, retryOnFailure: Boolean = true, mapTo: (ACLMessage) -> T): Future<T> =
+        CompletableFuture<T>().completeAsync {
+                ResponseMessage(
+                    message.apply { replyWith = replyWith ?: let { Date().time.toString() } },
+                    retryOnFailure
+                ).apply {
                     waitingConfirm += this
                     send(message)
                 }.response.get().let(mapTo)
@@ -68,7 +73,9 @@ abstract class Communicator: Agent() {
 
     private data class ResponseMessage(
         val message: ACLMessage,
-        var lastSent: Date = Date(),
+        val retryOnFailure: Boolean
+    ) {
+        var lastSent: Date = Date()
         val response: CompletableFuture<ACLMessage> = CompletableFuture()
-    )
+    }
 }

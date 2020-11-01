@@ -42,5 +42,5 @@ class Agent: Communicator() {
     fun placeOrder(user: User, items: Collection<QuantityItem>) = send(AcceptOrder.build(user, items).message(this))
 
     fun orders(user: User): Future<Collection<PlaceOrder>> =
-        sendMessage(InfoOrdersOut.build(user).message(this), InfoOrdersIn.parse)
+        sendMessage(InfoOrdersOut.build(user).message(this), true, InfoOrdersIn.parse)
 }
