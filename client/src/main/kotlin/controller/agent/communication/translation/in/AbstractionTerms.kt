@@ -48,7 +48,7 @@ object AbstractionTerms {
             .run { IDClass(next(), syntax) }
 
     fun Product.Companion.parse(string: String): Product =
-            string.parse("""item\(id\((.*)\), reserved\((.*)\)\)\[(.*)]""")
+            string.parse("""item\(id\((.*)\), ?reserved\((.*)\)\)\[(.*)]""")
                     .run { item(id(next()), reserved(next().toInt()))[next().asList().map { Position.parse(it) }] }
 
     fun WarehouseItem.Companion.parse(string: String): WarehouseItem =

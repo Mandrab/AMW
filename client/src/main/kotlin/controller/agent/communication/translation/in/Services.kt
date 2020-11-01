@@ -4,6 +4,7 @@ import common.ontology.dsl.abstraction.Command.CommandInfo
 import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.QuantityItem
+import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.User.User
 import common.ontology.dsl.abstraction.Script.Script
 import common.ontology.dsl.abstraction.Variant.Variant
@@ -37,8 +38,8 @@ object Services {
         override val parse = { message: ACLMessage -> message.content.asList().map { PlaceOrder.parse(it) } }
     }
 
-    object InfoWarehouse: Service<Collection<QuantityItem>> {
-        override val parse = { message: ACLMessage -> message.content.asList().map { QuantityItem.parse(it) } }
+    object InfoWarehouse: Service<Collection<Product>> {
+        override val parse = { message: ACLMessage -> message.content.asList().map { Product.parse(it) } }
     }
 
     object ExecuteCommand {
