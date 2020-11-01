@@ -11,7 +11,7 @@ object Proxy {
 
     interface Proxy: AgentProxy<Agent> {
 
-        fun shopItems(): Collection<QuantityItem>
+        fun shopItems(): Future<Collection<QuantityItem>>
 
         fun placeOrder(user: User, items: Collection<QuantityItem>)
 
@@ -29,10 +29,12 @@ object Proxy {
 
         override fun shutdown() = agent?.shutdown() ?: Unit
 
-        override fun shopItems() = agent?.shopItems() ?: emptyList()
+        override fun shopItems() = agent?.shopItems() ?: future(emptyList())
 
         override fun placeOrder(user: User, items: Collection<QuantityItem>) = agent?.placeOrder(user, items) ?: Unit
 
-        override fun orders(user: User) = agent?.orders(user) ?: CompletableFuture.completedFuture(emptyList())
+        override fun orders(user: User) = agent?.orders(user) ?: future(emptyList())
+
+        private fun <T> future(element: T): Future<T> = CompletableFuture.completedFuture(element)
     }
 }

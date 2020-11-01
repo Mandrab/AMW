@@ -4,9 +4,10 @@ import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.User.User
 import common.ontology.dsl.operation.Order.PlaceOrder
 import controller.agent.Communicator
-import controller.agent.communication.translation.`in`.LiteralParser.asList
-import controller.agent.communication.translation.`in`.OperationTerms.parse
-import controller.agent.communication.translation.out.Services.InfoOrders
+import controller.agent.communication.translation.`in`.Services.InfoWarehouse as InfoWarehouseIn
+import controller.agent.communication.translation.out.Services.InfoWarehouse as InfoWarehouseOut
+import controller.agent.communication.translation.`in`.Services.InfoOrders as InfoOrdersIn
+import controller.agent.communication.translation.out.Services.InfoOrders as InfoOrdersOut
 import controller.agent.communication.translation.out.Services.AcceptOrder
 import controller.user.agent.Proxy.Proxy
 import java.util.concurrent.Future
@@ -27,14 +28,14 @@ class Agent: Communicator() {
 
     fun shutdown() = takeDown()
 
-    fun shopItems(): Collection<QuantityItem> = emptyList()//TODO
+    fun shopItems(): Future<Collection<QuantityItem>> =
+        sendMessage(InfoWarehouseOut.build().message(this), InfoWarehouseIn.parse)
 
     /**
      * Allows to place an order with submitted elements
      */
-    fun placeOrder(user: User, elements: Collection<QuantityItem>) = send(AcceptOrder.build(user, elements).message())
+    fun placeOrder(user: User, items: Collection<QuantityItem>) = send(AcceptOrder.build(user, items).message(this))
 
-    fun orders(user: User): Future<Collection<PlaceOrder>> = sendMessage(InfoOrders.build(user).message()) {
-        it.content.asList().map { order -> PlaceOrder.parse(order) }
-    }
+    fun orders(user: User): Future<Collection<PlaceOrder>> =
+        sendMessage(InfoOrdersOut.build(user).message(this), InfoOrdersIn.parse)
 }
