@@ -22,6 +22,7 @@ import common.ontology.dsl.operation.Warehouse.info
 import controller.agent.communication.Messages.message
 import controller.agent.communication.Messages.receiver
 import controller.agent.communication.translation.out.OperationTerms.term
+import controller.user.agent.Agent
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.ACLMessage.REQUEST
 import jade.lang.acl.ACLMessage.INFORM
@@ -36,7 +37,7 @@ object Services {
     ) {
         abstract fun parse(): Literal
 
-        fun message(): ACLMessage =
+        fun message(agent: Agent): ACLMessage =
             message {
                 performative = servicePerformative
                 payloadObject = parse()
@@ -46,7 +47,7 @@ object Services {
                         service = serviceType
                     }
                 )
-            }
+            }(agent)
     }
 
     object AcceptOrder {
