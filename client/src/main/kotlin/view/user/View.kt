@@ -5,6 +5,7 @@ import view.utilities.LoadingPanel
 import view.utilities.swing.GlassLayer.layer
 import view.utilities.swing.Swing.frame
 import view.utilities.swing.Tab.tabs
+import java.util.concurrent.TimeUnit
 import javax.swing.JLayeredPane.CENTER_ALIGNMENT
 import javax.swing.SwingUtilities
 
@@ -18,11 +19,15 @@ object View {
                     add("History", History())   // TODO make smarter
                     addChangeListener {
                         loading(startLoading, stopLoading) {
-                            when (selectedComponent) {
-                                is Shop -> (selectedComponent as Shop).refresh(controller.shopItems().get())
-                                is History -> (selectedComponent as History).refresh(emptyList())//.refresh(controller.orders().get())
-                                else -> Unit
-                            }
+                            if(kotlin.runCatching {
+                                when (selectedComponent) {
+                                    is Shop -> (selectedComponent as Shop)
+                                        .refresh(controller.shopItems().get(2500, TimeUnit.MILLISECONDS))
+                                    is History -> (selectedComponent as History)
+                                        .refresh(emptyList())//.refresh(controller.orders().get()) TODO
+                                    else -> Unit
+                                }
+                            }.isFailure) println("Error! The remote object is requiring to much time to respond!")
                         }
                     }
                 }, CENTER_ALIGNMENT)
