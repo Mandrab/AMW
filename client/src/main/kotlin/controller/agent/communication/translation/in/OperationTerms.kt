@@ -4,6 +4,8 @@ import common.ontology.dsl.abstraction.*
 import common.ontology.dsl.abstraction.Address.address
 import common.ontology.dsl.abstraction.Client.client
 import common.ontology.dsl.abstraction.Email.email
+import common.ontology.dsl.abstraction.Item.QuantityItem
+import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.operation.Command.AddCommand
 import common.ontology.dsl.operation.Command.ExecuteCommand
 import common.ontology.dsl.operation.Command.execute
@@ -21,56 +23,36 @@ import common.ontology.dsl.operation.Order.order
 import common.ontology.dsl.operation.Script.ExecuteScript
 import common.ontology.dsl.operation.Script.execute
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
-import controller.agent.communication.translation.`in`.AbstractionTerms.parseQuantityItem
-import controller.agent.communication.translation.`in`.AbstractionTerms.parseWarehouseItem
 import controller.agent.communication.translation.`in`.LiteralParser.asList
 
 object OperationTerms {
 
-    fun AddCommand.Companion.parse(string: String): AddCommand {
-        val pattern = """add\((.*)\)""".toRegex()
-        return add(Command.parse(pattern.find(string.trim())!![0]))
-    }
+    fun AddCommand.Companion.parse(string: String): AddCommand = string.parse("""add\((.*)\)""")
+            .run { add(Command.parse(next())) }
 
-    fun AddItem.Companion.parse(string: String): AddItem {
-        val pattern = """add\((.*)\)""".toRegex()
-        return add(Item.parseWarehouseItem(pattern.find(string.trim())!![0]))
-    }
+    fun AddItem.Companion.parse(string: String): AddItem = string.parse("""add\((.*)\)""")
+            .run { add(WarehouseItem.parse(next())) }
 
-    fun AddVersion.Companion.parse(string: String): AddVersion {
-        val pattern = """add\((.*), ?variant\((.*)\)\)""".toRegex()
-        val results = pattern.find(string.trim())!!
-        return add(results[0], Variant.parse("variant(${results[1]})"))
-    }
+    fun AddVersion.Companion.parse(string: String): AddVersion = string.parse("""add\((.*), ?variant\((.*)\)\)""")
+            .run { add(next(), Variant.parse("variant(${next()})")) }
 
-    fun ExecuteCommand.Companion.parse(string: String): ExecuteCommand {
-        val pattern = """execute\((.*)\)""".toRegex()
-        return execute(ID.parse(pattern.find(string.trim())!![0], "command_id"))
-    }
+    fun ExecuteCommand.Companion.parse(string: String): ExecuteCommand = string.parse("""execute\((.*)\)""")
+            .run { execute(ID.parse(next(), "command_id")) }
 
-    fun ExecuteScript.Companion.parse(string: String): ExecuteScript {
-        val pattern = """execute\((.*)\)""".toRegex()
-        return execute(Script.parse(pattern.find(string.trim())!![0]))
-    }
+    fun ExecuteScript.Companion.parse(string: String): ExecuteScript = string.parse("""execute\((.*)\)""")
+            .run { execute(Script.parse(next())) }
 
-    fun PlaceOrder.Companion.parse(string: String): PlaceOrder {
-        val pattern = """order\(client\((.*)\), ?email\((.*)\), ?address\((.*)\)\)\[(.*)]""".toRegex()
-        val results = pattern.find(string.trim())!!
-        return order(client(results[0]), email(results[1]), address(results[2]))[
-                results[3].asList().map { Item.parseQuantityItem(it) }
-        ]
-    }
+    fun PlaceOrder.Companion.parse(string: String): PlaceOrder =
+            string.parse("""order\(client\((.*)\), ?email\((.*)\), ?address\((.*)\)\)\[(.*)]""")
+                    .run { order(client(next()), email(next()), address(next()))[
+                            next().asList().map { QuantityItem.parse(it) }
+                    ] }
 
-    fun InfoOrders.Companion.parse(string: String): InfoOrders {
-        val pattern = """info\(client\((.*)\), ?email\((.*)\)\)""".toRegex()
-        val results = pattern.find(string.trim())!!
-        return info(client(results[0]), email(results[1]))
-    }
+    fun InfoOrders.Companion.parse(string: String): InfoOrders =
+            string.parse("""info\(client\((.*)\), ?email\((.*)\)\)""").run { info(client(next()), email(next())) }
 
-    fun RemoveItem.Companion.parse(string: String): RemoveItem {
-        val pattern = """remove\((.*)\)""".toRegex()
-        return remove(Item.parseWarehouseItem(pattern.find(string.trim())!![0]))
-    }
+    fun RemoveItem.Companion.parse(string: String): RemoveItem = string.parse("""remove\((.*)\)""")
+            .run { remove(WarehouseItem.parse(next())) }
 
-    private operator fun MatchResult.get(index: Int) = this.groupValues[index + 1]
+    private fun String.parse(pattern: String) = pattern.toRegex().find(trim())!!.groupValues.drop(1).iterator()
 }

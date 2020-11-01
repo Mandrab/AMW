@@ -9,12 +9,16 @@ import common.ontology.dsl.abstraction.Email
 import common.ontology.dsl.abstraction.ID
 import common.ontology.dsl.abstraction.ID.ID as IDClass
 import common.ontology.dsl.abstraction.ID.id
-import common.ontology.dsl.abstraction.Item
+import common.ontology.dsl.abstraction.Item.Product
+import common.ontology.dsl.abstraction.Item.WarehouseItem
+import common.ontology.dsl.abstraction.Item.QuantityItem
+import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Name
 import common.ontology.dsl.abstraction.Name.name
 import common.ontology.dsl.abstraction.Position
 import common.ontology.dsl.abstraction.Quantity
 import common.ontology.dsl.abstraction.Quantity.quantity
+import common.ontology.dsl.abstraction.Quantity.reserved
 import common.ontology.dsl.abstraction.Rack
 import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Requirement
@@ -23,99 +27,63 @@ import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf
 import common.ontology.dsl.abstraction.Shelf.shelf
 import common.ontology.dsl.abstraction.Variant
+import controller.agent.communication.translation.`in`.LiteralParser.asList
 
 object AbstractionTerms {
 
-    fun Address.parse(string: String): Address.Address {
-        val pattern = """address\((.*)\)""".toRegex()
-        return address(pattern.find(string.trim())!![0])
-    }
+    fun Address.parse(string: String): Address.Address = string.parse("""address\((.*)\)""").run { address(next()) }
 
-    fun Client.parse(string: String): Client.Client {
-        val pattern = """client\((.*)\)""".toRegex()
-        return client(pattern.find(string.trim())!![0])
-    }
+    fun Client.parse(string: String): Client.Client = string.parse("""client\((.*)\)""").run { client(next()) }
 
-    fun Command.parse(string: String): Command.CommandInfo {
-        val pattern = """command\(id\((.*)\), ?name\((.*)\), ?description\((.*)\)\)""".toRegex()
-        val results = pattern.find(string.trim())!!
-        return command(id(results[0]),name(results[1]),description(results[2]))
-    }
+    fun Command.parse(string: String): Command.CommandInfo =
+            string.parse("""command\(id\((.*)\), ?name\((.*)\), ?description\((.*)\)\)""")
+                    .run { command(id(next()),name(next()),description(next())) }
 
-    fun Description.parse(string: String): Description.Description {
-        val pattern = """description\((.*)\)""".toRegex()
-        return description(pattern.find(string.trim())!![0])
-    }
+    fun Description.parse(string: String): Description.Description = string.parse("""description\((.*)\)""")
+            .run { description(next()) }
 
-    fun Email.parse(string: String): Email.Email {
-        val pattern = """email\((.*)\)""".toRegex()
-        return email(pattern.find(string.trim())!![0])
-    }
+    fun Email.parse(string: String): Email.Email = string.parse("""email\((.*)\)""").run { email(next()) }
 
-    fun ID.parse(string: String, syntax: String = "id"): ID.ID {
-        val pattern = """$syntax\((.*)\)""".toRegex()
-        return IDClass(pattern.find(string.trim())!![0], syntax)
-    }
+    fun ID.parse(string: String, syntax: String = "id"): ID.ID = string.parse("""$syntax\((.*)\)""")
+            .run { IDClass(next(), syntax) }
 
-    fun Item.parseWarehouseItem(string: String): Item.WarehouseItem {
-        val pattern = """item\(id\((.*)\), ?position\((.*)\)\)""".toRegex()
-        val results = pattern.find(string.trim())!!
-        return item(id(results[0]),Position.parse("position(${results[1]})"))
-    }
+    fun Product.Companion.parse(string: String): Product =
+            string.parse("""item\(id\((.*)\), reserved\((.*)\)\)\[(.*)]""")
+                    .run { item(id(next()), reserved(next().toInt()))[next().asList().map { Position.parse(it) }] }
 
-    fun Item.parseQuantityItem(string: String): Item.QuantityItem {
-        val pattern = """item\(id\((.*)\), ?(.*)\)""".toRegex()
-        val results = pattern.find(string.trim())!!
-        return item(id(results[0]),Quantity.parse(results[1]))
-    }
+    fun WarehouseItem.Companion.parse(string: String): WarehouseItem =
+            string.parse("""item\(id\((.*)\), ?position\((.*)\)\)""")
+                    .run { item(id(next()),Position.parse("position(${next()})")) }
 
-    fun Name.parse(string: String): Name.Name {
-        val pattern = """name\((.*)\)""".toRegex()
-        return name(pattern.find(string.trim())!![0])
-    }
+    fun QuantityItem.Companion.parse(string: String): QuantityItem = string.parse("""item\(id\((.*)\), ?(.*)\)""")
+            .run { item(id(next()),Quantity.parse(next())) }
 
-    fun Position.parse(string: String): Position.Position {
-        val pattern = """position\(rack\((.*)\), ?shelf\((.*)\), ?quantity\((.*)\)\)""".toRegex()
-        val results = pattern.find(string.trim())!!
-        return position(rack(results[0].toInt()),shelf(results[1].toInt()),quantity(results[2].toInt()))
-    }
+    fun Name.parse(string: String): Name.Name = string.parse("""name\((.*)\)""").run { name(next()) }
 
-    fun Quantity.parse(string: String): Quantity.Quantity {
-        val pattern = """quantity\((.*)\)""".toRegex()
-        return quantity(pattern.find(string.trim())!![0].toInt())
-    }
+    fun Position.parse(string: String): Position.Position =
+            string.parse("""position\(rack\((.*)\), ?shelf\((.*)\), ?quantity\((.*)\)\)""")
+                    .run { position(rack(next().toInt()),shelf(next().toInt()),quantity(next().toInt())) }
 
-    fun Rack.parse(string: String): Rack.Rack {
-        val pattern = """rack\((.*)\)""".toRegex()
-        return rack(pattern.find(string.trim())!![0].toInt())
-    }
+    fun Quantity.parse(string: String): Quantity.Quantity = string.parse("""quantity\((.*)\)""")
+            .run { quantity(next().toInt()) }
 
-    fun Requirement.parse(string: String): Requirement.Requirement {
-        val pattern = """(.*)""".toRegex()
-        return requirement(pattern.find(string.trim())!![0])
-    }
+    fun Rack.parse(string: String): Rack.Rack = string.parse("""rack\((.*)\)""").run { rack(next().toInt()) }
 
-    fun Script.parse(string: String): Script.Script {
-        val pattern = """script\((.*)\)\[(.*)]""".toRegex()
-        return script(pattern.find(string.trim())!![0])[
-                pattern.find(string.trim())!![1].split(",").map { Requirement.parse(it) }
-        ]
-    }
+    fun Requirement.parse(string: String): Requirement.Requirement = string.parse("""(.*)""")
+            .run { requirement(next()) }
 
-    fun Shelf.parse(string: String): Shelf.Shelf {
-        val pattern = """shelf\((.*)\)""".toRegex()
-        return shelf(pattern.find(string.trim())!![0].toInt())
-    }
+    fun Script.parse(string: String): Script.Script = string.parse("""script\((.*)\)\[(.*)]""")
+            .run { script(next())[next().split(",").map { Requirement.parse(it) }] }
 
-    fun Variant.parse(string: String): Variant.Variant {
-        val pattern = """variant\(id\((.*)\), ?requirements\[(.*)], ?script\((.*)\)\)""".toRegex()
-        val results = pattern.find(string.trim())!!
-        return variant(
-                id(results[0]),
-                script(results[2]),
-                results[1].split(",").map { Requirement.parse(it) }
-        )
-    }
+    fun Shelf.parse(string: String): Shelf.Shelf = string.parse("""shelf\((.*)\)""").run { shelf(next().toInt()) }
 
-    private operator fun MatchResult.get(index: Int) = this.groupValues[index + 1]
+    fun Variant.parse(string: String): Variant.Variant =
+            string.parse("""variant\(id\((.*)\), ?requirements\[(.*)], ?script\((.*)\)\)""").run {
+                val id = next()
+                val requirements = next()
+                val script = next()
+                variant(id(id), script(script), requirements.split(",").map { Requirement.parse(it) })
+            }
+
+    private fun String.parse(pattern: String) = pattern.toRegex().find(trim())!!.groupValues.drop(1).iterator()
 }
