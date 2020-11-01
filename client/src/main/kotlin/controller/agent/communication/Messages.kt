@@ -1,5 +1,8 @@
 package controller.agent.communication
 
+import jade.core.Agent
+import jade.core.NotFoundException
+import jade.domain.DFService
 import jade.domain.FIPAAgentManagement.DFAgentDescription
 import jade.domain.FIPAAgentManagement.ServiceDescription
 import jade.lang.acl.ACLMessage
@@ -9,11 +12,11 @@ import java.util.*
 object Messages {
 
     class Message {
-
-        val message: ACLMessage = ACLMessage().apply {
+        private val message: ACLMessage = ACLMessage().apply {
             performative = ACLMessage.INFORM
             replyWith = Date().time.toString()
         }
+        private var receivers = emptySet<DFAgentDescription>()
 
         var performative: Int
             get() = message.performative
@@ -31,17 +34,19 @@ object Messages {
             get() = message.contentObject
             set(value) { message.contentObject = value }
 
-        fun receivers(vararg receivers: Receiver) {
-            receivers.forEach { message.addReceiver(descriptor(it).name) }
+        fun receivers(vararg receivers: Receiver) { this.receivers += receivers.map { descriptor(it) } }
+
+        operator fun invoke(agent: Agent) = message.apply {
+            receivers.flatMap { DFService.search(agent, it).asSequence() }.ifEmpty { throw NotFoundException() }
+                .forEach { message.addReceiver(it.name) }
         }
 
-        private fun descriptor(receiver: Receiver) =
-            DFAgentDescription().apply {
-                addServices(ServiceDescription().apply {
-                    name = receiver.supplier
-                    type = receiver.service
-                })
-            }
+        private fun descriptor(receiver: Receiver) = DFAgentDescription().apply {
+            addServices(ServiceDescription().apply {
+                name = receiver.supplier
+                type = receiver.service
+            })
+        }
     }
 
     class Receiver {
@@ -49,7 +54,7 @@ object Messages {
         lateinit var service: String
     }
 
-    fun message(init: Message.() -> Unit): ACLMessage = Message().apply(init).message
+    fun message(init: Message.() -> Unit): Message = Message().apply(init)
 
     fun receiver(init: Receiver.() -> Unit): Receiver = Receiver().apply(init)
 }
