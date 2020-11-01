@@ -1,5 +1,6 @@
 package view.utilities.swing
 
+import view.utilities.swing.Swing.panel
 import javax.swing.JLayeredPane
 import javax.swing.JPanel
 
@@ -9,7 +10,7 @@ object GlassLayer {
         layout = null
     }
 
-    fun layer(init: JPanel.() -> Unit) = JPanel().apply(init).apply {
+    fun layer(init: JPanel.() -> Unit) = panel(init).apply {
         setBounds(0, 0, preferredSize.width, preferredSize.height)
     }
 }

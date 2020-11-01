@@ -3,10 +3,11 @@ package view.user
 import controller.Controller.User
 import view.utilities.LoadingPanel
 import view.utilities.swing.GlassLayer.layer
+import view.utilities.swing.Swing.button
 import view.utilities.swing.Swing.frame
 import view.utilities.swing.Tab.tabs
+import java.awt.BorderLayout.*
 import java.util.concurrent.TimeUnit
-import javax.swing.JLayeredPane.CENTER_ALIGNMENT
 import javax.swing.SwingUtilities
 
 object View {
@@ -14,23 +15,28 @@ object View {
     operator fun invoke(controller: User) = frame {
         contentPane = LoadingPanel { startLoading, stopLoading ->
             layer {
-                add(tabs {
+                val tabs = tabs {
                     add("Shop", Shop { controller.placeOrder(it) })
                     add("History", History())   // TODO make smarter
-                    addChangeListener {
+                }
+                add(tabs, CENTER)
+
+                add(button {
+                    text = "refresh"
+                    addActionListener {
+                        val component = tabs.selectedComponent
                         loading(startLoading, stopLoading) {
-                            if(kotlin.runCatching {
-                                when (selectedComponent) {
-                                    is Shop -> (selectedComponent as Shop)
+                            kotlin.runCatching {
+                                when (component) {
+                                    is Shop -> component
                                         .refresh(controller.shopItems().get(2500, TimeUnit.MILLISECONDS))
-                                    is History -> (selectedComponent as History)
-                                        .refresh(emptyList())//.refresh(controller.orders().get()) TODO
+                                    is History -> component.refresh(emptyList())//.refresh(controller.orders().get()) TODO
                                     else -> Unit
                                 }
-                            }.isFailure) println("Error! The remote object is requiring to much time to respond!")
+                            }
                         }
                     }
-                }, CENTER_ALIGNMENT)
+                }, NORTH)
             }
         }
         setBounds(0, 0, 500, 500)   // TODO

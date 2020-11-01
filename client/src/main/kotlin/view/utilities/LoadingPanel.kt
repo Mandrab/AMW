@@ -6,13 +6,17 @@ import view.utilities.swing.Label.label
 import java.awt.Color
 import javax.swing.JLayeredPane
 import javax.swing.JPanel
+import javax.swing.SwingConstants.CENTER
 
 object LoadingPanel {
 
     operator fun invoke() = layer {
         setBounds(0, 0, 500, 500)
 
-        add(label { text = "loading..." })
+        add(label {
+            text = "loading..."
+            horizontalAlignment = CENTER
+        })
 
         background = Color(background.red, background.green, background.blue, 220)
         isVisible = true
