@@ -1,16 +1,27 @@
 //////////////////////////////////////////////////// ITEMS ADDITION ////////////////////////////////////////////////////
 
 @addItem[atomic]
-+!kqml_received(Sender,achieve,add(Item),MsgID) <- !add(Item); .send(Sender,confirm,Msg,MsgID).
--!kqml_received(Sender,achieve,add(Item),MsgID) <- .send(Sender,failure,error(add(Item)),MsgID).
++!kqml_received(S, achieve, add(Item), MsgID) <- !feasible_slot(Item); !add(Item); .send(S, confirm, add(Item), MsgID).
+-!kqml_received(S, achieve, add(Item), MsgID) <- .send(S, failure, add(Item), MsgID).
 
 /***********************************************************************************************************************
  Utils
  **********************************************************************************************************************/
 
-+!add(item(id(ID),position(rack(Rack),shelf(S),quantity(NewQ)))) : item(id(ID),quantity(Q),reserved(ReservedQ))
-    <-  -item(id(ID),_,_)[source(self) | Positions];
-        +item(id(ID),quantity(Q + NewQ),reserved(ReservedQ))[position(rack(Rack),shelf(S),quantity(NewQ)) | Positions].
+// free slot
++!feasible_slot(item(_, position(R, S, _))): not _[position(R, S, _)|_].
 
-+!add(item(id(ItemId),position(rack(Rack),shelf(Shelf),quantity(Quantity)))) : not item(id(ItemId),_,_)
-    <-  +item(id(ItemId),quantity(Quantity),reserved(0))[position(rack(Rack),shelf(Shelf),quantity(Quantity))].
+// item of same type in slot
++!feasible_slot(item(ID, position(R, S, _))): item(ID, _)[position(R, S, _)|_].
+
+// update an entry of the existing item
++!add(item(ID, position(R, S, quantity(NQ))))
+    :   item(ID, RQ)[position(R, S, quantity(OQ)) | T]
+    <-  -item(ID, RQ);
+        +item(ID, RQ)[position(R, S, quantity(NQ + OQ)) | T].
+
+// add an entry of the existing item
++!add(item(ID, P)): item(ID, RQ)[L] <- +item(ID, RQ)[P | L].
+
+// no item with this id already exists
++!add(item(ID, P)) <- +item(ID, reserved(0))[P].
