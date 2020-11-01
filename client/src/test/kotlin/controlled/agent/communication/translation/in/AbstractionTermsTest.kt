@@ -10,18 +10,20 @@ import common.ontology.dsl.abstraction.ID.command_id
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.ID.order_id
 import common.ontology.dsl.abstraction.ID.v_id
+import common.ontology.dsl.abstraction.Item.Product
+import common.ontology.dsl.abstraction.Item.QuantityItem
+import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Name.name
 import common.ontology.dsl.abstraction.Position.position
 import common.ontology.dsl.abstraction.Quantity.quantity
+import common.ontology.dsl.abstraction.Quantity.reserved
 import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Requirement.requirement
 import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf.shelf
 import common.ontology.dsl.abstraction.Variant.variant
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
-import controller.agent.communication.translation.`in`.AbstractionTerms.parseQuantityItem
-import controller.agent.communication.translation.`in`.AbstractionTerms.parseWarehouseItem
 import org.junit.Test
 
 class AbstractionTermsTest {
@@ -50,10 +52,14 @@ class AbstractionTermsTest {
 
     @Test fun testWarehouseItemParse() =
             assert(item(id("a0"),position(rack(0),shelf(1),quantity(2)))
-                    == Item.parseWarehouseItem("item(id(a0), position(rack(0),shelf(1), quantity(2)))"))
+                    == WarehouseItem.parse("item(id(a0), position(rack(0),shelf(1), quantity(2)))"))
 
     @Test fun testQuantityItemParse() =
-            assert(item(id("a0"), quantity(5)) == Item.parseQuantityItem("item(id(a0), quantity(5))"))
+            assert(item(id("a0"), reserved(5))[position(rack(5), shelf(6), quantity(7))]
+                    == Product.parse("item(id(a0), reserved(5))[position(rack(5), shelf(6), quantity(7))]"))
+
+    @Test fun testProductParse() =
+            assert(item(id("a0"), quantity(5)) == QuantityItem.parse("item(id(a0), quantity(5))"))
 
     @Test fun testNameParse() = assert(name("name") == Name.parse("name(name)"))
 
