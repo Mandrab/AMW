@@ -59,12 +59,16 @@ abstract class Communicator: Agent() {
      * Periodically resend messages that need a response
      */
     private fun requestConfirmations() = cyclicBehaviour { agent ->
-        waitingConfirm.forEach { send(it.message) }
+        waitingConfirm.filter { Date().seconds - it.lastSent.seconds > 3 }.forEach {
+            it.lastSent = Date()
+            send(it.message)
+        }
         agent.block(updateTime)
     }
 
     private data class ResponseMessage(
         val message: ACLMessage,
+        var lastSent: Date = Date(),
         val response: CompletableFuture<ACLMessage> = CompletableFuture()
     )
 }
