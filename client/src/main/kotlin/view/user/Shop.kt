@@ -18,7 +18,6 @@ import java.awt.GridBagLayout
 import javax.swing.JPanel
 
 class Shop(
-    private val itemsSupplier: () -> Collection<QuantityItem>,
     private val placeOrder: (items: Collection<QuantityItem>) -> Unit
 ): JPanel() {
     private val items: List<QuantityItem>
@@ -29,7 +28,7 @@ class Shop(
 
         add(label { text = "Shop items" })
         items = list {
-            elements = itemsSupplier()
+            elements = emptyList()
             cellRenderer = render { " ID: ${it.id.name}    Quantity: ${it.quantity.value} " }
         }
         add(items, constraint { gridy = 1; gridheight = 4 })
@@ -54,8 +53,8 @@ class Shop(
         }, constraint { gridx = 2; gridy = 5 })
     }
 
-    fun refresh() {
-        items.elements = itemsSupplier()
+    fun refresh(elements: Collection<QuantityItem>) {
+        items.elements = elements
         selectedItems.clean()
     }
 

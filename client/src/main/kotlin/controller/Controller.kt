@@ -26,7 +26,7 @@ object Controller {
 
     interface User: Controller {
 
-        fun shopItems(): Collection<QuantityItem>
+        fun shopItems(): Future<Collection<QuantityItem>>
 
         fun placeOrder(items: Collection<QuantityItem>)
 

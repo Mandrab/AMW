@@ -2,17 +2,14 @@ package view.user
 
 import common.ontology.dsl.operation.Order.PlaceOrder
 import view.utilities.swing.Grid.constraint
+import view.utilities.swing.List.List
 import view.utilities.swing.List.list
 import java.awt.GridBagLayout
-import java.util.*
 import javax.swing.JLabel
-import javax.swing.JList
 import javax.swing.JPanel
 
-class History(
-    private val ordersSupplier: () -> Collection<PlaceOrder>
-): JPanel() {
-    private val orders: JList<PlaceOrder>
+class History: JPanel() {
+    private val orders: List<PlaceOrder>
 
     init {
         layout = GridBagLayout()
@@ -21,11 +18,11 @@ class History(
         add(orderInfo, constraint { gridx = 1 })
 
         orders = list {
-            elements = ordersSupplier()
+            elements = emptyList()
             onClick = { orderInfo.text = it.toString() }
         }
         add(orders, constraint { })
     }
 
-    fun refresh() = orders.setListData(Vector(ordersSupplier()))
+    fun refresh(elements: Collection<PlaceOrder>) { orders.elements = elements }
 }
