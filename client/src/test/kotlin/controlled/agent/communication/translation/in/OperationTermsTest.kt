@@ -76,6 +76,5 @@ class OperationTermsTest {
                 == InfoOrders.parse("info(client(antonio),email(antonio@email))"))
 
     @Test fun testRemoveItemParse() =
-            assert(remove(item(id("a0"),position(rack(5),shelf(6),quantity(7))))
-                    == RemoveItem.parse("remove(item(id(a0),position(rack(5),shelf(6),quantity(7))))"))
+            assert(remove(item(id("a0"), quantity(5))) == RemoveItem.parse("remove(item(id(a0),quantity(5)))"))
 }

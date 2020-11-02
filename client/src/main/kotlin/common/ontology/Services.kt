@@ -31,8 +31,6 @@ object Services {
         EXEC_COMMAND("exec(command)"),
         EXEC_SCRIPT("exec(command)"),
         REMOVE_ITEM("remove(item)"),
-        RETRIEVE_ITEMS("retrieve(item)"),
-        RETRIEVE_ITEM("retrieve(item)"),
         STORE_ITEM("store(item)");
     }
 }

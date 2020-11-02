@@ -3,13 +3,12 @@ package common.ontology.dsl.abstraction
 import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Position.Position
 import common.ontology.dsl.abstraction.Quantity.Quantity
-import common.ontology.dsl.abstraction.Quantity.Reserved
 
 object Item {
 
     interface Item { val id: ID }
 
-    data class Product(override val id: ID, val reserved: Reserved, var positions: Collection<Position>): Item {
+    data class Product(override val id: ID, var positions: Collection<Position>): Item {
 
         operator fun get(vararg positions: Position) = get(positions.toList())
 
@@ -24,7 +23,7 @@ object Item {
 
     data class QuantityItem(override val id: ID, val quantity: Quantity): Item { companion object }
 
-    fun item(id: ID, reserved: Reserved, vararg positions: Position) = Product(id, reserved, positions.toList())
+    fun item(id: ID, vararg positions: Position) = Product(id, positions.toList())
 
     fun item(id: ID, position: Position) = WarehouseItem(id, position)
 

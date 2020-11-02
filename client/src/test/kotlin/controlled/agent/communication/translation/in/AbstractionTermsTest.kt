@@ -17,7 +17,6 @@ import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Name.name
 import common.ontology.dsl.abstraction.Position.position
 import common.ontology.dsl.abstraction.Quantity.quantity
-import common.ontology.dsl.abstraction.Quantity.reserved
 import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Requirement.requirement
 import common.ontology.dsl.abstraction.Script.script
@@ -55,8 +54,8 @@ class AbstractionTermsTest {
                     == WarehouseItem.parse("item(id(a0), position(rack(0),shelf(1), quantity(2)))"))
 
     @Test fun testQuantityItemParse() =
-            assert(item(id("a0"), reserved(5))[position(rack(5), shelf(6), quantity(7))]
-                    == Product.parse("item(id(a0), reserved(5))[position(rack(5), shelf(6), quantity(7))]"))
+            assert(item(id("a0"))[position(rack(5), shelf(6), quantity(7))]
+                    == Product.parse("item(id(a0))[position(rack(5), shelf(6), quantity(7))]"))
 
     @Test fun testProductParse() =
             assert(item(id("a0"), quantity(5)) == QuantityItem.parse("item(id(a0), quantity(5))"))
