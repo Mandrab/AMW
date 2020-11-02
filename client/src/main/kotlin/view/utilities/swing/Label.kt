@@ -1,5 +1,6 @@
 package view.utilities.swing
 
+import java.awt.Component
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -20,6 +21,13 @@ object Label {
         init {
             add(_topic)
             add(_info)
+        }
+    }
+
+    class descriptionLabel(title: String, component: Component): JPanel() {
+        init {
+            add(label { text = title })
+            add(component)
         }
     }
 

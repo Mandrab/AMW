@@ -9,7 +9,6 @@ import view.utilities.swing.Swing.frame
 import view.utilities.swing.Tab.tabs
 import java.awt.BorderLayout.*
 import java.util.concurrent.TimeUnit
-import javax.swing.SwingUtilities
 
 object View {
 
@@ -40,6 +39,6 @@ object View {
                 addActionListener { updateTabs() }
             }, NORTH)
         } }
-        setBounds(0, 0, 500, 500)   // TODO
+        setBounds(0, 0, 700, 700)   // TODO
     }
 }

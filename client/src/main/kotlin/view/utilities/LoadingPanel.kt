@@ -12,7 +12,7 @@ import javax.swing.SwingUtilities
 object LoadingPanel {
 
     operator fun invoke() = layer {
-        setBounds(0, 0, 500, 500)
+        setBounds(0, 0, 700, 700)
 
         add(label {
             text = "loading..."
@@ -30,8 +30,7 @@ object LoadingPanel {
         val panel = mainPanel({ moveToFront(loadingLayer) }, { moveToBack(loadingLayer) })
         add(panel, JLayeredPane.DEFAULT_LAYER, 0)
 
-        loadingLayer.setBounds(0, 0, 500, 500)  // TODO
-        panel.setBounds(0, 0, 500, 500) // TODO
+        panel.setBounds(0, 0, 700, 700) // TODO
     }
 
     fun <T> loading(startLoading: () -> Unit, stopLoading: () -> Unit, operation: () -> T) {
