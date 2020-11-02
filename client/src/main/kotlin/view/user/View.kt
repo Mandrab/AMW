@@ -2,6 +2,7 @@ package view.user
 
 import controller.Controller.User
 import view.utilities.LoadingPanel
+import view.utilities.LoadingPanel.loading
 import view.utilities.swing.GlassLayer.layer
 import view.utilities.swing.Swing.button
 import view.utilities.swing.Swing.frame
@@ -13,40 +14,32 @@ import javax.swing.SwingUtilities
 object View {
 
     operator fun invoke(controller: User) = frame {
-        contentPane = LoadingPanel { startLoading, stopLoading ->
-            layer {
-                val tabs = tabs {
-                    add("Shop", Shop { controller.placeOrder(it) })
-                    add("History", History())   // TODO make smarter
-                }
-                add(tabs, CENTER)
+        contentPane = LoadingPanel { startLoading, stopLoading -> layer {
+            val tabs = tabs {
+                add("Shop", Shop { controller.placeOrder(it) })
+                add("History", History())   // TODO make smarter
+            }
+            add(tabs, CENTER)
 
-                add(button {
-                    text = "refresh"
-                    addActionListener {
-                        val component = tabs.selectedComponent
-                        loading(startLoading, stopLoading) {
-                            kotlin.runCatching {
-                                when (component) {
-                                    is Shop -> component
-                                        .refresh(controller.shopItems().get(2500, TimeUnit.MILLISECONDS))
-                                    is History -> component.refresh(emptyList())//.refresh(controller.orders().get()) TODO
-                                    else -> Unit
-                                }
-                            }
+            fun updateTabs() = tabs.selectedComponent?.let { component ->
+                loading(startLoading, stopLoading) {
+                    kotlin.runCatching {
+                        when (component) {
+                            is Shop -> component
+                                    .refresh(controller.shopItems().get(2500, TimeUnit.MILLISECONDS))
+                            is History -> component.refresh(emptyList())//.refresh(controller.orders().get()) TODO
+                            else -> Unit
                         }
                     }
-                }, NORTH)
+                }
             }
-        }
-        setBounds(0, 0, 500, 500)   // TODO
-    }
+            updateTabs()
 
-    private fun <T> loading(startLoading: () -> Unit, stopLoading: () -> Unit, operation: () -> T) {
-        startLoading()
-        SwingUtilities.invokeLater {
-            operation()
-            stopLoading()
-        }
+            add(button {
+                text = "refresh"
+                addActionListener { updateTabs() }
+            }, NORTH)
+        } }
+        setBounds(0, 0, 500, 500)   // TODO
     }
 }

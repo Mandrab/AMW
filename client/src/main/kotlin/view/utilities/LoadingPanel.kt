@@ -7,6 +7,7 @@ import java.awt.Color
 import javax.swing.JLayeredPane
 import javax.swing.JPanel
 import javax.swing.SwingConstants.CENTER
+import javax.swing.SwingUtilities
 
 object LoadingPanel {
 
@@ -31,5 +32,13 @@ object LoadingPanel {
 
         loadingLayer.setBounds(0, 0, 500, 500)  // TODO
         panel.setBounds(0, 0, 500, 500) // TODO
+    }
+
+    fun <T> loading(startLoading: () -> Unit, stopLoading: () -> Unit, operation: () -> T) {
+        startLoading()
+        SwingUtilities.invokeLater {
+            operation()
+            stopLoading()
+        }
     }
 }
