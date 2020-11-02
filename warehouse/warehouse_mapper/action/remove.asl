@@ -1,33 +1,30 @@
 ////////////////////////////////////////////////////// REMOVE ITEM /////////////////////////////////////////////////////
 
-@removeItem[atomic]
-+!kqml_received(Sender,achieve,remove(Item),MsgID) <- !remove(Item); .send(Sender,confirm,Msg,MsgID).
--!kqml_received(Sender,achieve,remove(Item),MsgID) <- .send(Sender,failure,error(remove(Item)),MsgID).
++!kqml_received(S, achieve, _, MID): cache(MID, Perf, Msg) <- .println("required cached message"); .send(S, Perf, Msg, MID).
 
-@removeReservedItem[atomic]
-+!kqml_received(Sender,achieve,remove_reserved(Item),MsgID)
-    <-  +removing_reserved;
-        !remove(Item);
-        .send(Sender,confirm,Msg,MsgID).
--!kqml_received(Sender,achieve,remove_reserved(Item),MsgID) <- .send(Sender,failure,error(remove_reserved(Item)),MsgID).
+@removeItem[atomic]
++!kqml_received(S, achieve, remove(Item), MID): Item = item(ID, quantity(Q))
+    <-  .println("required item remotion");
+        !is_sufficient(ID, Q);
+        !remove(ID, Q, [OH|OT]);
+        +cache(MID, confirm, remove(Item)[OH|OT]);
+        .send(S, confirm, remove(Item)[OH|OT], MID).
+
+-!kqml_received(S, achieve, remove(Item), MID) <- .println("failure in item remotion"); +cache(MID, failure, remove(Item)); .send(S,failure,remove(Item),MID).
 
 /***********************************************************************************************************************
  Utils
  **********************************************************************************************************************/
 
-+!remove(item(id(ID),position(rack(R),shelf(S),quantity(Removed)))) : removing_reserved
-    <-  -removing_reserved;
-        ? item(id(ID),quantity(Q),reserved(Res))[source(self) | Positions] & Removed <= Res;
-        !remove(position(rack(R),shelf(S),quantity(Removed)),Positions,Result);
-        -item(id(ID),_,_);
-        if (not .empty(Result)) { +item(id(ID),quantity(Q-Removed),reserved(Res-Removed))[[] | Result] }.
++!is_sufficient(ID, Q): item(ID)[source(self)|T] <- !count(T, O); Q < O.
 
-+!remove(item(id(ID),position(rack(R),shelf(S),quantity(Removed)))) : not removing_reserved
-    <-  ? item(id(ID),quantity(Q),reserved(Res))[source(self) | Positions] & Removed <= Q-Res;
-        !remove(position(rack(R),shelf(S),quantity(Removed)),Positions,Result);
-        -item(id(ID),_,_);
-        if (not .empty(Result)) { +item(id(ID),quantity(Q-Removed),reserved(Res))[[] | Result] }.
++!count([], 0).
++!count([position(_, _, quantity(Q))|T], O) <- !count(T, O1); O = Q + O1.
 
-+!remove(position(R,S,quantity(Q1)),[position(R,S,quantity(Q2))|T],[position(R,S,quantity(Q2-Q1))|T]) : Q1 < Q2.
-+!remove(P,[P|T],T).
-+!remove(P,[H|T],[H|R]) <- !remove(P,T,R).
++!remove(ID, Q, [position(R, S, quantity(Q))]): item(ID)[position(R, S, quantity(Q))|P]
+    <-  -item(ID); +item(ID)[P].
++!remove(ID, Q, [position(R, S, quantity(Q))]): item(ID)[position(R, S, quantity(IQ))|P] & IQ > Q
+    <-  -item(ID); +item(ID)[position(R, S, quantity(IQ - Q))|P].
++!remove(ID, Q, [position(R, S, quantity(IQ))|O]): item(ID)[position(R, S, quantity(IQ))|P]
+    <-  -item(ID); +item(ID)[P];
+        !remove(ID, Q, O).
