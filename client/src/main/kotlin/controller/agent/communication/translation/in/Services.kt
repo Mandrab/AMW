@@ -56,7 +56,5 @@ object Services {
 
     object RetrieveItem//: Service(TODO(), RETRIEVE_ITEM.id)
 
-    object StoreItem {
-        fun build(item: WarehouseItem): Nothing  = TODO()
-    }
+    object StoreItem: Service<Unit> { override val parse = { _: ACLMessage -> Unit } }
 }

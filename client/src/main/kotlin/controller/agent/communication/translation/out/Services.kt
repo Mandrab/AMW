@@ -103,7 +103,7 @@ object Services {
     object RetrieveItem//: Service(TODO(), RETRIEVE_ITEM.id)
 
     object StoreItem {
-        fun build(item: WarehouseItem) = object: Service(TODO(), STORE_ITEM.id) {
+        fun build(item: WarehouseItem) = object: Service(MANAGEMENT_ITEMS.id, STORE_ITEM.id, REQUEST) {
             override fun parse(): Literal = add(item).term()
         }
     }

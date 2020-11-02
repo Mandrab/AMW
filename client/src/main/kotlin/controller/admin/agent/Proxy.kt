@@ -1,5 +1,6 @@
 package controller.admin.agent
 
+import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
 import controller.agent.AgentProxy
 import java.util.concurrent.CompletableFuture
@@ -10,6 +11,8 @@ object Proxy {
     interface Proxy: AgentProxy<Agent> {
 
         fun addCommand()
+
+        fun addItem(item: WarehouseItem)
 
         fun addVersion()
 
@@ -32,6 +35,8 @@ object Proxy {
         override fun shutdown() = agent?.shutdown() ?: Unit
 
         override fun addCommand() = agent?.addCommand() ?: Unit
+
+        override fun addItem(item: WarehouseItem) = agent?.addItem(item) ?: Unit
 
         override fun addVersion() = agent?.addVersion() ?: Unit
 
