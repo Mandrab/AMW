@@ -1,15 +1,16 @@
 //////////////////////////////////////////////////// ITEMS ADDITION ////////////////////////////////////////////////////
 
-+!kqml_received(S, achieve, _, MID): cache(MID, Perf, Msg) <- .send(S, Perf, Msg, MID).
++!kqml_received(S, achieve, _, MID): cache(MID, Perf, Msg) <- .println("required cached message"); .send(S, Perf, Msg, MID).
 
 @addItem[atomic]
 +!kqml_received(S, achieve, add(Item), MsgID)
-    <-  !feasible_slot(Item);
+    <-  .println("required item addition");
+        !feasible_slot(Item);
         !add(Item);
         +cache(MsgID, confirm, add(Item));
         .send(S, confirm, add(Item), MsgID).
 
--!kqml_received(S, achieve, add(Item), MID) <- +cache(MID, failure, add(Item)); .send(S, failure, add(Item), MID).
+-!kqml_received(S, achieve, add(Item), MID) <- .println("failure in item addition"); +cache(MID, failure, add(Item)); .send(S, failure, add(Item), MID).
 
 /***********************************************************************************************************************
  Utils
@@ -26,7 +27,7 @@
     <-  -item(ID); +item(ID)[position(R, S, quantity(NQ + OQ)) | T].
 
 // add an entry of the existing item
-+!add(item(ID, P)): item(ID, RQ)[L] <- +item(ID)[P|L].
++!add(item(ID, P)): item(ID, RQ)[H|T] <- +item(ID)[P|[H|T]].
 
 // no item with this id already exists
 +!add(item(ID, P)) <- +item(ID)[P].
