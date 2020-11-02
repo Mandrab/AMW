@@ -25,3 +25,6 @@
 		.df_register("management(items)", "remove(item)");          // register for remove items from the warehouse
 		.df_register("management(items)", "retrieve(item)");        // register for reserve items of the warehouse
 		+set.                                                       // set setup-process ended
+
+// unknown messages management
++!kqml_received(Sender, _, Msg, MsgID) <- .send(Sender, failure, error(unknown, Msg), MsgID).
