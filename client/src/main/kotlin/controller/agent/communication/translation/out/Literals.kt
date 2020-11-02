@@ -59,6 +59,11 @@ object Literals {
 	fun String.toTerm() = Atom(this)
 
 	/**
+	 * Converts a string to a string-term
+	 */
+	fun String.toStringTerm() = StringTermImpl(this)
+
+	/**
 	 * Set string(s) as 'queue' of the literal. A queue is meant as:
 	 *      name[QUEUE-ELEMENT, QUEUE-ELEMENT, ...]
 	 */

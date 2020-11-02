@@ -95,12 +95,10 @@ object Services {
     }
 
     object RemoveItem {
-        fun build(item: WarehouseItem) = object: Service(TODO(), REMOVE_ITEM.id) {
+        fun build(item: QuantityItem) = object: Service(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id, REQUEST) {
             override fun parse(): Literal = remove(item).term()
         }
     }
-
-    object RetrieveItem//: Service(TODO(), RETRIEVE_ITEM.id)
 
     object StoreItem {
         fun build(item: WarehouseItem) = object: Service(MANAGEMENT_ITEMS.id, STORE_ITEM.id, REQUEST) {

@@ -18,7 +18,6 @@ import common.ontology.dsl.abstraction.Name.name
 import common.ontology.dsl.abstraction.Position
 import common.ontology.dsl.abstraction.Quantity
 import common.ontology.dsl.abstraction.Quantity.quantity
-import common.ontology.dsl.abstraction.Quantity.reserved
 import common.ontology.dsl.abstraction.Rack
 import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Requirement
@@ -48,8 +47,8 @@ object AbstractionTerms {
             .run { IDClass(next(), syntax) }
 
     fun Product.Companion.parse(string: String): Product =
-            string.parse("""item\(id\((.*)\), ?reserved\((.*)\)\)\[(.*)]""")
-                    .run { item(id(next()), reserved(next().toInt()))[next().asList().map { Position.parse(it) }] }
+            string.parse("""item\(id\((.*)\)\)\[(.*)]""")
+                    .run { item(id(next()))[next().asList().map { Position.parse(it) }] }
 
     fun WarehouseItem.Companion.parse(string: String): WarehouseItem =
             string.parse("""item\(id\((.*)\), ?position\((.*)\)\)""")

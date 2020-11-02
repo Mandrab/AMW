@@ -18,28 +18,29 @@ import common.ontology.dsl.abstraction.Shelf.Shelf
 import common.ontology.dsl.abstraction.Variant.Variant
 import controller.agent.communication.translation.out.Literals.get
 import controller.agent.communication.translation.out.Literals.invoke
+import controller.agent.communication.translation.out.Literals.toStringTerm
 import controller.agent.communication.translation.out.Literals.toTerm
 import jason.asSyntax.Literal
 
 object AbstractionTerms {
 
-    fun Address.term(): Literal = "address"(address)
+    fun Address.term(): Literal = "address"(address.toStringTerm())
 
-    fun Client.term(): Literal = "client"(name)
+    fun Client.term(): Literal = "client"(name.toStringTerm())
 
     fun CommandInfo.term(): Literal = "command"(id.term(), name.term(), description.term())
 
-    fun Description.term(): Literal = "description"(name)
+    fun Description.term(): Literal = "description"(name.toStringTerm())
 
-    fun Email.term(): Literal = "email"(address)
+    fun Email.term(): Literal = "email"(address.toStringTerm())
 
-    fun ID.term(syntax: String = "id"): Literal = syntax(name)
+    fun ID.term(syntax: String = "id"): Literal = syntax(name.toStringTerm())
 
     fun WarehouseItem.term(): Literal = "item"(id.term(), position.term())
 
     fun QuantityItem.term(): Literal = "item"(id.term(), quantity.term())
 
-    fun Name.term(): Literal = "name"(name)
+    fun Name.term(): Literal = "name"(name.toStringTerm())
 
     fun Position.term(): Literal = "position"(rack.term(), shelf.term(), quantity.term())
 
@@ -49,7 +50,8 @@ object AbstractionTerms {
 
     fun Requirement.term() = name.toTerm()
 
-    fun Script.term(): Literal = "script"(script).run { requirements?.let { this[it.map { r -> r.term() }] } ?: this }
+    fun Script.term(): Literal = "script"(script.toStringTerm())
+            .run { requirements?.let { this[it.map { r -> r.term() }] } ?: this }
 
     fun Shelf.term(): Literal = "shelf"(id)
 

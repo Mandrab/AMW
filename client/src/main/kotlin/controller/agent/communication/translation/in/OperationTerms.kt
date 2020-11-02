@@ -52,7 +52,7 @@ object OperationTerms {
             string.parse("""info\(client\((.*)\), ?email\((.*)\)\)""").run { info(client(next()), email(next())) }
 
     fun RemoveItem.Companion.parse(string: String): RemoveItem = string.parse("""remove\((.*)\)""")
-            .run { remove(WarehouseItem.parse(next())) }
+            .run { remove(QuantityItem.parse(next())) }
 
     private fun String.parse(pattern: String) = pattern.toRegex().find(trim())!!.groupValues.drop(1).iterator()
 }

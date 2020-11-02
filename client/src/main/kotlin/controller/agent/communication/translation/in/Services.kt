@@ -2,7 +2,6 @@ package controller.agent.communication.translation.`in`
 
 import common.ontology.dsl.abstraction.Command.CommandInfo
 import common.ontology.dsl.abstraction.ID.ID
-import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.User.User
@@ -50,11 +49,7 @@ object Services {
         fun build(script: Script): Nothing  = TODO()
     }
 
-    object RemoveItem {
-        fun build(item: WarehouseItem): Nothing  = TODO()
-    }
-
-    object RetrieveItem//: Service(TODO(), RETRIEVE_ITEM.id)
+    object RemoveItem: Service<Unit> { override val parse = { _: ACLMessage -> Unit } }
 
     object StoreItem: Service<Unit> { override val parse = { _: ACLMessage -> Unit } }
 }
