@@ -9,7 +9,7 @@
         +cache(MsgID, confirm, add(Item));
         .send(S, confirm, add(Item), MsgID).
 
--!kqml_received(S, achieve, add(Item), MsgID) <- .send(S, failure, add(Item), MsgID).
+-!kqml_received(S, achieve, add(Item), MID) <- +cache(MID, failure, add(Item)); .send(S, failure, add(Item), MID).
 
 /***********************************************************************************************************************
  Utils
