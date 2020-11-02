@@ -15,7 +15,12 @@ object View {
         contentPane = LoadingPanel { startLoading, stopLoading -> GlassLayer.layer {
             val tabs = tabs {
                 //add("Command", Command())
-                add("Warehouse", Warehouse(5,5) { controller.addItem(it) })    // TODO 1 magic numbers; 2 manage error from agent
+                add("Warehouse", Warehouse(5,5, {
+                        controller.addItem(it)
+                    }, {
+                        controller.removeItem(it)
+                    })
+                )    // TODO 1 magic numbers; 2 manage error from agent
                 //add("Script", Script())
             }
             add(tabs, BorderLayout.CENTER)

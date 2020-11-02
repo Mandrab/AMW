@@ -1,5 +1,6 @@
 package controller.admin.agent
 
+import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
 import controller.agent.AgentProxy
@@ -13,6 +14,8 @@ object Proxy {
         fun addCommand()
 
         fun addItem(item: WarehouseItem)
+
+        fun removeItem(item: QuantityItem)
 
         fun addVersion()
 
@@ -37,6 +40,8 @@ object Proxy {
         override fun addCommand() = agent?.addCommand() ?: Unit
 
         override fun addItem(item: WarehouseItem) = agent?.addItem(item) ?: Unit
+
+        override fun removeItem(item: QuantityItem) = agent?.removeItem(item) ?: Unit
 
         override fun addVersion() = agent?.addVersion() ?: Unit
 

@@ -1,5 +1,6 @@
 package controller.admin
 
+import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import controller.Controller.Admin
 import controller.admin.agent.Agent
@@ -25,6 +26,8 @@ class Controller(retryConnection: Boolean = true): Admin {
     override fun addCommand() = proxy.addCommand()
 
     override fun addItem(item: WarehouseItem) = proxy.addItem(item)
+
+    override fun removeItem(item: QuantityItem) = proxy.removeItem(item)
 
     override fun addVersion() = proxy.addVersion()
 

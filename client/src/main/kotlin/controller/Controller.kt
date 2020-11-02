@@ -21,6 +21,8 @@ object Controller {
 
         fun addItem(item: WarehouseItem)
 
+        fun removeItem(item: QuantityItem)
+
         fun addVersion()
 
         fun executeCommand()

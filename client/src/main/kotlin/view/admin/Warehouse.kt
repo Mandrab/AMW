@@ -1,6 +1,7 @@
 package view.admin
 
 import common.ontology.dsl.abstraction.ID.id
+import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.Item.item
@@ -21,7 +22,8 @@ import javax.swing.JTextArea
 class Warehouse(
     private val xLanesCount: Int,
     private val yLanesCount: Int,
-    private val addItem: (item: WarehouseItem) -> Unit
+    private val addItem: (item: WarehouseItem) -> Unit,
+    private val removeItem: (item: QuantityItem) -> Unit
 ): JPanel() {
     private var items: Collection<Product> = emptyList()
 
@@ -33,34 +35,37 @@ class Warehouse(
             add(button {
                 text = "Rack $rack"
                 addActionListener { Dialog.Info(itemInfoString(rack), "Info rack $rack") }
-            }, constraint { gridx = it.second; gridy = it.first + 1 })
+            }, constraint { gridx = it.second; gridy = it.first + 2 })
         }
 
         val idIn = JTextArea("id")
-        val rackIn = spinner(1, 1, xLanesCount)
-        val shelfIn = spinner(1, 1, yLanesCount)
         val quantityIn = spinner(1, 1, 100)
-        add(descriptionLabel("Item ID: ", idIn), constraint { gridx = 0; gridy = 0 })
-        add(descriptionLabel("rack: ", rackIn), constraint { gridx = 1; gridy = 0 })
-        add(descriptionLabel("shelf: ", shelfIn), constraint { gridx = 2; gridy = 0 })
-        add(descriptionLabel("quantity: ", quantityIn), constraint { gridx = 3; gridy = 0 })
-        add(button {
-            text = "add item"
+        val rackIn = spinner(1, 1, xLanesCount * yLanesCount)
+        val shelfIn = spinner(1, 1, 100)
+        add(descriptionLabel("Item ID: ", idIn), constraint { gridx = 0; gridy = 0; gridwidth = 2 })
+        add(descriptionLabel("quantity: ", quantityIn), constraint { gridx = 2; gridy = 0; gridwidth = 2 })
+        add(descriptionLabel("rack: ", rackIn), constraint { gridx = 0; gridy = 1; gridwidth = 2 })
+        add(descriptionLabel("shelf: ", shelfIn), constraint { gridx = 2; gridy = 1; gridwidth = 2 })
+        add(button { text = "add item"
             addActionListener {
                 addItem(item(id(idIn.text), position(
                         rack(rackIn.value as Int),
                         shelf(shelfIn.value as Int),
-                        quantity(quantityIn.value as Int))))
+                        quantity(quantityIn.value as Int)))
+                )
             }
         }, constraint { gridx = 4; gridy = 0 })
+        add(button { text = "remove item"
+            addActionListener { removeItem(item(id(idIn.text), quantity(quantityIn.value as Int))) }
+        }, constraint { gridx = 4; gridy = 1 })
     }
 
     fun refresh(elements: Collection<Product>) { items = elements }
 
     private fun itemInfoString(rack: Int) = items.filter { it.positions.any { it.rack.id == rack } }
-            .fold(StringBuilder()) { acc1, item -> acc1.append(
-                    item.positions.filter { it.rack.id == rack }.fold(StringBuilder()) { acc2, position ->
-                        acc2.append(" Shelf: ${position.shelf.id}    Item: ${item.id.name} \n")
-                    }
-            ) }.let { if (it.isBlank()) "No known element in this slot" else it.toString() }
+        .fold(StringBuilder()) { acc1, item -> acc1.append(
+                item.positions.filter { it.rack.id == rack }.fold(StringBuilder()) { acc2, position -> acc2.append(
+                    " Shelf: ${position.shelf.id}   Item: ${item.id.name}   Quantity: ${position.quantity.value} \n")
+                }
+        ) }.let { if (it.isBlank()) "No known element in this slot" else it.toString() }
 }
