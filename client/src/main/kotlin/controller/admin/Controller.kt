@@ -17,7 +17,7 @@ class Controller(retryConnection: Boolean = true): Admin {
     private val proxy = Proxy()
 
     init {
-        Agents.start(retryConnection)(arrayOf(Proxy(), "user", "user@mail"))(Agent::class.java)
+        Agents.start(retryConnection)(arrayOf(proxy, "user", "user@mail"))(Agent::class.java)
         View(this)
     }
 
@@ -28,6 +28,8 @@ class Controller(retryConnection: Boolean = true): Admin {
     override fun executeCommand() = proxy.executeCommand()
 
     override fun executeScript() = proxy.executeScript()
+
+    override fun warehouseState() = proxy.warehouseState()
 
     override fun stopSystem() = proxy.shutdown()
 }

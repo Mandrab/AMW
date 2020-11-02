@@ -1,5 +1,6 @@
 package controller
 
+import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.operation.Order.PlaceOrder
 import java.util.concurrent.Future
@@ -22,6 +23,8 @@ object Controller {
         fun executeCommand()
 
         fun executeScript()
+
+        fun warehouseState(): Future<Collection<Product>>
     }
 
     interface User: Controller {

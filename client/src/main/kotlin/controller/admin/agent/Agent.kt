@@ -1,7 +1,11 @@
 package controller.admin.agent
 
+import common.ontology.dsl.abstraction.Item.Product
 import controller.admin.agent.Proxy.Proxy
-import jade.core.Agent as JadeAgent
+import controller.agent.Communicator
+import controller.agent.communication.translation.`in`.Services.InfoWarehouse as InfoWarehouseIn
+import controller.agent.communication.translation.out.Services.InfoWarehouse as InfoWarehouseOut
+import java.util.concurrent.Future
 
 /**
  * Agent for client-side application.
@@ -10,9 +14,7 @@ import jade.core.Agent as JadeAgent
  *
  * @author Paolo Baldini
  */
-class Agent: JadeAgent() {
-    private val client: String by lazy { arguments[1] as String }
-    private val clientMail: String by lazy { arguments[2] as String }
+class Agent: Communicator() {
 
     override fun setup() {
         super.setup()
@@ -28,4 +30,7 @@ class Agent: JadeAgent() {
     fun executeCommand() { TODO() }
 
     fun executeScript() { TODO() }
+
+    fun warehouseState(): Future<Collection<Product>> =
+            sendMessage(InfoWarehouseOut.build().message(this), true, InfoWarehouseIn.parse)
 }
