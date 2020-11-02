@@ -6,8 +6,8 @@ object Dialog {
 
     object Info {
 
-        operator fun invoke(message: String) {
-            JOptionPane.showMessageDialog(null, message, "Info", JOptionPane.INFORMATION_MESSAGE);
+        operator fun invoke(message: String, title: String = "info") {
+            JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE)
         }
     }
 }

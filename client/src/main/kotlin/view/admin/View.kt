@@ -1,34 +1,44 @@
 package view.admin
 
 import controller.Controller.Admin
+import view.utilities.LoadingPanel
+import view.utilities.swing.GlassLayer
+import view.utilities.swing.Swing
 import view.utilities.swing.Tab.tabs
 import view.utilities.swing.Swing.frame
 import java.awt.BorderLayout
-import javax.swing.WindowConstants.EXIT_ON_CLOSE
+import java.util.concurrent.TimeUnit
 
 object View {
 
     operator fun invoke(controller: Admin) = frame {
+        contentPane = LoadingPanel { startLoading, stopLoading -> GlassLayer.layer {
+            val tabs = tabs {
+                //add("Command", Command())
+                add("Warehouse", Warehouse(5,5))    // TODO number
+                //add("Script", Script())
+            }
+            add(tabs, BorderLayout.CENTER)
 
-        layout = BorderLayout()
-
-        add(tabs {
-            //add("Warehouse", Warehouse())
-            add("Command", Command({ emptyList() }, { }))
-            //add("Script", Script())
-            addChangeListener {
-                when (selectedComponent) {
-                    is Warehouse -> (selectedComponent as Warehouse).refresh()
-                    is Command -> (selectedComponent as Command).refresh()
-                    is Script -> (selectedComponent as Script).refresh()
-                    else -> Unit
+            fun updateTabs() = tabs.selectedComponent?.let { component ->
+                LoadingPanel.loading(startLoading, stopLoading) {
+                    kotlin.runCatching {
+                        when (component) {
+                            is Warehouse -> component
+                                    .refresh(controller.warehouseState().get(2500, TimeUnit.MILLISECONDS))
+                            is Command -> component.refresh()
+                            is Script -> component.refresh()
+                        }
+                    }
                 }
             }
-        })
+            updateTabs()
 
-        defaultCloseOperation = EXIT_ON_CLOSE
-
-        pack()
-        show()
+            add(Swing.button {
+                text = "refresh"
+                addActionListener { updateTabs() }
+            }, BorderLayout.NORTH)
+        } }
+        setBounds(0, 0, 500, 500)   // TODO
     }
 }
