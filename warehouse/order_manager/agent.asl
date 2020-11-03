@@ -5,6 +5,8 @@
 { include("utilities/literal.asl") }
 { include("utilities/communication.asl") }
 { include("action/id_generator.asl") }
+{ include("action/info.asl") }
+{ include("action/request.asl") }
 
 /***********************************************************************************************************************
  Initial goals
@@ -23,49 +25,7 @@
     <-  .df_register("management(orders)", "accept(order)");
         .df_register("management(orders)", "info(orders)");
         +set.// register service as order acceptor
-
-/////////////////////////////
-
-+!kqml_received(Sender,achieve,info(Client,Email),MsgID)
-    <-  .findall(order(id(O),status(S),items(I)),order(id(O),status(S),client(name(Client),_,email(Email)),items(I)),L);
-        !reshape(L,R);
-        .send(Sender,tell,R,MsgID).
-
-+!reshape(item(id(I),quantity(Q))[_|_],item(id(I),quantity(Q))).
-+!reshape(order(id(O),status(S),items(I)),order(id(O),status(S),items(R))) <- !reshape(I,R).
-+!reshape([],[]).
-+!reshape([H|[]],[R]) <- !reshape(H,R).
-+!reshape([H|T],[R1|R2]) <- !reshape(H,R1); !reshape(T,R2).
-
-//////////////////////////////////////////////////// ORDER REQUEST /////////////////////////////////////////////////////
-
-///////////////////////////// ORDER RECEPTION
-// KQML achieve = ACL request: http://jason.sourceforge.net/doc/faq.html TODO remove
-+!kqml_received(Sender,achieve,Content,MsgID) : Content = order(client(Client),email(Email),address(Address))[[]|Items]
-	<-  !new_ID(order, OrderID);                                   // generate an id for the order
-		+order(id(OrderID), status(checking_items), client(name(Client), address(Address), email(Email)), items(Items));// save order's info (status=checking for validity)
-		!random_agent("management(items)", "retrieve(item)", Provider);
-		!concat(retrieve(order_id(OrderID)), Items, Res);
-        .send(Provider, achieve, Res).                            // ask for items reservation and positions
-
-////////////////////////////////////////////////// WAREHOUSE RESPONSE //////////////////////////////////////////////////
-
-///////////////////////////// CONFIRMATION
-
-// receive items position and reservation confirm
-+!kqml_received(Sender, confirm, Content, MsgID) : Content = order_id(OrderID)[ [] | Positions ]
-	&   order(id(OrderID), status(checking_items), ClientInfo, items(Items))
-	<-  !reshape_items(Items, Positions, Reshaped);
-	    -+order(id(OrderID), status(checking_gather_point), ClientInfo, items(Reshaped));
-        !gather(OrderID).                                         // gather items
-
--!kqml_received(Sender, confirm, Content, MsgID) : Content = order_id(OrderID)[ [] | Positions ].//TODO
-
-///////////////////////////// ERROR
-// TODO implementare update periodico da parte del client
-+!kqml_received(Sender, failure, order_id(OrderID), MsgID) : order(id(OrderID),status(checking_items),ClientInfo,Items)
-	<-	-+order(id(OrderID),status(refused),ClientInfo,Items).
-
+/*
 ////////////////////////////////////////// COLLECTION POINTS MANAGER RESPONSE //////////////////////////////////////////
 
 ///////////////////////////// PROPOSAL ACCEPT
@@ -112,7 +72,7 @@
 
 /***********************************************************************************************************************
  Utils
- **********************************************************************************************************************/
+ **********************************************************************************************************************
 
 //////////////////////////////////////////////// ORDER'S ITEMS GATHERING ///////////////////////////////////////////////
 
@@ -168,4 +128,4 @@
 +!check_missing(OrderID).
 
 +!all_zero([0]).
-+!all_zero([0|T]) <- !all_zero(T).
++!all_zero([0|T]) <- !all_zero(T). */
