@@ -6,3 +6,13 @@
 		!random_agent("management(items)", "remove(item)", Provider);
         .send(Provider, achieve, remove(items)[H|T], OID);          // ask for items reservation and positions
         .send(Sender, confirm, order(client(C), E, A)[H|T], OID).
+
++!kqml_received(Sender, confirm, remove(items)[H|T], OID)
+    <-  -order(id(OID), status(check), U)[H|T];
+        +order(id(OID), status(retrieve), U)[H|T];
+        // TODO require retrieve robot
+        .
+
++!kqml_received(Sender, failure, remove(items)[H|T], OID)
+    <-  -order(id(OID), status(check), U)[H|T];
+        +order(id(OID), status(refused), U)[H|T].
