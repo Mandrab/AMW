@@ -2,7 +2,7 @@ package controller.user.agent
 
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.User.User
-import common.ontology.dsl.operation.Order.PlaceOrder
+import common.ontology.dsl.operation.Order.InfoOrder
 import controller.agent.AgentProxy
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
@@ -15,7 +15,7 @@ object Proxy {
 
         fun placeOrder(user: User, items: Collection<QuantityItem>)
 
-        fun orders(user: User): Future<Collection<PlaceOrder>>
+        fun orders(user: User): Future<Collection<InfoOrder>>
     }
 
     operator fun invoke(): Proxy = ClientProxy()

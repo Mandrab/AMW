@@ -3,7 +3,7 @@ package controller
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.Item.QuantityItem
-import common.ontology.dsl.operation.Order.PlaceOrder
+import common.ontology.dsl.operation.Order.InfoOrder
 import java.util.concurrent.Future
 import controller.admin.Controller as AdminController
 import controller.user.Controller as UserController
@@ -38,7 +38,7 @@ object Controller {
 
         fun placeOrder(items: Collection<QuantityItem>)
 
-        fun orders(): Future<Collection<PlaceOrder>>
+        fun orders(): Future<Collection<InfoOrder>>
     }
 
     operator fun invoke(role: SystemRoles, retryConnection: Boolean = true) = when (role) {

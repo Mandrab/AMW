@@ -4,7 +4,7 @@ import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.User.User
-import common.ontology.dsl.operation.Order.PlaceOrder
+import common.ontology.dsl.operation.Order.InfoOrder
 import controller.agent.Communicator
 import controller.agent.communication.translation.`in`.Services.InfoWarehouse as InfoWarehouseIn
 import controller.agent.communication.translation.out.Services.InfoWarehouse as InfoWarehouseOut
@@ -41,6 +41,6 @@ class Agent: Communicator() {
      */
     fun placeOrder(user: User, items: Collection<QuantityItem>) = send(AcceptOrder.build(user, items).message(this))
 
-    fun orders(user: User): Future<Collection<PlaceOrder>> =
+    fun orders(user: User): Future<Collection<InfoOrder>> =
         sendMessage(InfoOrdersOut.build(user).message(this), true, InfoOrdersIn.parse)
 }

@@ -8,7 +8,7 @@ import view.utilities.swing.Swing.button
 import view.utilities.swing.Swing.frame
 import view.utilities.swing.Tab.tabs
 import java.awt.BorderLayout.*
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.MILLISECONDS
 
 object View {
 
@@ -24,9 +24,8 @@ object View {
                 loading(startLoading, stopLoading) {
                     kotlin.runCatching {
                         when (component) {
-                            is Shop -> component
-                                    .refresh(controller.shopItems().get(2500, TimeUnit.MILLISECONDS))
-                            is History -> component.refresh(emptyList())//.refresh(controller.orders().get()) TODO
+                            is Shop -> component.refresh(controller.shopItems().get(2500, MILLISECONDS))
+                            is History -> component.refresh(controller.orders().get(2500, MILLISECONDS))
                             else -> Unit
                         }
                     }
