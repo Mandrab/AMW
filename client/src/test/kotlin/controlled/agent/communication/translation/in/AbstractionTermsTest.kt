@@ -21,6 +21,10 @@ import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Requirement.requirement
 import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf.shelf
+import common.ontology.dsl.abstraction.Status
+import common.ontology.dsl.abstraction.Status.States.CHECKING
+import common.ontology.dsl.abstraction.Status.States.RETRIEVING
+import common.ontology.dsl.abstraction.Status.status
 import common.ontology.dsl.abstraction.User.user
 import common.ontology.dsl.abstraction.Variant.variant
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
@@ -80,6 +84,10 @@ class AbstractionTermsTest {
                     == Script.parse("script(x y z !)[r0, r1]"))
 
     @Test fun testShelfParse() = assert(shelf(5) == Shelf.parse("shelf(5)"))
+
+    @Test fun testStatusCheckParse() = assert(status(CHECKING) == Status.parse("status(check)"))
+
+    @Test fun testStatusRetrieveParse() = assert(status(RETRIEVING) == Status.parse("status(retrieve)"))
 
     @Test fun testUserParse() =
             assert(user(client("antonio"), email("antonio@mail"), address("address"))

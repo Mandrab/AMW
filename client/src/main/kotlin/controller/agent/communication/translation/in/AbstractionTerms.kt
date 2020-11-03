@@ -66,6 +66,12 @@ object AbstractionTerms {
 
     fun Shelf.parse(string: String): Shelf.Shelf = string.parse("""shelf\((.*)\)""").run { shelf(next().toInt()) }
 
+    fun Status.parse(string: String): Status.Status = string.parse("""status\((.*)\)""")
+            .run { status(when (next()) {
+                Status.States.CHECKING.value -> Status.States.CHECKING
+                else -> Status.States.RETRIEVING
+            }) }
+
     fun User.parse(string: String): User.User =
             string.parse("""user\(client\(\"(.*)\"\), ?email\(\"(.*)\"\), ?address\(\"(.*)\"\)\)""")
                     .run { user(client(next()), email(next()), address(next())) }

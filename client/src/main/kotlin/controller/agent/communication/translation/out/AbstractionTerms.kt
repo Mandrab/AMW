@@ -15,6 +15,7 @@ import common.ontology.dsl.abstraction.Rack.Rack
 import common.ontology.dsl.abstraction.Requirement.Requirement
 import common.ontology.dsl.abstraction.Script.Script
 import common.ontology.dsl.abstraction.Shelf.Shelf
+import common.ontology.dsl.abstraction.Status.Status
 import common.ontology.dsl.abstraction.User.User
 import common.ontology.dsl.abstraction.Variant.Variant
 import controller.agent.communication.translation.out.Literals.get
@@ -55,6 +56,8 @@ object AbstractionTerms {
             .run { requirements?.let { this[it.map { r -> r.term() }] } ?: this }
 
     fun Shelf.term(): Literal = "shelf"(id)
+
+    fun Status.term(): Literal = "status"(state.value.toTerm())
 
     fun User.term(): Literal = "user"(client.term(), email.term(), address.term())
 
