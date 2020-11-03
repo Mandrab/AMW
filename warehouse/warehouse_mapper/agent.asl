@@ -21,7 +21,6 @@
 	<-  .df_register("management(items)", "info(warehouse)");       // register as warehouse's info dispatcher
 		.df_register("management(items)", "store(item)");           // register for store new items in the warehouse
 		.df_register("management(items)", "remove(item)");          // register for remove items from the warehouse
-		.df_register("management(items)", "retrieve(item)");        // register for reserve items of the warehouse
 		+set.                                                       // set setup-process ended
 
 // unknown messages management
