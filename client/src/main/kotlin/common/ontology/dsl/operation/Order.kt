@@ -5,6 +5,7 @@ import common.ontology.dsl.abstraction.Client.Client
 import common.ontology.dsl.abstraction.Email.Email
 import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.QuantityItem
+import common.ontology.dsl.abstraction.Status.Status
 
 object Order {
 
@@ -23,9 +24,13 @@ object Order {
         companion object
     }
 
+    data class InfoOrder(val id: ID, val status: Status) { companion object }
+
     data class InfoOrders(val client: Client, val email: Email) { companion object }
 
     fun order(client: Client, email: Email, address: Address) = PlaceOrder(client, email, address)
+
+    fun info(id: ID, status: Status) = InfoOrder(id, status)
 
     fun info(client: Client, email: Email) = InfoOrders(client, email)
 }

@@ -4,6 +4,7 @@ import common.ontology.dsl.abstraction.*
 import common.ontology.dsl.abstraction.Address.address
 import common.ontology.dsl.abstraction.Client.client
 import common.ontology.dsl.abstraction.Email.email
+import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.operation.Command.AddCommand
@@ -17,6 +18,7 @@ import common.ontology.dsl.operation.Item.add
 import common.ontology.dsl.operation.Version.AddVersion
 import common.ontology.dsl.operation.Version.add
 import common.ontology.dsl.operation.Order.PlaceOrder
+import common.ontology.dsl.operation.Order.InfoOrder
 import common.ontology.dsl.operation.Order.InfoOrders
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
@@ -47,6 +49,9 @@ object OperationTerms {
                     .run { order(client(next()), email(next()), address(next()))[
                             next().asList().map { QuantityItem.parse(it) }
                     ] }
+
+    fun InfoOrder.Companion.parse(string: String): InfoOrder =
+            string.parse("""order\(id\((.*)\), ?(.*)\)""").run { info(id(next()), Status.parse(next())) }
 
     fun InfoOrders.Companion.parse(string: String): InfoOrders =
             string.parse("""info\(client\((.*)\), ?email\((.*)\)\)""").run { info(client(next()), email(next())) }

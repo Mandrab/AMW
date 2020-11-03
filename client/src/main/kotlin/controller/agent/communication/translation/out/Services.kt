@@ -51,9 +51,10 @@ object Services {
     }
 
     object AcceptOrder {
-        fun build(user: User, items: Collection<QuantityItem>) = object: Service(MANAGEMENT_ORDERS.id,ACCEPT_ORDER.id) {
-            override fun parse(): Literal = order(user.client, user.email, user.address)[items].term()
-        }
+        fun build(user: User, items: Collection<QuantityItem>) =
+                object: Service(MANAGEMENT_ORDERS.id,ACCEPT_ORDER.id, REQUEST) {
+                        override fun parse(): Literal = order(user.client, user.email, user.address)[items].term()
+                }
     }
 
     object AddCommand {
@@ -71,7 +72,7 @@ object Services {
     object InfoCommands//: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id)
 
     object InfoOrders {
-        fun build(user: User) = object: Service(MANAGEMENT_ORDERS.id, INFO_ORDERS.id) {
+        fun build(user: User) = object: Service(MANAGEMENT_ORDERS.id, INFO_ORDERS.id, REQUEST) {
             override fun parse(): Literal = info(user.client, user.email).term()
         }
     }

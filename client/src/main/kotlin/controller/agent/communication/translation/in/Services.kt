@@ -7,7 +7,7 @@ import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.User.User
 import common.ontology.dsl.abstraction.Script.Script
 import common.ontology.dsl.abstraction.Variant.Variant
-import common.ontology.dsl.operation.Order.PlaceOrder
+import common.ontology.dsl.operation.Order.InfoOrder
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
 import controller.agent.communication.translation.`in`.LiteralParser.asList
 import controller.agent.communication.translation.`in`.OperationTerms.parse
@@ -33,8 +33,8 @@ object Services {
 
     object InfoCommands//: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id)
 
-    object InfoOrders: Service<Collection<PlaceOrder>> {
-        override val parse = { message: ACLMessage -> message.content.asList().map { PlaceOrder.parse(it) } }
+    object InfoOrders: Service<Collection<InfoOrder>> {
+        override val parse = { message: ACLMessage -> message.content.asList().map { InfoOrder.parse(it) } }
     }
 
     object InfoWarehouse: Service<Collection<Product>> {
