@@ -13,20 +13,20 @@
 -!kqml_received(S, achieve, remove(Item), MID)
     <-  .println("failure in item remotion");
         +cache(MID, failure, remove(Item));
-        .send(S,failure,remove(Item),MID).
+        .send(S, failure, remove(Item), MID).
 
 @removeItems[atomic]
 +!kqml_received(S, achieve, remove(items)[H|T], MID)
     <-  .println("required items remotion");
-        !are_suffiecient([H|T], Q);
+        !are_sufficient([H|T]);
         !remove_all([H|T], [OH|OT]);
         +cache(MID, confirm, remove(items)[OH|OT]);
-        .send(S, confirm, remove(Item)[OH|OT], MID).
+        .send(S, confirm, remove(items)[OH|OT], MID).
 
 -!kqml_received(S, achieve, remove(items)[H|T], MID)
     <-  .println("failure in items remotion");
         +cache(MID, failure, remove(items)[H|T]);
-        .send(S,failure,remove(items)[H|T],MID).
+        .send(S, failure, remove(items)[H|T], MID).
 
 /***********************************************************************************************************************
  Utils
@@ -41,7 +41,7 @@
 +!count([position(_, _, quantity(Q))|T], O) <- !count(T, O1); O = Q + O1.
 
 +!remove_all([], []).
-+!remove_all([item(ID, quantity(Q))|T], [RH|RT]) <- !remove(ID, Q, RH); !remove_all(T, RT).
++!remove_all([item(ID, quantity(Q))|T], R) <- !remove(ID, Q, RH); !remove_all(T, RT); .concat(RH, RT, R).
 
 +!remove(ID, Q, [position(R, S, quantity(Q))]): item(ID)[position(R, S, quantity(Q))] <- -item(ID).
 +!remove(ID, Q, [position(R, S, quantity(Q))]): item(ID)[position(R, S, quantity(Q))|P] <- -item(ID); +item(ID)[P].
