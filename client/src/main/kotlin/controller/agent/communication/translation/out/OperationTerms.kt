@@ -27,7 +27,7 @@ object OperationTerms {
 
     fun ExecuteScript.term(): Literal = "execute"(script.term())
 
-    fun PlaceOrder.term(): Literal = "order"(client.term(), email.term(), address.term())[items.map { it.term() }]
+    fun PlaceOrder.term(): Literal = "order"(client.term(), email.term(), address.term())[items.map { it.term() }].apply { println(this) }
 
     fun InfoOrders.term(): Literal = "info"(client.term(), email.term())
 

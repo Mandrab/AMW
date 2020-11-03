@@ -28,18 +28,18 @@ import org.junit.Test
 class AbstractionTermsTest {
 
     @Test fun testAddressParse() =
-            assert(address("via xyz n° 468") == Address.parse("address(via xyz n° 468)"))
+            assert(address("via xyz n° 468") == Address.parse("address(\"via xyz n° 468\")"))
 
-    @Test fun testClientParse() = assert(client("antonio") == Client.parse("client(antonio)"))
+    @Test fun testClientParse() = assert(client("antonio") == Client.parse("client(\"antonio\")"))
 
     @Test fun testCommandParse() =
             assert(command(id("a0"),name("command"),description("description"))
-                    == Command.parse("command(id(a0),name(command), description(description))"))
+                    == Command.parse("command(id(\"a0\"),name(\"command\"), description(\"description\"))"))
 
     @Test fun testDescriptionParse() =
-            assert(description("description") == Description.parse("description(description)"))
+            assert(description("description") == Description.parse("description(\"description\")"))
 
-    @Test fun testEmailParse() = assert(email("antonio@email") == Email.parse("email(antonio@email)"))
+    @Test fun testEmailParse() = assert(email("antonio@email") == Email.parse("email(\"antonio@email\")"))
 
     @Test fun testIDParse() = assert(id("a0") == ID.parse("id(a0)"))
 
@@ -51,16 +51,16 @@ class AbstractionTermsTest {
 
     @Test fun testWarehouseItemParse() =
             assert(item(id("a0"),position(rack(0),shelf(1),quantity(2)))
-                    == WarehouseItem.parse("item(id(a0), position(rack(0),shelf(1), quantity(2)))"))
+                    == WarehouseItem.parse("item(id(\"a0\"), position(rack(0),shelf(1), quantity(2)))"))
 
     @Test fun testQuantityItemParse() =
             assert(item(id("a0"))[position(rack(5), shelf(6), quantity(7))]
-                    == Product.parse("item(id(a0))[position(rack(5), shelf(6), quantity(7))]"))
+                    == Product.parse("item(id(\"a0\"))[position(rack(5), shelf(6), quantity(7))]"))
 
     @Test fun testProductParse() =
-            assert(item(id("a0"), quantity(5)) == QuantityItem.parse("item(id(a0), quantity(5))"))
+            assert(item(id("a0"), quantity(5)) == QuantityItem.parse("item(id(\"a0\"), quantity(5))"))
 
-    @Test fun testNameParse() = assert(name("name") == Name.parse("name(name)"))
+    @Test fun testNameParse() = assert(name("name") == Name.parse("name(\"name\")"))
 
     @Test fun testPositionParse() =
             assert(position(rack(0),shelf(1), quantity(2))
@@ -85,5 +85,5 @@ class AbstractionTermsTest {
                     id("a0"),
                     script("x y z !"),
                     listOf(requirement("r0"), requirement("r1"))
-            ) == Variant.parse("variant(id(a0), requirements[r0, r1],script(x y z !))"))
+            ) == Variant.parse("variant(id(\"a0\"), requirements[r0, r1],script(\"x y z !\"))"))
 }

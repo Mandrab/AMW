@@ -39,18 +39,18 @@ class OperationTermsTest {
 
     @Test fun testAddCommandParse() =
             assert(add(command(id("a0"), name("name"), description("description")))
-                    == AddCommand.parse("add(command(id(a0), name(name), description(description)))"))
+                    == AddCommand.parse("add(command(id(\"a0\"), name(\"name\"), description(\"description\")))"))
 
     @Test fun testAddItemParse() =
         assert(add(item(id("a0"), position(rack(0), shelf(1), quantity(2))))
-                == AddItem.parse("add(item(id(a0), position(rack(0),shelf(1),quantity(2))))"))
+                == AddItem.parse("add(item(id(\"a0\"), position(rack(0),shelf(1),quantity(2))))"))
 
     @Test fun testAddVersionParse() =
             assert(
                 add(
                         "id",
                         variant(id("a0"), script("x y z !"), listOf(requirement("r0"), requirement("r1")))
-                ) == AddVersion.parse("add(id, variant(id(a0), requirements[r0, r1], script(x y z !)))")
+                ) == AddVersion.parse("add(id, variant(id(\"a0\"), requirements[r0, r1], script(\"x y z !\")))")
             )
 
     @Test fun testCommandParse() =
@@ -67,7 +67,7 @@ class OperationTermsTest {
                     )[
                             item(id("a0"), quantity(5))
                     ] == PlaceOrder.parse(
-                            "order(client(antonio), email(antonio@email), address(address))[item(id(a0),quantity(5))]"
+                            "order(client(antonio), email(antonio@email), address(address))[item(id(\"a0\"),quantity(5))]"
                     )
             )
 
@@ -76,5 +76,5 @@ class OperationTermsTest {
                 == InfoOrders.parse("info(client(antonio),email(antonio@email))"))
 
     @Test fun testRemoveItemParse() =
-            assert(remove(item(id("a0"), quantity(5))) == RemoveItem.parse("remove(item(id(a0),quantity(5)))"))
+            assert(remove(item(id("a0"), quantity(5))) == RemoveItem.parse("remove(item(id(\"a0\"),quantity(5)))"))
 }

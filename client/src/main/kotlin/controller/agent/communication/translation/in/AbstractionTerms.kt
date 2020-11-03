@@ -30,34 +30,34 @@ import controller.agent.communication.translation.`in`.LiteralParser.asList
 
 object AbstractionTerms {
 
-    fun Address.parse(string: String): Address.Address = string.parse("""address\((.*)\)""").run { address(next()) }
+    fun Address.parse(string: String): Address.Address = string.parse("""address\(\"(.*)\"\)""").run { address(next()) }
 
-    fun Client.parse(string: String): Client.Client = string.parse("""client\((.*)\)""").run { client(next()) }
+    fun Client.parse(string: String): Client.Client = string.parse("""client\(\"(.*)\"\)""").run { client(next()) }
 
     fun Command.parse(string: String): Command.CommandInfo =
-            string.parse("""command\(id\((.*)\), ?name\((.*)\), ?description\((.*)\)\)""")
+            string.parse("""command\(id\(\"(.*)\"\), ?name\(\"(.*)\"\), ?description\(\"(.*)\"\)\)""")
                     .run { command(id(next()),name(next()),description(next())) }
 
-    fun Description.parse(string: String): Description.Description = string.parse("""description\((.*)\)""")
+    fun Description.parse(string: String): Description.Description = string.parse("""description\(\"(.*)\"\)""")
             .run { description(next()) }
 
-    fun Email.parse(string: String): Email.Email = string.parse("""email\((.*)\)""").run { email(next()) }
+    fun Email.parse(string: String): Email.Email = string.parse("""email\(\"(.*)\"\)""").run { email(next()) }
 
     fun ID.parse(string: String, syntax: String = "id"): ID.ID = string.parse("""$syntax\((.*)\)""")
             .run { IDClass(next(), syntax) }
 
     fun Product.Companion.parse(string: String): Product =
-            string.parse("""item\(id\((.*)\)\)\[(.*)]""")
+            string.parse("""item\(id\("(.*)"\)\)\[(.*)]""")
                     .run { item(id(next()))[next().asList().map { Position.parse(it) }] }
 
     fun WarehouseItem.Companion.parse(string: String): WarehouseItem =
-            string.parse("""item\(id\((.*)\), ?position\((.*)\)\)""")
+            string.parse("""item\(id\("(.*)"\), ?position\((.*)\)\)""")
                     .run { item(id(next()),Position.parse("position(${next()})")) }
 
-    fun QuantityItem.Companion.parse(string: String): QuantityItem = string.parse("""item\(id\((.*)\), ?(.*)\)""")
+    fun QuantityItem.Companion.parse(string: String): QuantityItem = string.parse("""item\(id\("(.*)"\), ?(.*)\)""")
             .run { item(id(next()),Quantity.parse(next())) }
 
-    fun Name.parse(string: String): Name.Name = string.parse("""name\((.*)\)""").run { name(next()) }
+    fun Name.parse(string: String): Name.Name = string.parse("""name\(\"(.*)\"\)""").run { name(next()) }
 
     fun Position.parse(string: String): Position.Position =
             string.parse("""position\(rack\((.*)\), ?shelf\((.*)\), ?quantity\((.*)\)\)""")
@@ -77,7 +77,7 @@ object AbstractionTerms {
     fun Shelf.parse(string: String): Shelf.Shelf = string.parse("""shelf\((.*)\)""").run { shelf(next().toInt()) }
 
     fun Variant.parse(string: String): Variant.Variant =
-            string.parse("""variant\(id\((.*)\), ?requirements\[(.*)], ?script\((.*)\)\)""").run {
+            string.parse("""variant\(id\(\"(.*)\"\), ?requirements\[(.*)], ?script\(\"(.*)\"\)\)""").run {
                 val id = next()
                 val requirements = next()
                 val script = next()
