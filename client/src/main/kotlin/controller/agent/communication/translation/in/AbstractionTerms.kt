@@ -1,31 +1,21 @@
 package controller.agent.communication.translation.`in`
 
-import common.ontology.dsl.abstraction.Address
-import common.ontology.dsl.abstraction.Client
-import common.ontology.dsl.abstraction.Command
-import common.ontology.dsl.abstraction.Description
+import common.ontology.dsl.abstraction.*
+import common.ontology.dsl.abstraction.Address.address
+import common.ontology.dsl.abstraction.Client.client
 import common.ontology.dsl.abstraction.Description.description
-import common.ontology.dsl.abstraction.Email
-import common.ontology.dsl.abstraction.ID
+import common.ontology.dsl.abstraction.Email.email
 import common.ontology.dsl.abstraction.ID.ID as IDClass
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.item
-import common.ontology.dsl.abstraction.Name
 import common.ontology.dsl.abstraction.Name.name
-import common.ontology.dsl.abstraction.Position
-import common.ontology.dsl.abstraction.Quantity
 import common.ontology.dsl.abstraction.Quantity.quantity
-import common.ontology.dsl.abstraction.Rack
 import common.ontology.dsl.abstraction.Rack.rack
-import common.ontology.dsl.abstraction.Requirement
-import common.ontology.dsl.abstraction.Script
 import common.ontology.dsl.abstraction.Script.script
-import common.ontology.dsl.abstraction.Shelf
 import common.ontology.dsl.abstraction.Shelf.shelf
-import common.ontology.dsl.abstraction.Variant
 import controller.agent.communication.translation.`in`.LiteralParser.asList
 
 object AbstractionTerms {
@@ -75,6 +65,10 @@ object AbstractionTerms {
             .run { script(next())[next().split(",").map { Requirement.parse(it) }] }
 
     fun Shelf.parse(string: String): Shelf.Shelf = string.parse("""shelf\((.*)\)""").run { shelf(next().toInt()) }
+
+    fun User.parse(string: String): User.User =
+            string.parse("""user\(client\(\"(.*)\"\), ?email\(\"(.*)\"\), ?address\(\"(.*)\"\)\)""")
+                    .run { user(client(next()), email(next()), address(next())) }
 
     fun Variant.parse(string: String): Variant.Variant =
             string.parse("""variant\(id\(\"(.*)\"\), ?requirements\[(.*)], ?script\(\"(.*)\"\)\)""").run {

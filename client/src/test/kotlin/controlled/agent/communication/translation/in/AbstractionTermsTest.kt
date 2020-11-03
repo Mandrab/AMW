@@ -21,6 +21,7 @@ import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Requirement.requirement
 import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf.shelf
+import common.ontology.dsl.abstraction.User.user
 import common.ontology.dsl.abstraction.Variant.variant
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
 import org.junit.Test
@@ -79,6 +80,10 @@ class AbstractionTermsTest {
                     == Script.parse("script(x y z !)[r0, r1]"))
 
     @Test fun testShelfParse() = assert(shelf(5) == Shelf.parse("shelf(5)"))
+
+    @Test fun testUserParse() =
+            assert(user(client("antonio"), email("antonio@mail"), address("address"))
+                    == User.parse("user(client(\"antonio\"), email(\"antonio@mail\"), address(\"address\"))"))
 
     @Test fun testVariantParse() = assert(
             variant(
