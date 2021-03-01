@@ -4,8 +4,6 @@
 \usepackage{url}
 \usepackage{natbib}
 \usepackage{graphicx}
-%\usepackage{multicol, multirow}
-%\usepackage{tabularx, booktabs, makecell, caption}
 
 \newcommand{\emailaddr}[1]{\href{mailto:#1}{\texttt{#1}}}
 
@@ -20,165 +18,46 @@
     Paolo Baldini \\ \emailaddr{paolo.baldini6@studio.unibo.it}
 }
 
-% TODO \date{January 2019}
-
 \begin{document}
 
 \maketitle
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   ABSTRACT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{abstract}
-    Up to $\sim$2000 characters briefly describing the project.
+In the last years warehouses are getting more and more complicated. The increasing need of efficiency has pushed companies to provide their workers with tools that make jobs easier and faster. The largest ones have even substitute part of the human work with automatic machines. In this latter case, the most common approaches try to automatize through use of few PLC that manages the whole system.
+\vspace{6pt}
+\par
+Through the implementation of a system in which every machine appear as a robotic agent, I want to give a distributed alternative to the actual centralization practice. In this view, machines should manage incoming orders, retrieve required products and be as flexible and reusable as possible through the presence of an automatic update of \textit{procedural knowledge}.
 \end{abstract}
+\newpage
 
-\section{Goal/Requirements}
+\tableofcontents
+\newpage
 
-Detailed description of the project goals, requirements, and expected outcomes.
-%
-Use case Diagrams, examples, or Q/A simulations are welcome.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   SECTIONS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Scenarios}
+\include{section/goals/main.tex}
 
-Informal description of the ways users are expected to interact with your project.
-%
-It should describe \emph{how} and \emph{why} a user should use / interact with the system.
+\include{section/requirements/main.tex}
 
-\subsection{Self-assessment policy}
+\include{section/design/main.tex}
 
-\begin{itemize}
-    \item How should the \emph{quality} of the \emph{produced software} be assessed?
-    
-    \item How should the \emph{effectiveness} of the project outcomes be assessed?
-\end{itemize}
+\include{section/implementation/main.tex}
 
-\section{Requirements Analysis}
+\include{section/self_assessment/main.tex}
 
-Is there any implicit requirement hidden within this project's requirements?
-%
-Is there any implicit hypothesis hidden within this project's requirements?
-%
-Are there any non-functional requirements implied by this project's requirements?
+\include{section/deployment_instruction/main.tex}
 
-What model / paradigm / techonology is the best suited to face this project's requirements?
-%
-What's the abstraction gap among the available models / paradigms / techonologies and the problem to be solved?
+\include{section/usage_examples/main.tex}
 
-\section{Design}
-
-This is where the logical / abstract contribution of the project is presented.
-
-Notice that, when describing a software project, three dimensions need to be taken into account: structure, behaviour, and interaction.
-
-Always remember to report \textbf{why} a particular design has been chosen.
-Reporting wrong design choices which has been evalued during the design phase is welcome too.
-
-\subsection{Structure}
-
-Which entities need to by modelled to solve the problem?
-%
-(UML Class diagram)
-
-How should entities be modularised?
-%
-(UML Component / Package / Deployment Diagrams)
-
-\subsubsection{Ontology}
-
-\paragraph*{Concepts\vspace{12pt}\newline}
-
-\begin{figure}[!h]\centering
-    \includegraphics[width=.8\textwidth]{res/warehouse_ontology.png}    
-\end{figure}
-
-\noindent\begin{small}
-    \begin{tabular}{||c|c|c|c|c||}
-        Concept         & Parent concept        & \multicolumn{3}{c||}{\makecell{Has}} \\
-                        &                       & name              & type                  & cardinality \\
-        \hline \hline
-
-
-        Concept         &                       &                   &                       & \\
-                        &                       & ID                & String/Integer               & 1 \\
-        Container       & Concept               &                   &                       & \\
-        Rack            & Container             &                   &                       & \\
-                        &                       & \multirow{2}{*}{\shortstack{position\\$<$x1,x2,y1,y2$>$}} & \multirow{2}{*}{\shortstack{Tuple$<$Integer,\\Integer,Integer,Integer$>$}} & \multirow{2}{*}{\shortstack{1}} \\ \\
-                        &                       & compositeBy       & Shelf                 & 1..n \\
-        Shelf           & Container             &                   &                       & \\
-                        &                       & parent            & Rack                  & 1 \\
-        Object          & Concept               &                   &                       & \\
-                        &                       & name              & String                & 1 \\
-                        &                       & description       & String                & 0..1 \\
-        Item( Pack TODO )            & Object                &                   &                       & \\
-                        &                       & location          & Shelf                 & 1 \\
-                        &                       & weight (gr)       & Integer               & 1 \\
-        Agent           & Concept               &                   &                       & \\
-                        &                       & name              & String                & 0..1 \\
-                        &                       & description       & String                & 0..1 \\
-                        &                       & \multirow{2}{*}{\shortstack{position\\$<$x1,x2,y1,y2$>$}} & \multirow{2}{*}{\shortstack{Tuple$<$Integer,\\Integer,Integer,Integer$>$}} & \multirow{2}{*}{\shortstack{0..1}} \\ \\
-        Action          & Concept               &                   &                       & \\
-                        &                       & name              & String                & 1 \\
-                        &                       & description       & String                & 1 \\
-                        &                       & prerequisites     & Collection$<$Action$>$& 0..n \\
-%                        &                       & parameters        & Concept               & 0..n \\
-    \end{tabular}
-\end{small}
-    
-\pagebreak
-
-\subsection{Behaviour}
-
-How should each entity behave?
-%
-(UML State diagram or Activity Diagram)
-
-\subsection{Interaction}
-
-How should entities interact with each other?
-%
-(UML Sequence Diagram)
-
-\section{Implementation Details}
-
-Just report interesting / non-trivial / non-obvious implementation details.
-
-This section is expected to be short in case some documentation (e.g. Javadoc or Swagger Spec) has been produced for the software artefacts.
-%
-This this case, the produced documentation should be referenced here.
-
-\section{Self-assessment / Validation}
-
-Choose a criterion for the evaluation of the produced software and \textbf{its compliance to the requirements above}.
-
-Pseudo-formal or formal criteria are preferred.
-
-In case of a test-driven development, describe tests here and possibly report the amount of passing tests, the total amount of tests and, possibly, the test coverage.
-
-\section{Deployment Instructions}
-
-Explain here how to install and launch the produced software artefacts.
-%
-Assume the softaware must be installed on a totally virgin environment.
-%
-So, report \textbf{any} configuration step.
-
-Gradle and Docker may be useful here to ensure the deployment and launch processes to be easy.
-
-\section{Usage Examples}
-
-Show how to use the produced software artefacts.
-
-Ideally, there should be at least one example for each scenario proposed above.
-
-\section{Conclusions}
-
-Recap what you did
-
-\subsection{Future Works}
-
-Recap what you did \emph{not}
-
-\subsection{What did we learned}
-
-Racap what did you learned
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   STYLISTIC NOTES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section*{Stylistic Notes}
 
