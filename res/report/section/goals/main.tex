@@ -1,19 +1,57 @@
-\section{Goal/Requirements}
+\section{Obiettivi e requisiti}
+Il progetto mira allo sviluppo di un sistema (simulato) di controllo di un magazzino, il quale sarà gestito da agenti software e robotici. La scelta dell’implementazione simulata del sistema è dovuta alla mancanza di controllori fisici atti a rappresentare gli agenti robotici. Oltre a questo, la scelta permette di mettere in secondo piano le complicazioni
+hardware, che non rappresentano invero il focus del progetto.
+\parag
+Nel sistema, si prevederà la possibilità di sottoporre un ordine i cui elementi compositivi saranno quindi raggruppati dagli agenti robotici incaricati. La suddivisione dei compiti di recupero delle parti dell'ordine sarà diretta invece da un agente `coordinatore'.\newline
+Oltre al `normale' funzionamento di un magazzino, si desidera inoltre permettere agli agenti di eseguire task non precedentemente conosciuti. Lo sviluppo di questa caratteristica si delinea nella creazione di un repository di piani (i.e. abilit`a) a cui i vari agenti possano collegarsi per ottenere la capacità richiesta.
+\parag
+A livello tecnologico, il progetto prevede lo sviluppo di agenti JADE e Jason (questi ultimi, programmati quindi nella versione estesa di AgentSpeak(L)). Gli agenti funzioneranno quindi su infrastruttura JADE.
+Allo scopo di sviluppare la capacit`a di scaricamento dei piani, si ritiene infine utile l’utilizzo di ontologie atte a descrivere il dominio del magazzino.
+\parag
+Come obiettivi di apprendimento, ci si pongono quelli di acquisire conoscenza relativamente al modello BDI\footnote{Beliefs, Desires, Intentions}, approfondire aspetti pi`u avanzati di JADE e per quanto
+possibile, valutare l'utilizzo e l'impatto della rappresentazione di un dominio mediante ontologie in un sistema distribuito.
+% % TODO
+% % - detailed description of the project goals, 
+% % - requirements,
+% % - expected outcomes.
+% %
+% % Use case Diagrams, examples, or Q/A simulations are welcome.
 
-Detailed description of the project goals, requirements, and expected outcomes.
-%
-Use case Diagrams, examples, or Q/A simulations are welcome.
+% L'obiettivo del progetto è lo sviluppo di un sistema di gestione di magazzini basato sull'utilizzo di macchine controllate da agenti autonomi (vedasi Figura \ref{fig:warehouse}). Questo dovrà risultare flessibile per quanto riguarda l'introduzione di nuove macchine e funzionalità e per quanto possibile resistente ai malfunzionamenti. % TODO è resistente? TODO consistenza?
+% %
+% \begin{figure}[h]\centering
+%     \includegraphics[width=.8\textwidth]{section/goals/figure/warehouse.png}
+%     \caption{Rappresentazione immaginaria del sistema. Sono visibili le scaffalature, i robot e i punti di raccolta merci.}
+%     \label{fig:warehouse}
+% \end{figure}
+% \\
+% Da un punto di vista funzionale, saranno presenti due possibili utenti del sistema: \textit{cliente} e \textit{amministratore}. Questi avranno accesso a differenti tipi di operazioni, le quali possono essere riassunte dal seguente elenco puntato e dal diagramma degli usi visibile in Figura \ref{fig:warehouse-use-case}.
+% %
+% \begin{itemize}
+%     \item piazzare un ordine \textit{[cliente]}
+%     \item controllare stato di un ordine \textit{[cliente]}
+%     \item supervisionare lo stato del magazzino \textit{[admin]}
+%     \item rifornire il magazzino \textit{[admin]}
+%     \item sottomettere un task alle macchine del sistema \textit{[admin]}
+% \end{itemize}
+% %
+% \begin{figure}[h]\centering
+%     \includegraphics[width=.8\textwidth]{section/goals/figure/warehouse-use_case.png}
+%     \caption{Principali azioni effettuabili in base alla tipologia di utente.}
+%     \label{fig:warehouse-use-case}
+% \end{figure}
 
-\subsection{Scenarios}
+% \subsection{Scenarios}
+% % TODO
+% % Informal description of the ways users are expected to interact with your project.
+% % It should describe \emph{how} and \emph{why} a user should use / interact with the system.
 
-Informal description of the ways users are expected to interact with your project.
-%
-It should describe \emph{how} and \emph{why} a user should use / interact with the system.
+% Se i principali 
 
-\subsection{Self-assessment policy}
+% \subsection{Self-assessment policy}
 
-\begin{itemize}
-    \item How should the \emph{quality} of the \emph{produced software} be assessed?
+% \begin{itemize}
+%     \item How should the \emph{quality} of the \emph{produced software} be assessed?
     
-    \item How should the \emph{effectiveness} of the project outcomes be assessed?
-\end{itemize}
+%     \item How should the \emph{effectiveness} of the project outcomes be assessed?
+% \end{itemize}
