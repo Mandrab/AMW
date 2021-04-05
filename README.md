@@ -10,12 +10,12 @@ This paragraph contains a list of commands used to run the demo via gradle and d
 Initialization of the system:
 0. `./gradlew downloadFile` download auxiliary files
 1. `./gradlew unzip` unzip auxiliary files
-2. `./gradlew docker` to create the images of the agents (if it fails, check if the image already exists)
-3. `docker network create amw` to create the virtual network of the system
+2. `./gradlew [warehouse:AGENT_TYPE:]docker` creates the image of the agent(s) (they should not already exist)
+3. `docker network create amw` create the virtual network of the system
 
 To run the system:
 0. `./gradlew start_main_container` to start the JADE main container
-1. `./gradlew dockerRun` to start all the agents of the system
+1. `./gradlew [warehouse:AGENT_TYPE:]dockerRun` to start the agent(s) of the system
 
 Other useful commands:
 - Gradle:
