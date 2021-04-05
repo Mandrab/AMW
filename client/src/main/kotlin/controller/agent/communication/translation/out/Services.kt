@@ -52,7 +52,7 @@ object Services {
 
     object AcceptOrder {
         fun build(user: User, items: Collection<QuantityItem>) =
-                object: Service(MANAGEMENT_ORDERS.id,ACCEPT_ORDER.id, REQUEST) {
+                object: Service(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id, REQUEST) {
                         override fun parse(): Literal = order(user.client, user.email, user.address)[items].term()
                 }
     }
