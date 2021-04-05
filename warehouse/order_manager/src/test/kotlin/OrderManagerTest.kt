@@ -9,7 +9,6 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription
 import jade.domain.FIPAAgentManagement.ServiceDescription
 import org.junit.Assert
 
-
 class OrderManagerTest {
     private val proxy = proxy()
 

@@ -1,10 +1,13 @@
+# Folders
+**/.stop___MAS
+**/build
 .gradle
 .idea
-**/.stop___MAS
 bin
-**/build
 project
 res/docker
 target
+
+# Files
 **/APDescription.txt
 **/MTPs-Main-Container.txt
