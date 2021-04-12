@@ -16,7 +16,7 @@ Initialization of the system:
 
 To run the system:
 0. `./gradlew start_main_container` to start the JADE main container
-1. `./gradlew [warehouse:AGENT_TYPE:]dockerRun` to start the agent(s) of the system
+1. `./gradlew start_AGENT_NAME_agent | start_agents` to start the agent | agents of the system
 
 Other useful commands:
 - Gradle:

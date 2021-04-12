@@ -100,7 +100,7 @@ AGENTS.collect({ agentName ->                               // create tasks for 
         hostConfig.autoRemove = true                        // remove the container when the container's process exits
     }
 
-    /** Shows logs from the agent container */
+    /** Shows logs from the agent container TODO check */
     tasks.register(log_task(agentName), DockerLogsContainer) {
         logger.info "Logging $agentName agent"              // logging info on creation
 
@@ -143,7 +143,7 @@ task start_agents(type: DefaultTask) {
 }
 
 /** Display logs of all the agents */
-task show_logs(type: DefaultTask) {
+task show_logs(type: DefaultTask) { // TODO check
     AGENTS.forEach({ agentName ->
         dependsOn log_task(agentName)                       // start-all depends on the start of each agent
     })
@@ -210,6 +210,6 @@ task start_agent(type: JavaExec) {
 
 static String dockerfile_task(String agentName) { return "create_${agentName}_dockerfile" }
 static String build_task(String agentName) { return "build_${agentName}_image" }
-static String start_task(String agentName) { return "create_${agentName}_container" }
+static String start_task(String agentName) { return "start_${agentName}_agent" }
 static String log_task(String agentName) { return "log_${agentName}_container" }
 static String remove_task(String agentName) { return "remove_${agentName}_container" }
