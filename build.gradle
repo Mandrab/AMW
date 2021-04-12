@@ -1,12 +1,17 @@
+/**************************************************************************************************
+ * IMPORTS, PLUGIN, REPOSITORIES AND DEPENDENCIES
+ *************************************************************************************************/
+
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.image.*
 import de.undercouch.gradle.tasks.download.Download
 
+// specify used plugins
 plugins {
-    id "de.undercouch.download" version "1.2"
+    id "com.bmuschko.docker-remote-api" version "6.7.0"     // docker plugin
+    id "de.undercouch.download" version "1.2"               // downloads plugin
     id "org.jetbrains.kotlin.jvm" version "1.4.10"
 }
-
-compileKotlin.kotlinOptions.jvmTarget = "1.8"
-compileTestKotlin.kotlinOptions.jvmTarget = "1.8"
 
 // set repositories used
 repositories {
@@ -19,12 +24,137 @@ repositories {
 // define tasks dependencies
 dependencies {
     implementation "org.jason-lang:jason:2.4"
+
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
-def DOCKER_FOLDER = "res/docker"
-def JASON_FOLDER = "jason-2.4"
+/**************************************************************************************************
+ * PROJECT SETTINGS, CONSTANTS AND GLOBAL VARIABLES
+ *************************************************************************************************/
 
-// download zip
+// define project information
+group = "dev.mandrab.university.master.distributedsystems.amw"
+version = "1.0"
+
+// constants
+def DOCKER_FOLDER = "res/docker"        // folder where to put docker needed files
+def JASON_FOLDER = "jason-2.4"          // jason folder name
+def AGENTS = ["collection_point_manager", "command_manager", "order_manager", "robot_picker", "warehouse_mapper"]
+
+def property(name, defaultValue) {
+    return (project.properties as Map<String, String>).getOrDefault(name, defaultValue)
+}
+
+/**************************************************************************************************
+ * DOCKER CONFIGURATION
+ *************************************************************************************************/
+
+AGENTS.collect({ agentName ->
+    tasks.register(dockerfile_task(agentName), Dockerfile) {
+        logger.quiet "Creating dockerfile of $agentName agent"  // logging info on creation
+
+        from "openjdk:14-alpine"                                // base image
+        label(["maintainer": 'Paolo Baldini "paolobaldini01@gmail.com"'])   // set image manteiner
+
+        environmentVariable "HOME", "/root/agent"               // set HOME environmental variable
+        environmentVariable "NAME", agentName                   // set agent NAME as environmental variable
+        runCommand '''mkdir -p $HOME'''                         // create user (i.e., agent) home folder
+
+        doFirst {
+            delete "build/docker"                               // delete files from previous builds
+            copy {
+                from "src/main/asl/$agentName"                  // copy of agent specific files
+                from "src/main/asl/common"                      // copy of commons agent files
+                from "res/docker"                               // copy of jason files (from download task)
+                into "build/docker"                             // docker build context directory
+                include "*"                                     // copy all the files
+            }
+        }
+
+        copyFile("*", '''$HOME/''')                             // copy files needed by the agent to work
+
+        entryPoint "java"                                       // system engine
+        defaultCommand '-cp "$HOME/jason-2.4/libs/*"',          // set java classpath
+                "jade.Boot",                                    // run the agents in jade platform
+                "-container",                                   // run as container TODO check, i dont remember
+                "-host main_container",                         // run in main container TODO check, i dont remember
+                '''"$NAME:jason.infra.jade.JadeAgArch($HOME/agent.asl)"'''  // run agent from asl main file
+
+        exposePort 8080                                         // TODO needed?
+    }
+
+    tasks.register(build_task(agentName), DockerBuildImage) {  // create a build task for each agent
+        logger.quiet "Creating image of $agentName agent"   // logging info on creation
+
+        dependsOn "removeContainer"                         // remove container of agent
+        dependsOn dockerfile_task(agentName)                // depends on dockerfile task
+
+        images.add "amw:$agentName-$version"                // create image of agent
+    }
+
+    tasks.register(start_task(agentName), DockerCreateContainer) {
+        logger.info "Creating container of $agentName agent"  // logging info on creation
+
+        targetImageId "amw:$agentName-$version"               // id of image to start
+        hostConfig.portBindings = ['8080:8080']                 // TODO needed?
+        hostConfig.autoRemove = true                            // remove the container when the container's process exits
+    }
+
+    tasks.register(log_task(agentName), DockerLogsContainer) {
+        logger.info "Logging $agentName agent"                  // logging info on creation
+
+        targetContainerId "amw:$agentName-$version"             // stop image container
+        follow = true
+        tailAll = true
+        onNext { message ->
+            logger.quiet message.toString()                     // messages from the container will be passed when available
+        }
+    }
+
+    tasks.register(remove_task(agentName), DockerRemoveContainer) {
+        logger.info("Removing image of $agentName agent")     // logging info on creation
+
+        targetContainerId "amw:$agentName-$version"
+        onError { e -> if (!"404" in e.message) { throw e } }   // ignore error if is of type 'container not found'
+    }
+})
+
+task create_dockerfiles(type: DefaultTask) {
+    AGENTS.forEach({ agentName ->
+        dependsOn dockerfile_task(agentName)                // create-all depends on the creation of each dockerfile
+    })
+}
+
+task build_images(type: DefaultTask) {
+    AGENTS.forEach({ agentName ->
+        dependsOn build_task(agentName)                     // build-all depends on the build of each agent
+    })
+}
+
+task start_all(type: DefaultTask) {
+    AGENTS.forEach({ agentName ->
+        dependsOn start_task(agentName)                     // start-all depends on the start of each agent
+    })
+}
+
+task log_all(type: DefaultTask) {
+    AGENTS.forEach({ agentName ->
+        dependsOn log_task(agentName)                     // start-all depends on the start of each agent
+    })
+}
+
+task remove_all(type: DefaultTask) {
+    AGENTS.forEach({ agentName ->
+        dependsOn remove_task(agentName)                     // start-all depends on the start of each agent
+    })
+}
+
+/**************************************************************************************************
+ * OTHER TASKS
+ *************************************************************************************************/
+
+// download jason zip data
 task downloadFile(type: Download) {
     // create directories
     file(DOCKER_FOLDER + "/" + JASON_FOLDER).mkdirs()
@@ -33,7 +163,7 @@ task downloadFile(type: Download) {
     dest DOCKER_FOLDER
 }
 
-// unzip jason content
+// unzip jason data
 task unzip(type: Copy) {
     def zipFile = file(DOCKER_FOLDER + "/jason-2.4.zip")
     def outputDir = file(DOCKER_FOLDER + "/" + JASON_FOLDER)
@@ -52,13 +182,12 @@ task start_main_container(type: JavaExec) {
 // start agent specifying path, file and name
 task start_agent(type: JavaExec) {
     if (!project.hasProperty("f")) {
-        println "The agent name must be passed!"
-        return
+        return logger.error("The agent name must be passed!")
     }
 
-    String path = project.property("p") ? project.property("p") : "."
-    String file = project.property("f")
-    String name = project.hasProperty("n") ? project.property("n") : file.substring(0, file.lastIndexOf('.'))
+    String path = project.properties.getOrDefault("p", ".")
+    String file = project.properties["f"]
+    String name = project.properties.getOrDefault("n", file.substring(0, file.lastIndexOf('.')))
 
     group = "jason"
 
@@ -68,3 +197,13 @@ task start_agent(type: JavaExec) {
     args "-container"
     args "$name:jason.infra.jade.JadeAgArch($path/$file)"
 }
+
+/**************************************************************************************************
+ * UTILITY FUNCTIONS
+ *************************************************************************************************/
+
+static String dockerfile_task(String agentName) { return "create_${agentName}_dockerfile" }
+static String build_task(String agentName) { return "build_${agentName}_image" }
+static String start_task(String agentName) { return "create_${agentName}_container" }
+static String log_task(String agentName) { return "log_${agentName}_container" }
+static String remove_task(String agentName) { return "remove_${agentName}_container" }
