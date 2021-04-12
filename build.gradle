@@ -23,9 +23,9 @@ repositories {
 // define tasks dependencies
 dependencies {
     implementation "org.jason-lang:jason:2.4"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     testImplementation "junit:junit:4.12"
-    testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 /**************************************************************************************************
@@ -161,7 +161,7 @@ task remove_containers(type: DefaultTask) {
  *************************************************************************************************/
 
 /** Download jason zip data */
-task downloadFile(type: Download) {
+task download_file(type: Download) {
     // create directories
     file(DOCKER_FOLDER + "/" + JASON_FOLDER).mkdirs()
 
