@@ -4,6 +4,7 @@
 .gradle
 .idea
 bin
+bak
 project
 res/docker
 target
