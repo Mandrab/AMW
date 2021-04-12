@@ -4,7 +4,6 @@
 
 import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.image.*
-import de.undercouch.gradle.tasks.download.Download
 
 // specify used plugins
 plugins {
@@ -38,115 +37,122 @@ group = "dev.mandrab.university.master.distributedsystems.amw"
 version = "1.0"
 
 // constants
-def DOCKER_FOLDER = "res/docker"        // folder where to put docker needed files
-def JASON_FOLDER = "jason-2.4"          // jason folder name
+def DOCKER_FOLDER = "res/docker"                            // folder where to put docker needed files
+def JASON_FOLDER = "jason-2.4"                              // jason folder name
 def AGENTS = ["collection_point_manager", "command_manager", "order_manager", "robot_picker", "warehouse_mapper"]
-
-def property(name, defaultValue) {
-    return (project.properties as Map<String, String>).getOrDefault(name, defaultValue)
-}
 
 /**************************************************************************************************
  * DOCKER CONFIGURATION
  *************************************************************************************************/
 
-AGENTS.collect({ agentName ->
+AGENTS.collect({ agentName ->                               // create tasks for each agent
+
+    /** Create the Dockerfile to build the agent image */
     tasks.register(dockerfile_task(agentName), Dockerfile) {
         logger.quiet "Creating dockerfile of $agentName agent"  // logging info on creation
 
-        from "openjdk:14-alpine"                                // base image
+        from "openjdk:14-alpine"                            // base image
         label(["maintainer": 'Paolo Baldini "paolobaldini01@gmail.com"'])   // set image manteiner
 
-        environmentVariable "HOME", "/root/agent"               // set HOME environmental variable
-        environmentVariable "NAME", agentName                   // set agent NAME as environmental variable
-        runCommand '''mkdir -p $HOME'''                         // create user (i.e., agent) home folder
+        environmentVariable "HOME", "/root/agent"           // set HOME environmental variable
+        environmentVariable "NAME", agentName               // set agent NAME as environmental variable
+        runCommand '''mkdir -p $HOME'''                     // create user (i.e., agent) home folder
 
         doFirst {
-            delete "build/docker"                               // delete files from previous builds
+            delete "build/docker"                           // delete files from previous builds
             copy {
-                from "src/main/asl/$agentName"                  // copy of agent specific files
-                from "src/main/asl/common"                      // copy of commons agent files
-                from "res/docker"                               // copy of jason files (from download task)
-                into "build/docker"                             // docker build context directory
-                include "*"                                     // copy all the files
+                from "src/main/asl/$agentName"              // copy of agent specific files
+                from "src/main/asl/common"                  // copy of commons agent files
+                from "res/docker"                           // copy of jason files (from download task)
+                into "build/docker"                         // docker build context directory
+                include "*"                                 // copy all the files
             }
         }
 
-        copyFile("*", '''$HOME/''')                             // copy files needed by the agent to work
+        copyFile("*", '''$HOME/''')                         // copy files needed by the agent to work
 
-        entryPoint "java"                                       // system engine
-        defaultCommand '-cp "$HOME/jason-2.4/libs/*"',          // set java classpath
-                "jade.Boot",                                    // run the agents in jade platform
-                "-container",                                   // run as container TODO check, i dont remember
-                "-host main_container",                         // run in main container TODO check, i dont remember
+        entryPoint "java"                                   // system engine
+        defaultCommand '-cp "$HOME/jason-2.4/libs/*"',      // set java classpath
+                "jade.Boot",                                // run the agents in jade platform
+                "-container",                               // run as container TODO check, i dont remember
+                "-host main_container",                     // run in main container TODO check, i dont remember
                 '''"$NAME:jason.infra.jade.JadeAgArch($HOME/agent.asl)"'''  // run agent from asl main file
 
-        exposePort 8080                                         // TODO needed?
+        exposePort 8080                                     // TODO needed?
     }
 
-    tasks.register(build_task(agentName), DockerBuildImage) {  // create a build task for each agent
+    /** Build the agent image through the previously created Dockerfile */
+    tasks.register(build_task(agentName), DockerBuildImage) {   // create a build task for each agent
         logger.quiet "Creating image of $agentName agent"   // logging info on creation
 
-        dependsOn "removeContainer"                         // remove container of agent
+        dependsOn remove_task(agentName)                    // remove container of agent
         dependsOn dockerfile_task(agentName)                // depends on dockerfile task
 
         images.add "amw:$agentName-$version"                // create image of agent
     }
 
+    /** Start the agent container */
     tasks.register(start_task(agentName), DockerCreateContainer) {
-        logger.info "Creating container of $agentName agent"  // logging info on creation
+        logger.info "Creating container of $agentName agent"    // logging info on creation
 
-        targetImageId "amw:$agentName-$version"               // id of image to start
-        hostConfig.portBindings = ['8080:8080']                 // TODO needed?
-        hostConfig.autoRemove = true                            // remove the container when the container's process exits
+        targetImageId "amw:$agentName-$version"             // id of image to start
+        hostConfig.portBindings = ['8080:8080']             // TODO needed?
+        hostConfig.autoRemove = true                        // remove the container when the container's process exits
     }
 
+    /** Shows logs from the agent container */
     tasks.register(log_task(agentName), DockerLogsContainer) {
-        logger.info "Logging $agentName agent"                  // logging info on creation
+        logger.info "Logging $agentName agent"              // logging info on creation
 
-        targetContainerId "amw:$agentName-$version"             // stop image container
+        targetContainerId "amw:$agentName-$version"         // stop image container
         follow = true
         tailAll = true
         onNext { message ->
-            logger.quiet message.toString()                     // messages from the container will be passed when available
+            logger.quiet message.toString()                 // messages from the container will be passed when available
         }
     }
 
+    /** Remove the container of the agent */
     tasks.register(remove_task(agentName), DockerRemoveContainer) {
-        logger.info("Removing image of $agentName agent")     // logging info on creation
+        logger.info("Removing image of $agentName agent")   // logging info on creation
 
-        targetContainerId "amw:$agentName-$version"
+        targetContainerId "amw:$agentName-$version"         // specify the target container id
         onError { e -> if (!"404" in e.message) { throw e } }   // ignore error if is of type 'container not found'
     }
 })
 
+/** Create Dockerfiles for all the agents */
 task create_dockerfiles(type: DefaultTask) {
     AGENTS.forEach({ agentName ->
         dependsOn dockerfile_task(agentName)                // create-all depends on the creation of each dockerfile
     })
 }
 
+/** Build images of all the agents */
 task build_images(type: DefaultTask) {
     AGENTS.forEach({ agentName ->
         dependsOn build_task(agentName)                     // build-all depends on the build of each agent
     })
 }
 
-task start_all(type: DefaultTask) {
+/** Start all agents containers */
+task start_agents(type: DefaultTask) {
     AGENTS.forEach({ agentName ->
         dependsOn start_task(agentName)                     // start-all depends on the start of each agent
     })
 }
 
-task log_all(type: DefaultTask) {
+/** Display logs of all the agents */
+task show_logs(type: DefaultTask) {
     AGENTS.forEach({ agentName ->
-        dependsOn log_task(agentName)                     // start-all depends on the start of each agent
+        dependsOn log_task(agentName)                       // start-all depends on the start of each agent
     })
 }
 
-task remove_all(type: DefaultTask) {
+/** Remove all the agents containers */
+task remove_containers(type: DefaultTask) {
     AGENTS.forEach({ agentName ->
-        dependsOn remove_task(agentName)                     // start-all depends on the start of each agent
+        dependsOn remove_task(agentName)                    // start-all depends on the start of each agent
     })
 }
 
@@ -154,7 +160,7 @@ task remove_all(type: DefaultTask) {
  * OTHER TASKS
  *************************************************************************************************/
 
-// download jason zip data
+/** Download jason zip data */
 task downloadFile(type: Download) {
     // create directories
     file(DOCKER_FOLDER + "/" + JASON_FOLDER).mkdirs()
@@ -163,7 +169,7 @@ task downloadFile(type: Download) {
     dest DOCKER_FOLDER
 }
 
-// unzip jason data
+/** Unzip jason zip data */
 task unzip(type: Copy) {
     def zipFile = file(DOCKER_FOLDER + "/jason-2.4.zip")
     def outputDir = file(DOCKER_FOLDER + "/" + JASON_FOLDER)
@@ -172,14 +178,14 @@ task unzip(type: Copy) {
     into outputDir
 }
 
-// start jade main container
+/** Start jade main container */
 task start_main_container(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = "jade.Boot"
     args "-gui"
 }
 
-// start agent specifying path, file and name
+/** Start agent specifying path, file and name */
 task start_agent(type: JavaExec) {
     if (!project.hasProperty("f")) {
         return logger.error("The agent name must be passed!")
