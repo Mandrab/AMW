@@ -14,12 +14,12 @@ Initialization of the system:
 3. `./gradlew build_AGENT_NAME_image | build_images` creates the image of the agent | agents
 4. `docker network create amw` create the virtual network of the system
 
-To run the system:
-0. `./gradlew start_main_container` to start the JADE main container
-1. `./gradlew start_AGENT_NAME_agent | start_agents` to start the agent | agents of the system
+To run the system: `./gradlew start_system` to start the main container and the agents
 
 Other useful commands:
 - Gradle:
+    - `./gradlew start_main_container` to start the JADE main container
+    - `./gradlew start_AGENT_NAME_agent | start_agents` to start the agent | agents of the system. Needs a main JADE container running.
     - `./gradlew start_agent [-Pp=PATH/TO] -Pf=MAIN_FILE.asl [-Pn=AGENT_NAME]` start and *asl* agent. Needs a main JADE container running.
 - Docker:
     - `docker images` see all the installed images
