@@ -33,5 +33,5 @@ object List {
 
     fun <T> list(init: List<T>.() -> Unit) = List<T>().apply(init)
 
-    fun <T> render(init: (T) -> String): ListCellRenderer<T> = ListCellRenderer<T> { l, e, i, s, c -> JLabel(init(e)) }
+    fun <T> render(init: (T) -> String): ListCellRenderer<T> = ListCellRenderer<T> { _, e, _, _, _ -> JLabel(init(e)) }
 }
