@@ -204,6 +204,16 @@ task start_agent(type: JavaExec) {
     args "$name:jason.infra.jade.JadeAgArch($path/$file)"
 }
 
+/**
+ * Start main container and agents of the system.
+ * Require the initialization/setup tasks to be already completed
+ */
+task start_system(type: DefaultTask) {
+    dependsOn start_main_container
+    dependsOn start_agents
+    finalizedBy show_logs
+}
+
 /**************************************************************************************************
  * UTILITY FUNCTIONS
  *************************************************************************************************/
