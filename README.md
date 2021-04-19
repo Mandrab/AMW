@@ -25,8 +25,8 @@ Other useful commands:
     - `docker images` see all the installed images
     - `docker run --network amw IMAGE` run the agent on the amw virtual network
     - `docker logs CONTAINER` print the container CLI
-    - ``docker stop -f `docker images -aq` `` **WARNING** stop ***ALL*** the container in your OS!
-    - ``docker rm -f `docker images -aq` `` **WARNING** remove ***ALL*** the container in your OS!
+    - ``docker stop `docker images -aq` `` **WARNING** stop ***ALL*** the container in your OS!
+    - ``docker container rm -f `sudo docker container ls -aq` `` **WARNING** remove ***ALL*** the container in your OS!
     - ``docker rmi -f `docker images -aq` `` **WARNING** remove ***ALL*** the images in your OS!
 - JADE:
     - `java -cp path/to/JADE_JAR jade.Boot -gui` start JADE main container from CLI
