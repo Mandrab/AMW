@@ -1,9 +1,0 @@
-rootProject.name = "Agent-Managed Warehouse"
-
-include "client"
-
-include "warehouse:collection_point_manager"
-include "warehouse:command_manager"
-include "warehouse:order_manager"
-include "warehouse:robot_picker"
-include "warehouse:warehouse_mapper"

@@ -1,3 +1,0 @@
-name: move_to_zone_A
-description: >
-  When his main method is called, it move the agent to zone A (1, 1) of the warehouse.
