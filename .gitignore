@@ -20,11 +20,11 @@ target
 **/MTPs-Main-Container.txt
 
 # latex files
-*.aux
-*.fbd_latexmk
-*.fls
-*.log
-*.out
-*.pdf
-*.synctex.gz
-*.toc
+**/*.aux
+**/*.fbd_latexmk
+**/*.fls
+**/*.log
+**/*.out
+**/*.pdf
+**/*.synctex.gz
+**/*.toc
