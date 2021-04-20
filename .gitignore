@@ -21,7 +21,7 @@ target
 
 # latex files
 **/*.aux
-**/*.fbd_latexmk
+**/*.fdb_latexmk
 **/*.fls
 **/*.log
 **/*.out
