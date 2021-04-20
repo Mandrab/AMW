@@ -2,14 +2,38 @@
 Il progetto mira allo sviluppo di un sistema (simulato) di controllo di un magazzino, il quale sarà gestito da agenti software e robotici. La scelta dell’implementazione simulata del sistema è dovuta alla mancanza di controllori fisici atti a rappresentare gli agenti robotici. Oltre a questo, la scelta permette di mettere in secondo piano le complicazioni
 hardware, che non rappresentano invero il focus del progetto.
 \parag
-Nel sistema, si prevederà la possibilità di sottoporre un ordine i cui elementi compositivi saranno quindi raggruppati dagli agenti robotici incaricati. La suddivisione dei compiti di recupero delle parti dell'ordine sarà diretta invece da un agente `coordinatore'.\newline
-Oltre al `normale' funzionamento di un magazzino, si desidera inoltre permettere agli agenti di eseguire task non precedentemente conosciuti. Lo sviluppo di questa caratteristica si delinea nella creazione di un repository di piani (i.e. abilit`a) a cui i vari agenti possano collegarsi per ottenere la capacità richiesta.
+Nel sistema si prevederà la possibilità di sottoporre un ordine. I prodotti che lo compongono saranno quindi raggruppati dagli agenti robotici incaricati. La suddivisione dei compiti di recupero delle parti dell'ordine sarà diretta invece da un agente `coordinatore'.\newline
+Oltre al `normale' funzionamento di un magazzino, si desidera inoltre permettere agli agenti di eseguire task non precedentemente conosciuti. Lo sviluppo di questa caratteristica si delinea nella creazione di un repository di piani (i.e. abilità) a cui i vari agenti possano collegarsi per ottenere la capacità richiesta.
 \parag
-A livello tecnologico, il progetto prevede lo sviluppo di agenti JADE e Jason (questi ultimi, programmati quindi nella versione estesa di AgentSpeak(L)). Gli agenti funzioneranno quindi su infrastruttura JADE.
-Allo scopo di sviluppare la capacit`a di scaricamento dei piani, si ritiene infine utile l’utilizzo di ontologie atte a descrivere il dominio del magazzino.
+A livello tecnologico, il progetto prevede lo sviluppo di agenti JADE e Jason (questi ultimi, programmati quindi nella versione estesa di AgentSpeak(L)). Gli agenti funzioneranno su di un infrastruttura distribuita JADE.
+Allo scopo di sviluppare la capacità di scaricamento dei piani, si ritiene infine utile la definizione di ontologie atte a descrivere il dominio del magazzino.
 \parag
-Come obiettivi di apprendimento, ci si pongono quelli di acquisire conoscenza relativamente al modello BDI\footnote{Beliefs, Desires, Intentions}, approfondire aspetti pi`u avanzati di JADE e per quanto
-possibile, valutare l'utilizzo e l'impatto della rappresentazione di un dominio mediante ontologie in un sistema distribuito.
+Come obiettivi di apprendimento, ci si pongono quelli di acquisire conoscenza relativamente al modello BDI\footnote{Beliefs, Desires, Intentions}, approfondire aspetti più avanzati di JADE e per quanto
+possibile, valutare l'utilizzo e l'impatto della rappresentazione di un dominio mediante ontologie in un sistema distribuito. Si valuta infine la possibilità di apprendimento di docker per il deployment delle componenti del sistema.
+\parag
+Un elenco formale dei requirements del progetto sarà fornito di seguito. TODO
+
+\subsection{Requisiti funzionali}
+\begin{itemize}
+    \item Implementare un sistema dinamico in grado di permettere l'aggiunta di agenti runtime;
+    \item Permettere l'interazione col sistema tramite un client dedicato;
+    \item Rendere possibile l'esecuzione di task non precedentemente definiti;
+    \item Rendere possibile la sottomissione di ordini da utenti umani esterni al sistema.
+\end{itemize}
+
+\subsection{Requisiti non funzionali}
+\begin{itemize}
+    \item Studiare Jason e il modello BDI ed utilizzarli per la creazione degli agenti del sistema `magazzino';
+    \item Approfondire (TODO già visto? non ricordo) la conoscenza del framework JADE ed utilizzarlo come architettura (TODO architettura è corretto?) base per la comunicazione degli agenti distribuiti;
+    \item Definire una ontologia rappresentante il magazzino da utilizzare per la definizione di azioni e conoscenze;
+    \item Utilizzare un approccio test-driven per monitorare il corretto funzionamento del sistema. (TODO da fare)
+\end{itemize}
+
+\subsection{Risultati attesi}
+Il risultato atteso è un sistema simulante un magazzino. Questo dovrà accettare ordini entranti e adoperarsi per il loro corretto completamento.\\
+Si prevede la presenza di una interfaccia utente tramite la quale sia possibile sottomettere ordini, eseguire task e visualizzare lo stato del sistema. Quest'ultima caratteristica non sarà tuttavia considerata un elemento obbligatorio nella soluzione finale e ci si riserva la possibilità di cancellarne lo sviluppo in caso di problemi o se i tempi di sviluppo dovessero estendersi troppo (TODO).\\
+Gli artefatti derivanti dallo sviluppo del progetto saranno immagini docker rappresentanti le entità del sistema ed un software client funzionante su JVM per l'interazione con esso.
+
 % % TODO
 % % - detailed description of the project goals, 
 % % - requirements,
