@@ -61,7 +61,7 @@ AGENTS.collect({ agentName ->                               // create tasks for 
         runCommand "mkdir -p $DOCKER.HOME"                  // create user (i.e., agent) home folder
 
         doFirst {
-            delete "build/docker"                           // delete files from previous builds
+            delete DOCKER.CONTEXT                           // delete files from previous builds
             copy {
                 from "src/main/asl/$agentName"              // copy of agent specific files
                 from "src/main/asl/common"                  // copy of commons agent files
@@ -69,7 +69,7 @@ AGENTS.collect({ agentName ->                               // create tasks for 
             }
             copy {
                 from "$DOCKER.RESOURCES/$JASON_FOLDER/libs" // copy of jason files (from download task)
-                into "build/docker/libs"                    // docker build context directory
+                into "$DOCKER.CONTEXT/libs"                 // docker build context directory
             }
         }
 
@@ -79,10 +79,8 @@ AGENTS.collect({ agentName ->                               // create tasks for 
         defaultCommand "-cp", "$DOCKER.HOME/libs/*",        // set java classpath
                 "jade.Boot",                                // run the agents in jade platform
                 "-container",                               // run as container TODO check, i dont remember
-                "-host", "main_container",                  // run in main container TODO check, i dont remember
+                "-host", "172.17.0.1",//"main_container",                  // connect to specific host TODO main_container was defined starting docker
                 "$agentName:jason.infra.jade.JadeAgArch($DOCKER.HOME/agent.asl)"// run agent from asl main file
-
-        exposePort 1099                                     // TODO needed?
     }
 
     /** Build the agent image through the previously created Dockerfile */
@@ -120,7 +118,7 @@ AGENTS.collect({ agentName ->                               // create tasks for 
         onNext { message ->
             logger.quiet message.toString()                 // messages from the container will be passed when available
         }
-    } get() dependsOn create_task(agentName)                // depends on container creation
+    } get() dependsOn start_task(agentName)                // depends on container creation
 
     /** Remove the container of the agent */
     tasks.register(remove_task(agentName), DockerRemoveContainer) {
