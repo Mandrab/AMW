@@ -5,27 +5,27 @@
 import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.image.*
 
-// specify used plugins
+/** specify used plugins */
 plugins {
     id "com.bmuschko.docker-remote-api" version "6.7.0"     // docker plugin
     id "de.undercouch.download" version "1.2"               // downloads plugin
-    id "org.jetbrains.kotlin.jvm" version "1.4.10"
+    id "org.jetbrains.kotlin.jvm" version "1.4.10"          // provides language support
 }
 
-// set repositories used
+/** set repositories used */
 repositories {
     mavenCentral()
     maven {
-        url "http://jacamo.sourceforge.net/maven2/"
+        url "http://jacamo.sourceforge.net/maven2/"         // jacamo repository
     }
 }
 
-// define tasks dependencies
+/** define tasks dependencies */
 dependencies {
-    implementation "org.jason-lang:jason:2.4"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jason-lang:jason:2.4"               // jason lang dependency
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"// stdlib for kotlin
 
-    testImplementation "junit:junit:4.12"
+    testImplementation "junit:junit:4.12"                   // testing use junit framework
 }
 
 /**************************************************************************************************
@@ -55,7 +55,7 @@ AGENTS.collect({ agentName ->                               // create tasks for 
         logger.quiet title("Creating dockerfile for $agentName agent")  // logging info on creation
 
         from "openjdk:11-jre-slim"                          // base image
-        label(["maintainer": 'Paolo Baldini "paolobaldini01@gmail.com"'])   // set image mainteiner
+        label(["maintainer": 'Paolo Baldini "paolobaldini01@gmail.com"'])   // set image maintainer
 
         environmentVariable "HOME", DOCKER.HOME             // set HOME environmental variable
         runCommand "mkdir -p $DOCKER.HOME"                  // create user (i.e., agent) home folder
@@ -78,85 +78,84 @@ AGENTS.collect({ agentName ->                               // create tasks for 
         entryPoint "java"                                   // system engine
         defaultCommand "-cp", "$DOCKER.HOME/libs/*",        // set java classpath
                 "jade.Boot",                                // run the agents in jade platform
-                "-container",                               // run as container TODO check, i dont remember
-                "-host", "172.17.0.1",//"main_container",                  // connect to specific host TODO main_container was defined starting docker
-                "$agentName:jason.infra.jade.JadeAgArch($DOCKER.HOME/agent.asl)"// run agent from asl main file
+                "-container",                               // start peripheral container instead of a Main Container
+                "-host",                                    // connect to specific host (defined as next parameter)
+                "172.17.0.1",                               // address of gateway from bridge network to host machine
+                randomName(agentName) +                     // define random agent name in the system
+                    ":jason.infra.jade.JadeAgArch(" +       // implementation of Jade Architecture to run Jason agents
+                    "$DOCKER.HOME/agent.asl)"               // run agent from its .asl main file
     }
 
     /** Build the agent image through the previously created Dockerfile */
     tasks.register(build_task(agentName), DockerBuildImage) {   // create a build task for each agent
-        logger.quiet title("Creating image of $agentName agent")    // logging info on creation
+        logger.quiet title("Creating image of $agentName agent")// logging info on creation
 
         images.add "amw:$agentName-$version"                // create image of agent
     } get() dependsOn dockerfile_task(agentName)            // depends on dockerfile task
 
-    /** Create the agent container */
+    /** Create the agent container from the image */
     tasks.register(create_task(agentName), DockerCreateContainer) {
-        //dependsOn remove_task(agentName)                    // remove container of agent TODO
-
         logger.info "Creating container of $agentName agent"// logging info on creation
 
         targetImageId "amw:$agentName-$version"             // id of image to start
-        containerName = agentName + new Random().nextInt()  // set container name
+        containerName = randomName agentName                // set container name
         hostConfig.autoRemove = true                        // remove the container when the container's process exits
-    }
+    } get() dependsOn build_task(agentName)                 // depends on image creation task
 
     /** Start agents containers */
     tasks.register(start_task(agentName), DockerStartContainer) {
         logger.quiet title("Starting $agentName agent")     // logging info on creation
 
-        targetContainerId(tasks.getByName(create_task(agentName)).containerId)
+        targetContainerId tasks.getByName(create_task(agentName)).containerId   // specify id of container to start
     } get() dependsOn create_task(agentName)                // depends on container creation
 
     /** Shows logs from the agent container TODO check */
     tasks.register(log_task(agentName), DockerLogsContainer) {
         logger.quiet title("Logging $agentName agent")      // logging info on creation
 
-        targetContainerId(tasks.getByName(create_task(agentName)).containerId)//"amw:$agentName-$version"         // stop image container
-        follow = true
-        tailAll = true
-        onNext { message ->
-            logger.quiet message.toString()                 // messages from the container will be passed when available
-        }
-    } get() dependsOn start_task(agentName)                // depends on container creation
+        targetContainerId tasks.getByName(create_task(agentName)).containerId   // specify id of container to log
+        follow = true                                       // task to block until the container exists
+        tailAll = true                                      // copy all output since the container has started
+        onNext { logger.quiet it.toString() }               // messages from the container will be passed when available
+    } get() dependsOn start_task(agentName)                 // depends on container creation
 
     /** Remove the container of the agent */
     tasks.register(remove_task(agentName), DockerRemoveContainer) {
-        logger.quiet title("Removing container of $agentName agent")    // logging info on creation
+        logger.quiet title("Removing container of $agentName agent")// logging info on creation
 
         targetContainerId "amw:$agentName-$version"         // specify the target container id
-        onError { e -> if (!"404" in e.message) { throw e } }   // ignore error if is of type 'container not found'
+        onError { if (!"404" in it.message) { throw it } }  // ignore error if is of type 'container not found'
     }
 })
 
 /** Create Dockerfiles for all the agents */
 task create_dockerfiles(type: DefaultTask) {
-    AGENTS.forEach({dependsOn dockerfile_task(it)})         // create-all depends on the creation of each dockerfile
+    AGENTS.forEach({dependsOn dockerfile_task(it)})         // depends on creation of each dockerfile
 }
 
 /** Build images of all the agents */
 task build_images(type: DefaultTask) {
-    AGENTS.forEach({dependsOn build_task(it)})              // build-all depends on the build of each agent
+    AGENTS.forEach({dependsOn build_task(it)})              // depends on the build of each agent
 }
 
 /** Create a container for each agent */
 task create_containers(type: DefaultTask) {
-    AGENTS.forEach({dependsOn create_task(it)})             // start-all depends on the start of each agent
+    AGENTS.forEach({dependsOn create_task(it)})             // depends on the start of each agent
 }
 
 /** Start all agents containers */
 task start_agents(type: DefaultTask) {
-    AGENTS.forEach({dependsOn start_task(it)})              // start-all depends on the start of each agent
+    AGENTS.forEach({dependsOn start_task(it)})              // depends on the start of each agent
 }
 
 /** Display logs of all the agents */
 task show_logs(type: DefaultTask) { // TODO check
-    AGENTS.forEach({dependsOn log_task(it)})                // start-all depends on the start of each agent
+    AGENTS.forEach({dependsOn log_task(it)})                // depends on the start of each agent
 }
 
 /** Remove all the agents containers */
 task remove_containers(type: DefaultTask) {
-    AGENTS.forEach({dependsOn remove_task(it)})             // start-all depends on the start of each agent
+    AGENTS.forEach({dependsOn remove_task(it)})             // depends on the removal of each container
 }
 
 /**************************************************************************************************
@@ -165,20 +164,19 @@ task remove_containers(type: DefaultTask) {
 
 /** Download jason zip data */
 task download_file(type: Download) {
-    // create directories
-    file "$DOCKER.RESOURCES/$JASON_FOLDER" mkdirs()
-
     src "https://deac-riga.dl.sourceforge.net/project/jason/jason/version%202.4/jason-2.4.zip"
     dest DOCKER.RESOURCES
 }
 
 /** Unzip jason zip data */
 task unzip(type: Copy) {
-    def zipFile = file "$DOCKER.RESOURCES/jason-2.4.zip"
-    def outputDir = file "$DOCKER.RESOURCES/$JASON_FOLDER"
+    def zipFile = file "$DOCKER.RESOURCES/jason-2.4.zip"    // zip file name
+    def outputDir = "$DOCKER.RESOURCES/$JASON_FOLDER"       // define output directory
+
+    file outputDir mkdirs()                                 // create output process directory
 
     from zipTree(zipFile)
-    into outputDir
+    into file(outputDir)
 }
 
 /** Start jade main container */
@@ -204,7 +202,7 @@ task start_agent(type: JavaExec) {
     standardInput = System.in
     main "jade.Boot"
     args "-container"
-    args "$name:jason.infra.jade.JadeAgArch($path/$file)"
+    args "${randomName(name)}:jason.infra.jade.JadeAgArch($path/$file)"
 }
 
 /**
@@ -230,3 +228,5 @@ static String remove_task(String agentName) { return "remove_${agentName}_contai
 
 static String bf(String text) { return "\033[1m$text\033[0m" }
 static String title(String text) { return bf("### $text") }
+
+static String randomName(String seed) { return "$seed-${new Random().nextInt()}" }
