@@ -128,11 +128,6 @@ AGENTS.collect({ agentName ->                               // create tasks for 
     }
 })
 
-/** Create Dockerfiles for all the agents */
-task create_dockerfiles(type: DefaultTask) {
-    AGENTS.forEach({dependsOn dockerfile_task(it)})         // depends on creation of each dockerfile
-}
-
 /** Build images of all the agents */
 task build_images(type: DefaultTask) {
     AGENTS.forEach({dependsOn build_task(it)})              // depends on the build of each agent
@@ -149,12 +144,12 @@ task start_agents(type: DefaultTask) {
 }
 
 /** Display logs of all the agents */
-task show_logs(type: DefaultTask) { // TODO check
+task show_logs(type: DefaultTask) { // TODO test
     AGENTS.forEach({dependsOn log_task(it)})                // depends on the start of each agent
 }
 
 /** Remove all the agents containers */
-task remove_containers(type: DefaultTask) {
+task remove_containers(type: DefaultTask) { // TODO test
     AGENTS.forEach({dependsOn remove_task(it)})             // depends on the removal of each container
 }
 
