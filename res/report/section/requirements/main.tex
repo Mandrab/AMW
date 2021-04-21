@@ -39,8 +39,11 @@ Come ultimo punto, la documentazione di JADE è curata, il che agevola ulteriorm
 \subsection{L'interprete Jason}
 Come tecnologia per lo sviluppo di alcuni degli agenti del sistema si è scelto di utilizzare il linguaggio ASL (AgentSpeakLanguage) nella sua estensione interpretata da Jason. Seppur ciò non fosse necessario allo sviluppo del sistema, le ragioni che hanno spinto a questa scelta sono legate alla volontà di apprendere il modello di programmazione BDI (Belief, Desire, Intention).\\
 L'adozione di questa tecnologia ha anche permesso di entrare a contatto sia con lo standard di comunicazione FIPA-ACL (negli agenti JADE) sia con quello KQML (negli agenti Jason), dando modo di valutare ed utilizzare entrambi.
-TODO BDI.
 
-% \subsubsection{La piattaforma Docker}
+\subsubsection{La piattaforma Docker}
+La tecnologia Docker permette di isolare i componenti del sistema e di eseguirli in maniera indipendente. Il suo utilizzo porta numerosi vantaggi, quali una notevole semplicità di deployment e scalabilità, a partire da una semplice immagine di base.\\
+Docker modularizza inoltre la singola entità del sistema, permettendo una compartimentalizzazione implicita e, in questo contesto, la possibilità di simulare una distribuzione su diverse macchine. Le istanze delle immagini docker comunicano infatti su di una rete fornita dalla piattaforma, simulando quindi implicitamente una distribuzione del sistema.\\
+Infine, come ultimo punto, l'utilizzo di immagini dockerizzate permette di aggiungere in maniera semplice nuovi agenti al sistema durante le simulazioni.\\
+L'utilizzo di questa tecnologia non era ovviamente necessario allo scopo base del progetto, ma la possibilità di simulare una distribuzione delle entità in rete era auspicabile e se ne è perciò deciso l'uso.
 
 % \subsection{Il tool di automazione Gradle}
