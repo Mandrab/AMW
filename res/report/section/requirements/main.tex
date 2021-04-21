@@ -24,11 +24,12 @@ Il requisito precedentemente definito cita la replicabilità (TODO). Questa cara
 Diversi framework forniscono differenti modalità di programmazione. A causa di ciò, un'oculata scelta degli stessi risulta fondamentale per un corretto sviluppo del sistema. Questi devono infatti favorire il raggiungimento dei requisiti precedentemente definiti.\\
 Di seguito verranno descritte le tecnologie scelte e le caratteristiche che hanno portato alla loro adozione.
 
-\subsection{Il framework JADE}
+\subsubsection{Il framework JADE}
 Il framework di appoggio scelto per lo sviluppo del progetto è stato JADE: JAVA Agent DEvelopment framework. Questo permette lo sviluppo di applicativi distribuiti basati sulle astrazioni degli agenti.\\
 Il suo utilizzo porta molti vantaggi. In primis, la sua storia di sviluppo lo rende un framework molto stabile e maturo, utilizzato in contesti aziendali da diverso tempo e quindi adeguatamente testato ed affidabile. Questo include inoltre funzionalità avanzate, di cui si è valutato l'utilizzo, quali la definizione di ontologie a livello di programma (TODO).\\
 Il framework è stato inoltre approcciato durante il corso e la sua adozione ha permesso di focalizzare gli sforzi e gli studi sull'utilizzo di tecnologie non ancora conosciute.\\
 Come ultimo punto, la documentazione di JADE è curata, il che agevola ulteriormente nello sviluppo di applicazioni di notevole complessità (TODO).
+% TODO maybe confronto con tucson e spiegazione scelta
 
 % \subsubsection{Comunicazione}
 % per scalabilità. black board vs message passing
@@ -36,7 +37,7 @@ Come ultimo punto, la documentazione di JADE è curata, il che agevola ulteriorm
 % \subsubsection{Sistema distribuito}
 % per scalabilità e resilienza. jason deve funzionare su jade
 
-\subsection{L'interprete Jason}
+\subsubsection{L'interprete Jason}
 Come tecnologia per lo sviluppo di alcuni degli agenti del sistema si è scelto di utilizzare il linguaggio ASL (AgentSpeakLanguage) nella sua estensione interpretata da Jason. Seppur ciò non fosse necessario allo sviluppo del sistema, le ragioni che hanno spinto a questa scelta sono legate alla volontà di apprendere il modello di programmazione BDI (Belief, Desire, Intention).\\
 L'adozione di questa tecnologia ha anche permesso di entrare a contatto sia con lo standard di comunicazione FIPA-ACL (negli agenti JADE) sia con quello KQML (negli agenti Jason), dando modo di valutare ed utilizzare entrambi.
 
@@ -46,4 +47,8 @@ Docker modularizza inoltre la singola entità del sistema, permettendo una compa
 Infine, come ultimo punto, l'utilizzo di immagini dockerizzate permette di aggiungere in maniera semplice nuovi agenti al sistema durante le simulazioni.\\
 L'utilizzo di questa tecnologia non era ovviamente necessario allo scopo base del progetto, ma la possibilità di simulare una distribuzione delle entità in rete era auspicabile e se ne è perciò deciso l'uso.
 
-% \subsection{Il tool di automazione Gradle}
+\subsubsection{Il tool di automazione Gradle}
+Gradle è un tool di build automatica solitamente utilizzato per applicativi Java.\\
+Nel progetto è stato utilizzato per la definizione di task/comandi user friendly per la messa in esecuzione del sistema in tutte le sue componenti. Esso viene principalmente utilizzato per la creazione e l'avvio dei componenti dockerizzati, ma si occupa anche dell'esecuzione del container principale di JADE. Quest'ultimo è infatti avviato direttamente sulla macchina, che funziona da main host per l'infrastruttura (e non è quindi dockerizzato).\\
+Infine, l'utilizzo di Gradle permette un avvio istantaneo di tutte le componenti del sistema multi-agente tramite l'utilizzo di un solo comando.
+% TODO maybe confronto con maven e spiegazione scelta
