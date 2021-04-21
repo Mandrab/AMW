@@ -1,18 +1,43 @@
 \section{Analisi dei requisiti}
 
-% TODO
-% Is there any implicit requirement hidden within this project's requirements?
-% %
-% Is there any implicit hypothesis hidden within this project's requirements?
-% %
-% Are there any non-functional requirements implied by this project's requirements?
+% Section requirements (by template):
+% Is there any implicit requirement hidden within this project's requirements? Is there any implicit hypothesis hidden within this project's requirements? Are there any non-functional requirements implied by this project's requirements?
+% What model / paradigm / techonology is the best suited to face this project's requirements? What's the abstraction gap among the available models / paradigms / techonologies and the problem to be solved?
 
-% What model / paradigm / techonology is the best suited to face this project's requirements?
-% %
-% What's the abstraction gap among the available models / paradigms / techonologies and the problem to be solved?
+In questa sezione verranno analizzati i requisiti di alto livello (TODO chap precedente) precedentemente descritti. Da questi verranno estrapolate proprietà implicite e non funzionali, utili alla definizione delle tecnologie e del futuro design del sistema.
 
-La fase di analisi dei requisiti è stata fondamentale, in quanto ha permesso uno studio approfondito delle tecnologie da utilizzare per implementare al meglio il progetto.
+\subsection{Requisisti impliciti e non funzionali}
+I requisiti di alto livello definiti nella sezione precedente ci fornisco un punto di partenza, il quale non risulta però sufficiente alla scelta tecnologica ed al design. In questa sezione saranno dunque analizzate proprietà implicite che possiamo derivare dalle precedenti definizioni, in modo da ottenere e chiarificare le caratteristiche richieste al nostro sistema.
 
-\subsection{Il framework JADE}
-Il framework di appoggio scelto per lo sviluppo del progetto è stato JADE: JAVA Agent DEvelopment framework. Il suoo utilizzo porta infatti con se molti vantaggi. In primis, la sua storia di sviluppo lo rende un framework molto stabile e maturo, utilizzato in contesti aziendali da diverso tempo e quindi adeguatamente testato. Questo permette inoltre l'utilizzo di funzionalità avanzate, che si era inizialmente pensato di utilizzare, quali la definizione di ontologie a livello di programma (TODO). Oltre a ciò, il framework era già stato approcciato durante il corso e il suo utilizzo ha permesso di focalizzare gli sforzi e gli studi sull'utilizzo di tecnologie non ancora conosciute.
-Come ultimo punto, la documentazione di JADE è curata, il che agevola ulteriormente nello sviluppo di applicazioni di tale complessità (TODO).
+\subsubsection{Scalabilità}
+Man mano che la domanda aumenta, gli elementi del sistema dovrebbero poter essere aggiunti in modo da ampliare le capacità dello stesso.\\
+Ciò è tuttavia fattibile principalmente per le entità software dello stesso, mentre quelle hardware richiederebbero per questo un design dedicato allo scopo. Non volendo entrare in dettagli tanto profondi, si considererà che il design adeguato per queste sia già fornito e si modelleranno semplicemente i comportamenti ad alto livello atti a raggiungere una scalabilità quantomeno teorica.
+
+\subsubsection{Resilienza}
+Il malfunzionamento di un entità del sistema non dovrebbe bloccare il funzionamento dello stesso.\\
+Questa caratteristica è raggiungibile tramite la distribuzione, l'indipendenza e la replicabilità (TODO replicabilità?) degli agenti.
+
+\subsubsection{Semplicità di messa in funzionamento}
+Il requisito precedentemente definito cita la replicabilità (TODO). Questa caratteristica è dipendente dalla messa in funzionamento di nuove componenti del sistema. A tal scopo si ritiene necessario che, nel caso di fallimento di un componente, questo possa essere facilmente rimpiazzato; quanto meno nel caso software.
+
+% \subsection{Le tecnologie scelte}
+% Diversi framework forniscono infatti modalità di programmazione diverse, che potrebbero andare in conflitto con i requisiti precedentemente definiti. Risulta quindi importante una definizione e una scelta oculata di requisiti non funzionali e tecnologie in modo da trarre il maggior beneficio dall'utilizzo di queste ultime.
+
+% \subsubsection{Comunicazione}
+% per scalabilità. black board vs message passing
+
+% \subsubsection{Sistema distribuito}
+% per scalabilità e resilienza. jason deve funzionare su jade
+
+% \subsection{L'interprete Jason}
+% BDI
+
+% \subsection{Il framework JADE}
+% Il framework di appoggio scelto per lo sviluppo del progetto è stato JADE: JAVA Agent DEvelopment framework. Il suoo utilizzo porta infatti con se molti vantaggi. In primis, la sua storia di sviluppo lo rende un framework molto stabile e maturo, utilizzato in contesti aziendali da diverso tempo e quindi adeguatamente testato. Questo permette inoltre l'utilizzo di funzionalità avanzate, che si era inizialmente pensato di utilizzare, quali la definizione di ontologie a livello di programma (TODO). Oltre a ciò, il framework era già stato approcciato durante il corso e il suo utilizzo ha permesso di focalizzare gli sforzi e gli studi sull'utilizzo di tecnologie non ancora conosciute.
+% Come ultimo punto, la documentazione di JADE è curata, il che agevola ulteriormente nello sviluppo di applicazioni di tale complessità (TODO).
+
+% non funzionali e 
+
+% \subsubsection{La piattaforma Docker}
+
+% \subsection{Il tool di automazione Gradle}
