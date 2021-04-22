@@ -1,0 +1,26 @@
+@startuml class_diagram
+class Communicator {
+    {method} sendMessage(message: ACLMessage)
+    {method} sendMessage(\n\
+        message: ACLMessage,\n\
+        retryOnFailure: boolean,\n\
+        mapTo: ACLMessage -> T
+    ): Future<T>
+}
+class jade.core.Agent {
+    {method} setup()
+}
+class admin.Agent {
+    {method} shutdown()
+    {method} addCommand()
+    {method} addItem(item: WarehouseItem)
+    {method} removeItem(item: QuantityItem) 
+    {method} addVersion()
+    {method} executeCommand()
+    {method} executeScript()
+    {method} warehouseState(): Future<Collection<Product>>
+}
+
+Communicator    -|> jade.core.Agent
+admin.Agent      -|> Communicator
+@enduml

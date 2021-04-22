@@ -1,0 +1,22 @@
+@startuml class_diagram
+class Communicator {
+    {method} sendMessage(message: ACLMessage)
+    {method} sendMessage(\n\
+        message: ACLMessage,\n\
+        retryOnFailure: boolean,\n\
+        mapTo: ACLMessage -> T
+    ): Future<T>
+}
+class jade.core.Agent {
+    {method} setup()
+}
+class user.Agent {
+    {method} shutdown()
+    {method} shopItems(): Future<Collection<QuantityItem>>
+    {method} placeOrder(user: User, items: Collection<QuantityItem>)
+    {method} orders(user: User): Future<Collection<InfoOrder>>
+}
+
+Communicator    -|> jade.core.Agent
+user.Agent      -|> Communicator
+@enduml
