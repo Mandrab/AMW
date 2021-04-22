@@ -7,32 +7,20 @@
 % Always remember to report \textbf{why} a particular design has been chosen.
 % Reporting wrong design choices which has been evalued during the design phase is welcome too.
 
-% \subsection{Structure}
+In questa sezione si analizza il sistema AMW da punto di vista di \textit{struttura}, \textit{comportamento} ed \textit{interazione}.
+Si discuterà inizialmente la struttura di massima del sistema e le entità rappresentate. Successivamente, si analizzerà il loro comportamento; ed infine verranno presentate le modalità di interazione fra esse.
+
+\subsection{Struttura}
 
 % Which entities need to by modelled to solve the problem?
 % %
 % (UML Class diagram)
-
 % How should entities be modularised?
 % %
 % (UML Component / Package / Deployment Diagrams)
 
-% \subsection{Behaviour}
-
-% How should each entity behave?
-% %
-% (UML State diagram or Activity Diagram)
-
-% \subsection{Interaction}
-
-% How should entities interact with each other?
-% %
-% (UML Sequence Diagram)
-
-Il sistema AMW è un software distribuito basato sull'astrazione degli agenti. Questi definiscono la struttura e l'interazione di ogni singola entità del magazzino.\\
-Come già anticipato, gli agenti del sistema sono sviluppati tramite le tecnologie JADE e Jason. A causa di ciò, i modelli logici delle due tipologie di agenti differiscono, passando da un modello a \textit{behaviour} ad uno \textit{BDI}. La comunicazione risulta altrettanto complessa in quanto richiede una conversione (effettuata automaticamente) da modello di comunicazione FIPA-ACL a KQML.
-\parag
-Il sistema basa il suo funzionamento sull’interazione di una moltitudine di agenti, di seguito elencati:
+Il sistema AMW è un software distribuito basato sull'astrazione degli agenti, che definiscono la struttura e le comunicazioni di ogni singola entità del magazzino. Questi sono dunque molteplici e la loro interazione permette al behaviour complessivo del magazzino di emergere.\\
+Nello specifico, gli agenti che concorrono al corretto funzionamento del sistema sono:
 \begin{itemize}
     \item Admin
     \item User
@@ -44,20 +32,8 @@ Il sistema basa il suo funzionamento sull’interazione di una moltitudine di ag
 \end{itemize}
 Ogni agente svolge un preciso compito e interagisce con uno o più agenti differenti. Ciò permette al comportamento complessivo del sistema di emergere dall'interazione delle sue sotto componenti (TODO).\\
 All'interno del sistema si è testata la presenza di una singola istanza di ogni agente (ad eccezion fatta per gli agenti client e robotici TODO). Ciò non impedisce tuttavia di aggiungerne di nuovi, in quando la scoperta di questi viene effettuata runtime tramite un servizio di pagine gialle, che quindi permette una loro aggiunta in maniera flessibile.\\
-L'unico punto contrario alla dichiarazione precedente potrebbe riguardare il Collection Point Manager. Questo gestisce infatti l'allocazione di componenti fisiche e una sua ridondanza necessiterebbe di essere effettuata in maniera oculata.
+L'unico punto contrario alla dichiarazione precedente potrebbe riguardare il Collection Point Manager, che gestisce infatti l'allocazione di componenti fisiche e necessiterebbe quindi di una ridondanza effettuata in maniera oculata.
 % TODO all’interno del sistema sono presenti una sola istanza di ogni agente sopra elencato, ad eccezione del User. Per questo agente, il numero di istanze corrisponde al numero di clienti al lavoro e può variare durante l’esecuzione.
-
-\subsection{Struttura}
-
-% Which entities need to by modelled to solve the problem?
-% %
-% (UML Class diagram)
-
-\subsubsection{Ontologia del sistema}
-
-% How should entities be modularised?
-% %
-% (UML Component / Package / Deployment Diagrams)
 
 \subsection{Behaviour}
 
@@ -65,8 +41,14 @@ L'unico punto contrario alla dichiarazione precedente potrebbe riguardare il Col
 % %
 % (UML State diagram or Activity Diagram)
 
+Come già anticipato, gli agenti del sistema sono sviluppati tramite le tecnologie JADE e Jason. A causa di ciò, i modelli logici delle due tipologie di agenti differiscono, passando da un modello a \textit{behaviour} ad uno \textit{BDI}.
+
 \subsection{Interazione}
 
 % How should entities interact with each other?
 % %
 % (UML Sequence Diagram)
+
+La comunicazione risulta altrettanto complessa in quanto richiede una conversione (effettuata automaticamente) da modello di comunicazione FIPA-ACL a KQML.
+
+\subsubsection{Ontologia del sistema}
