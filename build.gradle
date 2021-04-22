@@ -4,12 +4,17 @@
 
 import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.image.*
+import com.wiredforcode.gradle.spawn.*
+
+import java.util.concurrent.atomic.AtomicReference
 
 /** specify used plugins */
 plugins {
     id "com.bmuschko.docker-remote-api" version "6.7.0"     // docker plugin
+    id "com.wiredforcode.spawn" version "0.8.0"             // spawnprocesstask plugin
     id "de.undercouch.download" version "1.2"               // downloads plugin
     id "org.jetbrains.kotlin.jvm" version "1.4.10"          // provides language support
+    id "java"
 }
 
 /** set repositories used */
@@ -17,6 +22,9 @@ repositories {
     mavenCentral()
     maven {
         url "http://jacamo.sourceforge.net/maven2/"         // jacamo repository
+    }
+    maven {
+        url "http://dl.bintray.com/vermeulen-mp/gradle-plugins" // spawnprocesstask repository
     }
 }
 
@@ -181,6 +189,15 @@ task start_main_container(type: JavaExec) {
     args "-gui"
 }
 
+/** Start jade main container in background */
+task start_main_container_background(type: SpawnProcessTask, dependsOn: "assemble") {
+    command "./gradlew start_main_container"
+    ready "Agent container Main-Container@172.18.0.1 is ready."
+}
+
+/** Stop background jade main container */
+task stop_main_container_background(type: KillProcessTask)
+
 /** Start agent specifying path, file and name */
 task start_agent(type: JavaExec) {
     if (!project.hasProperty("f")) {
@@ -205,13 +222,16 @@ task start_agent(type: JavaExec) {
  * Require the initialization/setup tasks to be already completed
  */
 task start_system(type: DefaultTask) {
-    dependsOn start_main_container
+    dependsOn start_main_container_background
     dependsOn start_agents
     finalizedBy show_logs
 }
 
+/** Tests generally needs system to be running TODO */
+test.dependsOn start_system
+
 /**************************************************************************************************
- * UTILITY FUNCTIONS
+ * UTILITY FUNCTIONS & CLASSES
  *************************************************************************************************/
 
 static String dockerfile_task(String agentName) { return "create_${agentName}_dockerfile" }
