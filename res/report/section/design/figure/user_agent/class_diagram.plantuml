@@ -17,6 +17,6 @@ class user.Agent {
     {method} orders(user: User): Future<Collection<InfoOrder>>
 }
 
-Communicator    -|> jade.core.Agent
 user.Agent      -|> Communicator
+Communicator    -|> jade.core.Agent
 @enduml
