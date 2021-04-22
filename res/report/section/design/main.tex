@@ -34,6 +34,18 @@ Ogni agente svolge un preciso compito e interagisce con uno o più agenti differ
 All'interno del sistema si è testata la presenza di una singola istanza di ogni agente (ad eccezion fatta per gli agenti client e robotici TODO). Ciò non impedisce tuttavia di aggiungerne di nuovi, in quando la scoperta di questi viene effettuata runtime tramite un servizio di pagine gialle, che quindi permette una loro aggiunta in maniera flessibile.\\
 L'unico punto contrario alla dichiarazione precedente potrebbe riguardare il Collection Point Manager, che gestisce infatti l'allocazione di componenti fisiche e necessiterebbe quindi di una ridondanza effettuata in maniera oculata.
 % TODO all’interno del sistema sono presenti una sola istanza di ogni agente sopra elencato, ad eccezione del User. Per questo agente, il numero di istanze corrisponde al numero di clienti al lavoro e può variare durante l’esecuzione.
+\parag
+Di seguito verrà fornita una descrizione della struttura degli agenti. A tal scopo risulta però necessario fornire una rappresentazione propedeutica dell'ambiente, definita tramite l'utilizzo di una ontologia.
+
+\subsubsection{Ontologia del sistema}
+
+\subsubsection{Admin}
+\subsubsection{User}
+\subsubsection{Collection Point Manager}
+\subsubsection{Command Manager}
+\subsubsection{Order Manager}
+\subsubsection{Robot Picker}
+\subsubsection{Warehouse Mapper}
 
 \subsection{Behaviour}
 
@@ -41,7 +53,16 @@ L'unico punto contrario alla dichiarazione precedente potrebbe riguardare il Col
 % %
 % (UML State diagram or Activity Diagram)
 
-Come già anticipato, gli agenti del sistema sono sviluppati tramite le tecnologie JADE e Jason. A causa di ciò, i modelli logici delle due tipologie di agenti differiscono, passando da un modello a \textit{behaviour} ad uno \textit{BDI}.
+Come già anticipato, gli agenti del sistema sono sviluppati tramite le tecnologie JADE e Jason. A causa di ciò, i modelli logici delle due tipologie di agenti differiscono, passando da un modello a \textit{behaviour} ad uno \textit{BDI}. Nello specifico, gli agenti sviluppati in JADE ed utilizzanti un modello a behaviour sono quelli relativi al client di interazione col sistema: Admin e User; gli altri agenti sono invece basati sul modello BDI.\\
+Di seguito verranno descritti i behaviour e la logica di ogni agente del sistema.
+
+\subsubsection{Admin}
+\subsubsection{User}
+\subsubsection{Collection Point Manager}
+\subsubsection{Command Manager}
+\subsubsection{Order Manager}
+\subsubsection{Robot Picker}
+\subsubsection{Warehouse Mapper}
 
 \subsection{Interazione}
 
@@ -49,6 +70,14 @@ Come già anticipato, gli agenti del sistema sono sviluppati tramite le tecnolog
 % %
 % (UML Sequence Diagram)
 
-La comunicazione risulta altrettanto complessa in quanto richiede una conversione (effettuata automaticamente) da modello di comunicazione FIPA-ACL a KQML.
+La comunicazione è un aspetto fondamentale del sistema e permette il funzionamento dello stesso. L'analisi delle interazioni risulta perciò un elemento di fondamentale importanza nella descrizione del design e funzionamento di AMW.\\
+Come già accennato, la comunicazione risulta in un certo qual modo complessa, in quanto richiede una conversione (effettuata automaticamente) da modello di comunicazione FIPA-ACL a KQML.\\
+Di seguito, le interazioni disponibili ed effettuate dai vari agenti saranno descritte ed analizzate.
 
-\subsubsection{Ontologia del sistema}
+\subsubsection{Admin}
+\subsubsection{User}
+\subsubsection{Collection Point Manager}
+\subsubsection{Command Manager}
+\subsubsection{Order Manager}
+\subsubsection{Robot Picker}
+\subsubsection{Warehouse Mapper}
