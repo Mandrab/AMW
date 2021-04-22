@@ -35,9 +35,26 @@ All'interno del sistema si è testata la presenza di una singola istanza di ogni
 L'unico punto contrario alla dichiarazione precedente potrebbe riguardare il Collection Point Manager, che gestisce infatti l'allocazione di componenti fisiche e necessiterebbe quindi di una ridondanza effettuata in maniera oculata.
 % TODO all’interno del sistema sono presenti una sola istanza di ogni agente sopra elencato, ad eccezione del User. Per questo agente, il numero di istanze corrisponde al numero di clienti al lavoro e può variare durante l’esecuzione.
 \parag
-Di seguito verrà fornita una descrizione della struttura degli agenti. A tal scopo risulta però necessario fornire una rappresentazione propedeutica dell'ambiente, definita tramite l'utilizzo di una ontologia.
+Di seguito verrà fornita una descrizione della struttura degli agenti. A tal scopo risulta però necessario fornire una rappresentazione propedeutica dell'ambiente, definita tramite l'utilizzo di un'ontologia.
 
 \subsubsection{Ontologia del sistema}
+Un ontologia rappresenta un sistema in quanto tale, e le categorie fondamentali che lo compongono, incluse le relazioni fra esse. Questa è una componente importante per la rappresentazione della conoscenza ed è stata utilizzata nel sistema per descrivere e definire l'ambiente del magazzino.\\
+Nello specifico, è stata definita una ontologia relativa agli oggetti fisici o informativi ed alle loro relazioni (vedasi Figura \ref{fig:ontology_abstractions}); ed una ontologia relativa alle operazioni su di essi effettuabili (vedasi Figura \ref{fig:ontology_operations}).
+\parag
+Le entità fisiche rappresentate nel sistema magazzino sono gli \textit{item}, che rappresentano gli oggetti acquistabili ed in esso conservate. Questi sono ovviamente indicizzati tramice un \textit{id} e mantenuti in scaffalature identificabili.\\
+Per quanto riguarda le entità puramente informative, si possono riscontrare i comandi e le informazioni relative agli acquirenti del sistema. Le prime sono relative al repository di conoscenza procedurale (TODO) a cui gli agenti possono attingere; le seconde sono relative alle informazioni quali l'indirizzo di spedizione etc. 
+\begin{figure}[ht]
+    \includegraphics[width=\textwidth]{section/design/figure/ontology_abstractions.png}
+    \caption{Rappresentazione schematica delle entità (fisiche e non) del sistema e delle loro relazioni.}
+    \label{fig:ontology_abstractions}
+\end{figure}
+\parag
+L'ontologia rappresentante le operazioni definisce invece le azioni che possono coinvolgere determinate astrazioni del sistema e le informazioni per la loro esecuzione. Un banale esempio di ciò è l'operazione di piazzamento di un ordine, la quale necessita di mettere in relazione informazioni associate all'acquirente e gli oggetti richiesti da questo.
+\begin{figure}[ht]
+    \includegraphics[width=\textwidth]{section/design/figure/ontology_operations.png}% TODO
+    \caption{Rappresentazione schematica delle operazioni disponibili nel sistema e delle loro relazioni con le astrazioni precedentemente definite.}
+    \label{fig:ontology_operations}
+\end{figure}
 
 \subsubsection{Admin}
 \subsubsection{User}
