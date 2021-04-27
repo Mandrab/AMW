@@ -223,7 +223,7 @@ task start_agent(type: JavaExec) {
  */
 task start_system(type: DefaultTask) {
     dependsOn start_main_container_background
-    dependsOn start_agents
+    finalizedBy start_agents
 }
 
 /** Tests generally needs system to be running TODO */
