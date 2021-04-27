@@ -189,14 +189,14 @@ task start_main_container(type: JavaExec) {
     args "-gui"
 }
 
+/** Stop background jade main container */
+task stop_main_container_background(type: KillProcessTask)
+
 /** Start jade main container in background */
 task start_main_container_background(type: SpawnProcessTask, dependsOn: "assemble") {
     command "./gradlew start_main_container"
-    ready "Agent container Main-Container@172.18.0.1 is ready."
+    ready "is ready."
 }
-
-/** Stop background jade main container */
-task stop_main_container_background(type: KillProcessTask)
 
 /** Start agent specifying path, file and name */
 task start_agent(type: JavaExec) {
