@@ -227,7 +227,7 @@ task start_system(type: DefaultTask) {
 }
 
 /** Tests generally needs system to be running TODO */
-test.dependsOn start_system
+test.dependsOn start_system finalizedBy stop_main_container_background
 
 /**************************************************************************************************
  * UTILITY FUNCTIONS & CLASSES
