@@ -4,14 +4,15 @@
 
 import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.image.*
-import com.wiredforcode.gradle.spawn.*
+import com.github.psxpaul.task.*
+import org.gradle.internal.os.OperatingSystem
 
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.AtomicInteger
 
 /** specify used plugins */
 plugins {
     id "com.bmuschko.docker-remote-api" version "6.7.0"     // docker plugin
-    id "com.wiredforcode.spawn" version "0.8.0"             // spawnprocesstask plugin
+    id "com.github.psxpaul.execfork" version "0.1.13"       // plugin for background executions
     id "de.undercouch.download" version "1.2"               // downloads plugin
     id "org.jetbrains.kotlin.jvm" version "1.4.10"          // provides language support
     id "java"
@@ -22,9 +23,6 @@ repositories {
     mavenCentral()
     maven {
         url "http://jacamo.sourceforge.net/maven2/"         // jacamo repository
-    }
-    maven {
-        url "http://dl.bintray.com/vermeulen-mp/gradle-plugins" // spawnprocesstask repository
     }
 }
 
@@ -51,15 +49,18 @@ def DOCKER = [
         RESOURCES: "res/docker"                             // folder where to put docker needed files
 ]
 def JASON_FOLDER = "jason-2.4"                              // jason folder name
+def LOG_DIR = "logs"                                        // agent log files output folder
 def AGENTS = ["collection_point_manager", "command_manager", "order_manager", "robot_picker", "warehouse_mapper"]
+        .collect { new Agent(it) }
 
 /**************************************************************************************************
  * DOCKER CONFIGURATION
  *************************************************************************************************/
 
-AGENTS.collect({ agentName ->                               // create tasks for each agent
+AGENTS.collect { agentName ->                               // create tasks for each agent
+
     /** Create the Dockerfile to build the agent image */
-    tasks.register(dockerfile_task(agentName), Dockerfile) {
+    define Dockerfile, agentName.create.dockerfile, {
         logger.quiet title("Creating dockerfile for $agentName agent")  // logging info on creation
 
         from "openjdk:11-jre-slim"                          // base image
@@ -89,76 +90,97 @@ AGENTS.collect({ agentName ->                               // create tasks for 
                 "-container",                               // start peripheral container instead of a Main Container
                 "-host",                                    // connect to specific host (defined as next parameter)
                 "172.17.0.1",                               // address of gateway from bridge network to host machine
-                randomName(agentName) +                     // define random agent name in the system
+                agentName.unique +                          // define random agent name in the system
                     ":jason.infra.jade.JadeAgArch(" +       // implementation of Jade Architecture to run Jason agents
                     "$DOCKER.HOME/agent.asl)"               // run agent from its .asl main file
     }
 
     /** Build the agent image through the previously created Dockerfile */
-    tasks.register(build_task(agentName), DockerBuildImage) {   // create a build task for each agent
+    define DockerBuildImage, agentName.build.image, {
+        dependsOn agentName.create.dockerfile               // depends on dockerfile task
+
         logger.quiet title("Creating image of $agentName agent")// logging info on creation
 
         images.add "amw:$agentName-$version"                // create image of agent
-    } get() dependsOn dockerfile_task(agentName)            // depends on dockerfile task
+    }
 
     /** Create the agent container from the image */
-    tasks.register(create_task(agentName), DockerCreateContainer) {
+    define DockerCreateContainer, agentName.create.container, {
+        dependsOn agentName.build.image                     // depends on image creation task
+
         logger.info "Creating container of $agentName agent"// logging info on creation
 
         targetImageId "amw:$agentName-$version"             // id of image to start
-        containerName = randomName agentName                // set container name
+        containerName = agentName.unique                    // set container name
         hostConfig.autoRemove = true                        // remove the container when the container's process exits
-    } get() dependsOn build_task(agentName)                 // depends on image creation task
+    }
 
     /** Start agents containers */
-    tasks.register(start_task(agentName), DockerStartContainer) {
+    define DockerStartContainer, agentName.start.agent, {
+        dependsOn agentName.create.container                // depends on container creation
+
         logger.quiet title("Starting $agentName agent")     // logging info on creation
 
-        targetContainerId tasks.getByName(create_task(agentName)).containerId   // specify id of container to start
-    } get() dependsOn create_task(agentName)                // depends on container creation
+        targetContainerId find(agentName.create.container).containerId   // specify id of container to start
+    }
 
-    /** Shows logs from the agent container TODO check */
-    tasks.register(log_task(agentName), DockerLogsContainer) {
+    /** Shows logs from the agent container */
+    define DockerLogsContainer, 'todo' + agentName.log.agent, {
+        dependsOn agentName.start.agent                     // depends on container creation
+
         logger.quiet title("Logging $agentName agent")      // logging info on creation
 
-        targetContainerId tasks.getByName(create_task(agentName)).containerId   // specify id of container to log
+        targetContainerId find(agentName.create.container).containerId   // specify id of container to log
         follow = true                                       // task to block until the container exists
         tailAll = true                                      // copy all output since the container has started
         onNext { logger.quiet it.toString() }               // messages from the container will be passed when available
-    } get() dependsOn start_task(agentName)                 // depends on container creation
+    }
+
+    /** Shows logs from the agent container in background */
+    define DefaultTask, agentName.stop.background.log.agent, {}
+
+    /** Shows logs from the agent container in background TODO check and clean */
+    define ExecFork, agentName.start.background.log.agent, {
+        executable = os "./gradlew"
+        args = [ agentName.log.agent ]
+        standardOutput = "$LOG_DIR/${agentName.agent}-daemon.log"
+        errorOutput = "$LOG_DIR/${agentName.agent}-daemon-error.log"
+        stopAfter = find agentName.stop.background.log.agent
+        waitForOutput = 'is ready'
+    }
 
     /** Remove the container of the agent */
-    tasks.register(remove_task(agentName), DockerRemoveContainer) {
+    define DockerRemoveContainer, agentName.remove.container, {
         logger.quiet title("Removing container of $agentName agent")// logging info on creation
 
         targetContainerId "amw:$agentName-$version"         // specify the target container id
         onError { if (!"404" in it.message) { throw it } }  // ignore error if is of type 'container not found'
     }
-})
+}
 
 /** Build images of all the agents */
 task build_images(type: DefaultTask) {
-    AGENTS.forEach({dependsOn build_task(it)})              // depends on the build of each agent
+    AGENTS.forEach({ dependsOn it.build.image })            // depends on the build of each agent
 }
 
 /** Create a container for each agent */
 task create_containers(type: DefaultTask) {
-    AGENTS.forEach({dependsOn create_task(it)})             // depends on the start of each agent
+    AGENTS.forEach({ dependsOn it.create.container })       // depends on the start of each agent
 }
 
 /** Start all agents containers */
 task start_agents(type: DefaultTask) {
-    AGENTS.forEach({dependsOn start_task(it)})              // depends on the start of each agent
+    AGENTS.forEach({ dependsOn it.start.agent })            // depends on the start of each agent
 }
 
-/** Display logs of all the agents */
+/** Display logs of all the agents in background */
 task show_logs(type: DefaultTask) { // TODO test
-    AGENTS.forEach({dependsOn log_task(it)})                // depends on the start of each agent
+    AGENTS.forEach({ dependsOn it.background.log.agent })   // depends on the start of each agent
 }
 
 /** Remove all the agents containers */
 task remove_containers(type: DefaultTask) { // TODO test
-    AGENTS.forEach({dependsOn remove_task(it)})             // depends on the removal of each container
+    AGENTS.forEach({ dependsOn it.remove.container })       // depends on the removal of each container
 }
 
 /**************************************************************************************************
@@ -182,20 +204,15 @@ task unzip(type: Copy) {
     into file(outputDir)
 }
 
-/** Start jade main container */
-task start_main_container(type: JavaExec) {
+/** Stop background jade main container */
+define DefaultTask, new Agent("main").stop.background.container, { }
+
+/** Start background jade main container */
+define JavaExecFork, new Agent("main").start.background.container, {
     classpath = sourceSets.main.runtimeClasspath
     main = "jade.Boot"
-    args "-gui"
-}
-
-/** Stop background jade main container */
-task stop_main_container_background(type: KillProcessTask)
-
-/** Start jade main container in background */
-task start_main_container_background(type: SpawnProcessTask, dependsOn: "assemble") {
-    command "./gradlew start_main_container"
-    ready "is ready."
+    args [ "-gui" ]
+    stopAfter = find(new Agent("main").stop.background.container)
 }
 
 /** Start agent specifying path, file and name */
@@ -222,25 +239,48 @@ task start_agent(type: JavaExec) {
  * Require the initialization/setup tasks to be already completed
  */
 task start_system(type: DefaultTask) {
-    dependsOn start_main_container_background
-    finalizedBy start_agents
+    dependsOn new Agent("main").start.background.container
+    finalizedBy show_logs
 }
 
 /** Tests generally needs system to be running TODO */
-test.dependsOn start_system finalizedBy stop_main_container_background
+test.dependsOn start_system finalizedBy find(new Agent("main").stop.background.container)
 
 /**************************************************************************************************
  * UTILITY FUNCTIONS & CLASSES
  *************************************************************************************************/
 
-static String dockerfile_task(String agentName) { return "create_${agentName}_dockerfile" }
-static String build_task(String agentName) { return "build_${agentName}_image" }
-static String create_task(String agentName) { return "create_${agentName}_container" }
-static String start_task(String agentName) { return "start_${agentName}_agent" }
-static String log_task(String agentName) { return "log_${agentName}_agent" }
-static String remove_task(String agentName) { return "remove_${agentName}_container" }
+/** Only used as syntactic sugar for task definition */
+private <T extends Task> void define(Class<T> type, String name, Closure action) {
+    tasks.register(name, type) { it.with action }
+}
 
-static String bf(String text) { return "\033[1m$text\033[0m" }
-static String title(String text) { return bf("### $text") }
+/** Only used as syntactic sugar for task search */
+private Task find(Object seed) { return tasks.getByName(seed.toString()) }
 
-static String randomName(String seed) { return "$seed-${new Random().nextInt()}" }
+private static String bf(String seed) { return "\033[1m$seed\033[0m" }
+private static String title(String seed) { return bf("### $seed") }
+
+private static String os(Object seed) { return OperatingSystem.current().isWindows() ? seed + ".bat" : seed }
+
+class Agent {
+    private static final entitiesCounter = new AtomicInteger()
+    private String seed
+
+    Agent(String seed) { this.seed = seed }
+
+    @Lazy def background = new Agent("background_$seed")
+    @Lazy def start = new Agent("start_$seed")
+    @Lazy def stop = new Agent("stop_$seed")
+    @Lazy def create = new Agent("create_$seed")
+    @Lazy def log = new Agent("log_$seed")
+    @Lazy def remove = new Agent("remove_$seed")
+    @Lazy def build = new Agent("build_$seed")
+
+    @Lazy def agent = seed + "_agent"
+    @Lazy def container = seed + "_container"
+    @Lazy def image = seed + "_image"
+    @Lazy def dockerfile = seed + "_dockerfile"
+
+    @Lazy def unique = "$seed-${entitiesCounter.getAndIncrement()}"
+}
