@@ -125,7 +125,7 @@ AGENTS.collect { agentName ->                               // create tasks for 
     }
 
     /** Shows logs from the agent container */
-    define DockerLogsContainer, 'todo' + agentName.log.agent, {
+    define DockerLogsContainer, agentName.log.agent, {
         dependsOn agentName.start.agent                     // depends on container creation
 
         logger.quiet title("Logging $agentName agent")      // logging info on creation
@@ -175,7 +175,7 @@ task start_agents(type: DefaultTask) {
 
 /** Display logs of all the agents in background */
 task show_logs(type: DefaultTask) { // TODO test
-    AGENTS.forEach({ dependsOn it.background.log.agent })   // depends on the start of each agent
+    AGENTS.forEach({ dependsOn it.start.background.log.agent }) // depends on the start of each agent
 }
 
 /** Remove all the agents containers */
