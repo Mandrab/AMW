@@ -106,7 +106,6 @@ AGENTS.collect { TaskTarget target ->                       // create tasks for 
     /** Create the agent container from the image */
     define DockerCreateContainer, target.create.container, {
         dependsOn target.build.image                        // depends on image creation task
-        dependsOn target.remove.container                   // depends on previous container removal
 
         targetImageId target.containerId                    // id of image to start
         containerName = target.unique                       // set container name
@@ -134,6 +133,7 @@ AGENTS.collect { TaskTarget target ->                       // create tasks for 
     define ExecFork, target.background.log.agent, {
         executable = os "./gradlew"
         args = [ target.foreground.log.agent ]
+        stopAfter = test
         waitForOutput = "is ready"
     }
 
@@ -202,6 +202,7 @@ define JavaExecFork, MAIN_CONTAINER.start.background.container, {
     classpath = sourceSets.main.runtimeClasspath
     main = "jade.Boot"
     args = [ "-gui" ]
+    stopAfter = test
     waitForOutput = "is ready"
 }
 
@@ -225,10 +226,17 @@ task start_agent(type: JavaExec) {
 /** Start main container and agents of the system */
 task start_system(type: DefaultTask) {
     dependsOn MAIN_CONTAINER.start.background.container
+
     AGENTS.findAll { it != AGENTS.last() }
             .forEach { dependsOn it.background.log.agent }
-    dependsOn AGENTS.last().foreground.log.agent
+
+    if (project.hasProperty("foreground"))
+        dependsOn AGENTS.last().foreground.log.agent
+    else dependsOn AGENTS.last().background.log.agent
 }
+
+/** Tests run depends on complete start of the system */
+test.dependsOn start_system
 
 /**************************************************************************************************
  * UTILITY FUNCTIONS & CLASSES
