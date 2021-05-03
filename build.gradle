@@ -48,14 +48,14 @@ def DOCKER = [
         RESOURCES: "res/docker"                             // folder where to put docker needed files
 ]
 def JASON_FOLDER = "jason-2.4"                              // jason folder name
-def MAIN_CONTAINER = new TaskTarget("0-main")
+def MAIN_CONTAINER = new TaskTarget("main")
 def AGENTS = [
-        "1-collection_point_manager",
-        "2-command_manager",
-        "3-order_manager",
-        "4-robot_picker",
-        "5-warehouse_mapper"
-].collect { new TaskTarget(it) }
+        1: "collection_point_manager",
+        2: "command_manager",
+        3: "order_manager",
+        4: "robot_picker",
+        5: "warehouse_mapper"
+].collect { new TaskTarget(it.value, it.key) }
 
 /**************************************************************************************************
  * DOCKER CONFIGURATION
@@ -73,8 +73,7 @@ AGENTS.collect { TaskTarget target ->                       // create tasks for 
         doFirst {
             delete DOCKER.CONTEXT                           // delete files from previous builds
             copy {
-                from "src/main/asl/$target"                 // copy of agent specific files
-                from "src/main/asl/common"                  // copy of commons agent files
+                from target.sourceFiles                     // copy of agent source files
                 into DOCKER.CONTEXT                         // docker build context directory
             }
             copy {
@@ -258,28 +257,29 @@ private static String os(Object seed) { return OperatingSystem.current().isWindo
 class TaskTarget {
     private static final entitiesCounter = new AtomicInteger()
     private String name
+    private Integer level
     private String seed
 
-    TaskTarget(String name, String seed = "") {
+    TaskTarget(String name, Integer level = 0, String seed = "") {
         this.name = name
+        this.level = level
         this.seed = seed
     }
 
-    @Lazy def background = new TaskTarget(name, "_background$seed")
-    @Lazy def foreground = new TaskTarget(name, "_foreground$seed")
-    @Lazy def start = new TaskTarget(name, "_start$seed")
-    @Lazy def create = new TaskTarget(name, "_create$seed")
-    @Lazy def log = new TaskTarget(name, "_log$seed")
-    @Lazy def remove = new TaskTarget(name, "_remove$seed")
-    @Lazy def build = new TaskTarget(name, "_build$seed")
+    @Lazy def background = new TaskTarget(name, level, "_background$seed")
+    @Lazy def foreground = new TaskTarget(name, level, "_foreground$seed")
+    @Lazy def start = new TaskTarget(name, level, "_start$seed")
+    @Lazy def create = new TaskTarget(name, level, "_create$seed")
+    @Lazy def log = new TaskTarget(name, level, "_log$seed")
+    @Lazy def remove = new TaskTarget(name, level, "_remove$seed")
+    @Lazy def build = new TaskTarget(name, level, "_build$seed")
 
-    @Lazy def agent = "$name${seed}_agent"
-    @Lazy def container = "$name${seed}_container"
-    @Lazy def image = "$name${seed}_image"
-    @Lazy def dockerfile = "$name${seed}_dockerfile"
+    @Lazy def agent = "$level-$name${seed}_agent"
+    @Lazy def container = "$level-$name${seed}_container"
+    @Lazy def image = "$level-$name${seed}_image"
+    @Lazy def dockerfile = "$level-$name${seed}_dockerfile"
 
     @Lazy def containerId = "amw:$name"
-    @Lazy def logFile = "logs/$name-agent.log"
-    @Lazy def errFile = "logs/$name-error-agent.log"
+    @Lazy def sourceFiles = ["src/main/asl/$name", "src/main/asl/common"]
     @Lazy def unique = "$name-${entitiesCounter.getAndIncrement()}"
 }
