@@ -1,9 +1,10 @@
 package tester.asl.order_manager
 
-import jade.core.ProfileImpl
-import jade.core.Runtime
+import common.TestAgent
+import common.TestAgents.TestProxy
+import common.TestAgents.proxy
+import jade.core.Agent
 import org.junit.Test
-import kotlin.random.Random
 import jade.domain.DFService
 
 import jade.domain.FIPAAgentManagement.DFAgentDescription
@@ -17,29 +18,28 @@ class OrderManagerTest {
     private val _name = "management(orders)"
     private val _type = "accept(order)"
     private val waitingTime = 500L
-    private val proxy = proxy()
+    private val agent = proxy().agent
 
-    @Test fun testerIsRegistering() = Assert.assertNotNull(proxy.agent)
+    @Test fun testerIsRegistering() = Assert.assertNotNull(agent)
 
-    @Test fun agentExists() = Assert.assertTrue(
-        proxy.agent.run { DFService.search(this, DFAgentDescription().apply {
+    @Test fun orderManagerExists() = Assert.assertTrue(agent.run {
+        DFService.search(this, DFAgentDescription().apply {
             addServices(ServiceDescription().apply { name = _name; type = _type })
-        })}.isNotEmpty()
-    )
+        })}.isNotEmpty())
 
-    @Test fun withoutOrdersReturnsEmptyList() = proxy.agent.run {
+    @Test fun infoRequestReturnsEmptyListIfNoOrderHasBeenMade() = agent.run {
         sendRequest("info('', '')")
         val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
         Assert.assertEquals(result.content, "[]")
     }
-/*
+
     @Test fun orderWithNoItemsIsIgnored() = proxy().agent.run {
         sendRequest("order('x', 'y', 'z')[]")
         Assert.assertNull(blockingReceive(waitingTime))
     }
-*/
-    @Test fun requestedOrderShouldBeConfirmed() {
+
+    @Test fun submittedOrderShouldBeConfirmed() {
         val agent = proxy().agent
         agent.sendRequest("order('x', 'y', 'z')[item, i]")
         val result = agent.blockingReceive(waitingTime)
@@ -48,11 +48,9 @@ class OrderManagerTest {
         Assert.assertEquals(result.content, "order(client('x'), 'y', 'z')[item, i]")
     }
 
-    private fun proxy(): TestAgent.Proxy = TestAgent.Proxy().apply { Runtime.instance()
-        .createAgentContainer(ProfileImpl()).createNewAgent("tester.asl.order_manager.OrderManagerTest" + Random.nextDouble(),
-        TestAgent().javaClass.canonicalName, arrayOf(this)).run { start() } }
+    private fun proxy(): TestProxy<Agent> = proxy("tester.asl.order_manager.OrderManagerTest")
 
-    private fun TestAgent.sendRequest(content: String) = send(ACLMessage().also {
+    private fun Agent.sendRequest(content: String) = send(ACLMessage().also {
         it.addReceiver(DFService.search(this, DFAgentDescription().apply {
             addServices(ServiceDescription().apply { name = _name; type = _type })
         }).first().name)
