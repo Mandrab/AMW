@@ -10,6 +10,11 @@ import java.util.Date
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
+/**
+ * Provides useful methods and utilities for working with agent entities
+ *
+ * @author Paolo Baldini
+ */
 abstract class Communicator: Agent() {
     private val updateTime = 2500L
     private var waitingConfirm = emptyList<ResponseMessage>()
@@ -32,7 +37,7 @@ abstract class Communicator: Agent() {
         waitingConfirm = waitingConfirm.filterNot { responses.any { (message, _) -> message == it } }
 
         // complete future for all the received messages
-        responses.forEach { it.first.response.complete(it.second) }
+        responses.forEach { it.first.finalize(it.second!!) }
 
         // drop "received" messages that are not expected TODO: maybe fare che droppo tutto ciò che non è in waitConfirm
         generateSequence { receiveContent("received") }
@@ -50,21 +55,17 @@ abstract class Communicator: Agent() {
      * When the response arrives, extract needed information from it
      */
     fun <T> sendMessage(message: ACLMessage, retryOnFailure: Boolean = true, mapTo: (ACLMessage) -> T): Future<T> =
-        CompletableFuture<T>().completeAsync {
-                ResponseMessage(
-                    message.apply { replyWith = replyWith ?: let { Date().time.toString() } },
-                    retryOnFailure
-                ).apply {
-                    waitingConfirm += this
-                    send(message)
-                }.response.get().let(mapTo)
-            }
+        CompletableFuture<T>().also { future ->
+            message.replyWith = message.replyWith ?: Date().time.toString()
+            waitingConfirm += ResponseMessage(message, retryOnFailure) { future.complete(mapTo(it)) }
+            send(message)
+        }
 
     /**
      * Periodically resend messages that need a response
      */
     private fun requestConfirmations() = cyclicBehaviour { agent ->
-        waitingConfirm.filter { Date().seconds - it.lastSent.seconds > 3 }.forEach {
+        waitingConfirm.filter { Date().seconds - it.lastSent.seconds > 2 }.forEach {// TODO is minus correct?
             it.lastSent = Date()
             send(it.message)
         }
@@ -73,9 +74,9 @@ abstract class Communicator: Agent() {
 
     private data class ResponseMessage(
         val message: ACLMessage,
-        val retryOnFailure: Boolean
+        val retryOnFailure: Boolean,
+        val finalize: (ACLMessage) -> Unit
     ) {
         var lastSent: Date = Date()
-        val response: CompletableFuture<ACLMessage> = CompletableFuture()
     }
 }
