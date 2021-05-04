@@ -1,19 +1,18 @@
 package controlled.agent.communication
 
 import common.SupportAgent
+import common.TestAgents.find
 import common.TestAgents.proxy
 import common.TestAgents.register
+import controller.agent.Agents.cyclicBehaviour
 import jade.core.Agent
-import jade.domain.DFService
-import jade.domain.FIPAAgentManagement.DFAgentDescription
-import jade.domain.FIPAAgentManagement.ServiceDescription
 import jade.lang.acl.ACLMessage
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
 class CommunicatorTest {
-    private val waitingTime = 500L
+    private val waitingTime = 1000L
 
     private val communicatorName = "communicator-name"
     private val receiverName = "receiver-name"
@@ -29,15 +28,23 @@ class CommunicatorTest {
     }
 
     @Test fun sendMessageEffectivelyDeliverIt() {
-        val aid = communicator.run {
-            DFService.search(this, DFAgentDescription().apply {
-                addServices(ServiceDescription().apply { name = receiverName })
-            })
-        }.first().name
+        val aid = communicator.find(receiverName, receiverType)
         communicator.sendMessage(ACLMessage().apply {
             content = "text"
             addReceiver(aid)
         })
         Assert.assertNotNull(receiver.blockingReceive(waitingTime))
+    }
+
+    @Test fun sendMessageAllowsToReceiveAResponse() {
+        receiver.addBehaviour(cyclicBehaviour {
+            receiver.send(receiver.blockingReceive().createReply())
+        })
+        val aid = communicator.find(receiverName, receiverType)
+        communicator.sendMessage(ACLMessage().apply {
+            content = "text"
+            addReceiver(aid)
+        })
+        Assert.assertNotNull(communicator.blockingReceive(waitingTime))
     }
 }
