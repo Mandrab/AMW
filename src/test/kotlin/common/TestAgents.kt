@@ -38,4 +38,8 @@ object TestAgents {
             addServices(ServiceDescription().apply { name = _name; type = _type })
         })
     }
+
+    fun Agent.find(_name: String, _type: String) = DFService.search(this, DFAgentDescription().apply {
+            addServices(ServiceDescription().apply { name = _name; type = _type })
+        }).first().name
 }
