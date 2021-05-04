@@ -49,4 +49,18 @@ class CommunicatorTest {
         }).get(waitingTime, TimeUnit.MILLISECONDS)                          // throws an exception if timeout elapse
         Assert.assertNotNull(result)
     }
+
+    @Test fun sendMessageAllowsToMarshallResponse() {
+        receiver.addBehaviour(cyclicBehaviour {
+            receiver.send(receiver.blockingReceive().createReply().apply { content = "text" })
+        })
+        val aid = communicator.find(receiverName, receiverType)
+        val result = communicator.sendMessage(ACLMessage().apply {
+            content = "text"
+            addReceiver(aid)
+        }) {
+            it.content                                                      // extract content from the message
+        }.get(waitingTime, TimeUnit.MILLISECONDS)                           // throws an exception if timeout elapse
+        Assert.assertTrue(result == "text")
+    }
 }
