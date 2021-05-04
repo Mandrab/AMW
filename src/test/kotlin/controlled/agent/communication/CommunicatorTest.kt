@@ -5,11 +5,13 @@ import common.TestAgents.find
 import common.TestAgents.proxy
 import common.TestAgents.register
 import controller.agent.Agents.cyclicBehaviour
+import jade.core.AID
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -20,6 +22,7 @@ class CommunicatorTest {
     private val receiverName = "receiver-name" + Random.nextDouble()
     private val receiverType = "receiver-type"
 
+    private lateinit var receiverAID: AID
     private lateinit var communicator: SupportAgent
     private lateinit var receiver: Agent
 
@@ -27,40 +30,42 @@ class CommunicatorTest {
         communicator = proxy(communicatorName, SupportAgent().javaClass.canonicalName).agent as SupportAgent
         receiver = proxy(receiverName).agent
         receiver.register(receiverName, receiverType)
+        receiverAID = communicator.find(receiverName, receiverType)
     }
 
-    @Test fun sendMessageEffectivelyDeliverIt() {
-        val aid = communicator.find(receiverName, receiverType)
-        communicator.sendMessage(ACLMessage().apply {
-            content = "text"
-            addReceiver(aid)
-        })
+    @Test fun sendMessageShouldEffectivelyDeliverIt() {
+        communicator.sendMessage(message())
         Assert.assertNotNull(receiver.blockingReceive(waitingTime))
     }
 
-    @Test fun sendMessageAllowsToReceiveAResponse() {
+    @Test fun sendMessageShouldAllowToReceiveAResponse() {
         receiver.addBehaviour(cyclicBehaviour {
             receiver.send(receiver.blockingReceive().createReply())
         })
-        val aid = communicator.find(receiverName, receiverType)
-        val result = communicator.sendMessage(ACLMessage().apply {
-            content = "text"
-            addReceiver(aid)
-        }).get(waitingTime, TimeUnit.MILLISECONDS)                          // throws an exception if timeout elapse
-        Assert.assertNotNull(result)
+        communicator.sendMessage(message())
+            .get(waitingTime, TimeUnit.MILLISECONDS)                        // throws an exception if timeout elapse
     }
 
-    @Test fun sendMessageAllowsToMarshallResponse() {
+    @Test fun sendMessageShouldAllowToMarshallResponse() {
         receiver.addBehaviour(cyclicBehaviour {
             receiver.send(receiver.blockingReceive().createReply().apply { content = "text" })
         })
-        val aid = communicator.find(receiverName, receiverType)
-        val result = communicator.sendMessage(ACLMessage().apply {
-            content = "text"
-            addReceiver(aid)
-        }) {
+        val result = communicator.sendMessage(message()) {
             it.content                                                      // extract content from the message
         }.get(waitingTime, TimeUnit.MILLISECONDS)                           // throws an exception if timeout elapse
         Assert.assertTrue(result == "text")
     }
+
+    @Test fun sendMessageShouldTryOvercomeNetworkFailures() {
+        val counter = Semaphore(0)
+        receiver.addBehaviour(cyclicBehaviour {
+            receiver.blockingReceive()
+            counter.release()
+        })
+        communicator.sendMessage(message())
+        val succeeded = counter.tryAcquire(2, 5 * waitingTime, TimeUnit.MILLISECONDS)
+        Assert.assertTrue(succeeded)
+    }
+
+    private fun message() = ACLMessage().apply { addReceiver(receiverAID) }
 }
