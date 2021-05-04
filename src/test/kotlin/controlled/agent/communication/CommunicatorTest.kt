@@ -10,12 +10,14 @@ import jade.lang.acl.ACLMessage
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class CommunicatorTest {
     private val waitingTime = 1000L
 
-    private val communicatorName = "communicator-name"
-    private val receiverName = "receiver-name"
+    private val communicatorName = "communicator-name" + Random.nextDouble()
+    private val receiverName = "receiver-name" + Random.nextDouble()
     private val receiverType = "receiver-type"
 
     private lateinit var communicator: SupportAgent
@@ -41,10 +43,10 @@ class CommunicatorTest {
             receiver.send(receiver.blockingReceive().createReply())
         })
         val aid = communicator.find(receiverName, receiverType)
-        communicator.sendMessage(ACLMessage().apply {
+        val result = communicator.sendMessage(ACLMessage().apply {
             content = "text"
             addReceiver(aid)
-        })
-        Assert.assertNotNull(communicator.blockingReceive(waitingTime))
+        }).get(waitingTime, TimeUnit.MILLISECONDS)                          // throws an exception if timeout elapse
+        Assert.assertNotNull(result)
     }
 }
