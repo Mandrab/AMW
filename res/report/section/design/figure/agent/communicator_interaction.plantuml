@@ -1,4 +1,4 @@
-@startuml communicator_states
+@startuml communicator_interaction
 
 alt failing request
     Communicator --x OtherAgent : request

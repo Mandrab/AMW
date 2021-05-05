@@ -1,0 +1,8 @@
+@startuml command_execution
+
+Admin --> DF                    : search a command executor
+DF --> Admin                    : response
+Admin --> Executor              : request execution
+Executor --> Admin              : TODO
+
+@enduml

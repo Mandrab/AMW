@@ -128,7 +128,12 @@ Un esempio di gestione di failure \'e visibile in Figura \ref{fig:communicator_s
 \end{figure}
 
 \subsubsection{Admin}
+Questo agente permette l'utilizzo delle funzionalit\'a di amministratore. A questo proposito, esso necessita di interagire con pi\'u entità del sistema, fra cui: \textit{WarehouseMapper} per lo storing e la rimozione degli elementi dal magazzino; \textit{CommandManager} per tutte le funzionalit\'a relative ai comandi. Inoltre, può potenzialmente dialogare con tutti gli agenti allo scopo di lanciare l'esecuzione dei comandi.\\
+Un esempio relativo all'interazione necessaria all'esecuzione dei comandi \'e visibile in Figura \ref{fig:command_execution}
+
 \subsubsection{User}
+Come gi\'a detto il compito dell'user agent \'e relativo alla gestione degli ordini. A causa di ci\'o, la principale interazione di questo \'e con l'agente gestore degli ordini \textit{OrderManager} e con quello incaricato della gestione del magazzino, \textit{WarehouseMapper}, per la visualizzazione degli articoli disponibili.
+
 \subsubsection{Collection Point Manager}
 \subsubsection{Command Manager}
 \subsubsection{Order Manager}
