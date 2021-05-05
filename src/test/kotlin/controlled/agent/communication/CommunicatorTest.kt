@@ -56,7 +56,7 @@ class CommunicatorTest {
         Assert.assertTrue(succeeded)
     }
 
-    @Test fun sendMessageShouldNotRetryAfterSuccesfulDelivery() {
+    @Test fun sendMessageShouldNotRetryAfterSuccessfulDelivery() {
         val tryCounter = Semaphore(0)
         receiver.addBehaviour(cyclicBehaviour {
             receiver.send(receiver.blockingReceive().createReply())
