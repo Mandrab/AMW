@@ -1,6 +1,5 @@
 package controlled.agent.communication
 
-import common.Communicator
 import common.TestAgents.proxy
 import common.TestAgents.register
 import controller.agent.Agents.cyclicBehaviour
