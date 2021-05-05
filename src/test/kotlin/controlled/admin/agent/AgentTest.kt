@@ -31,7 +31,7 @@ class AgentTest {
     private val adminAgent = Proxy().apply { Agents.start(false)(listOf(this).toTypedArray())(AdminAgent::class.java) }
     private val commandManager = proxy(agentName()).agent.apply { register(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id) }
     private val warehouseMapper = proxy(agentName()).agent.apply {
-        register(MANAGEMENT_ITEMS.id, STORE_ITEM.id, REMOVE_ITEM.id)
+        register(MANAGEMENT_ITEMS.id, STORE_ITEM.id, REMOVE_ITEM.id, INFO_WAREHOUSE.id)
     }
 
     @Test fun addCommandShouldSendRequestToCommandManager() {
@@ -59,6 +59,38 @@ class AgentTest {
         Assert.assertNotNull(result)
         Assert.assertEquals(REQUEST, result.performative)
         Assert.assertEquals("""remove(item(id("a"),quantity(3)))""", result.contentObject.toString())
+    }
+
+    @Test fun addVersionShouldSendRequestToCommandManager() {
+        adminAgent.addVersion()
+        val result = commandManager.blockingReceive(receiveWaitingTime)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(REQUEST, result.performative)
+        Assert.assertEquals("TODO", result.contentObject.toString())
+    }
+
+    @Test fun executeCommandShouldSendRequestToSomeViableAgent() {
+        adminAgent.executeCommand()
+        val result = commandManager.blockingReceive(receiveWaitingTime)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(REQUEST, result.performative)
+        Assert.assertEquals("TODO", result.contentObject.toString())
+    }
+
+    @Test fun executeScriptShouldSendRequestToSomeViableAgent() {
+        adminAgent.executeScript()
+        val result = commandManager.blockingReceive(receiveWaitingTime)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(REQUEST, result.performative)
+        Assert.assertEquals("TODO", result.contentObject.toString())
+    }
+
+    @Test fun warehouseStateShouldSendRequestToWarehouseManager() {
+        adminAgent.warehouseState()
+        val result = warehouseMapper.blockingReceive(receiveWaitingTime)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(REQUEST, result.performative)
+        Assert.assertEquals("""info(warehouse)""", result.contentObject.toString())
     }
 
     private fun agentName() = "agent" + Random.nextDouble()
