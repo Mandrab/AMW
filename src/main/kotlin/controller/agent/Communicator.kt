@@ -74,12 +74,12 @@ abstract class Communicator: Agent() {
      *
      * @return a cyclic behaviour for the task
      */
-    private fun requestConfirmations() = cyclicBehaviour { agent ->
+    private fun requestConfirmations() = cyclicBehaviour { behaviour ->
         waitingConfirm.filter { it.age() > 2 }.forEach {                    // find not responded messages
             it.lastSent = Instant.now()                                     // update send time
             send(it.message)                                                // resend them
         }
-        agent.block(updateTime)                                             // block for a while
+        behaviour.block(updateTime)                                         // block for a while
     }
 
     /**
