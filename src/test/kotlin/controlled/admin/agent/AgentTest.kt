@@ -30,7 +30,9 @@ class AgentTest {
 
     private val adminAgent = Proxy().apply { Agents.start(false)(listOf(this).toTypedArray())(AdminAgent::class.java) }
     private val commandManager = proxy(agentName()).agent.apply { register(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id) }
-    private val warehouseMapper = proxy(agentName()).agent.apply { register(MANAGEMENT_ITEMS.id, STORE_ITEM.id) }
+    private val warehouseMapper = proxy(agentName()).agent.apply {
+        register(MANAGEMENT_ITEMS.id, STORE_ITEM.id, REMOVE_ITEM.id)
+    }
 
     @Test fun addCommandShouldSendRequestToCommandManager() {
         adminAgent.addCommand()
@@ -49,6 +51,14 @@ class AgentTest {
             """add(item(id("a"),position(rack(2),shelf(3),quantity(2))))""",
             result.contentObject.toString()
         )
+    }
+
+    @Test fun removeItemShouldSendRequestToWarehouseMapper() {
+        adminAgent.removeItem(item(id("a"),quantity(3)))
+        val result = warehouseMapper.blockingReceive(receiveWaitingTime)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(REQUEST, result.performative)
+        Assert.assertEquals("""remove(item(id("a"),quantity(3)))""", result.contentObject.toString())
     }
 
     private fun agentName() = "agent" + Random.nextDouble()
