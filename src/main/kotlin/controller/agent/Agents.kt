@@ -29,10 +29,10 @@ object Agents {
         val agentClassName = agentClass.canonicalName
 
         fun startAgent() = ExceptionWrapper.ensure {
-            Runtime.instance()                                            // get a hold on JADE runtime
+            Runtime.instance()                                          // get a hold on JADE runtime
                 .createAgentContainer(ProfileImpl())                    // create a container with default profile
-                .createNewAgent(agentName, agentClassName, others)        // Create a new agent
-                .apply { start() }                                        // start the agent
+                .createNewAgent(agentName, agentClassName, others)      // create a new agent
+                .apply { start() }                                      // start the agent
         }
 
         // if an error occurred and need to retry, recur
