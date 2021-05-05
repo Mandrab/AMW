@@ -1,0 +1,14 @@
+@startuml communicator_states
+
+alt failing request
+    Communicator --x OtherAgent : request
+else failing response
+    Communicator --> OtherAgent : request
+    OtherAgent --x Communicator     : response
+end
+
+Communicator --> Communicator   : timeout
+Communicator --> OtherAgent     : request (resent)
+OtherAgent --> Communicator     : response
+
+@enduml

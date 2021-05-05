@@ -1,0 +1,13 @@
+@startuml communicator_states
+
+[*] --> Idle
+Idle --> CheckMessages              : messages received
+Idle --> ResendMessages             : timeout elapsed
+CheckMessages --> Idle              : block()
+ResendMessages --> Idle             : block(timeout)
+
+Idle            : agent is not doing anything
+CheckMessages   : check incomming messages to find\nresponses to sent ones
+ResendMessages : resend messages that haven't\nreceived any response
+
+@enduml

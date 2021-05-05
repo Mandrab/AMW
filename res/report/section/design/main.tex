@@ -57,6 +57,8 @@ L'ontologia rappresentante le operazioni definisce invece le azioni che possono 
 \end{figure}
 
 \subsubsection{Admin}
+L'agente admin \`e colui che si occupa di permettere l'interazione dell'amministratore col sistema. Condividendo alcuni tratti con l'agente user, si \'e deciso di raccogliere le caratteristiche comuni di queste due entit\'a tramite la definizione di un agente astratto dedito alla comunicazione col sistema (in esso, \'e denominato \textit{Communicator}; vedasi Figura \ref{fig:class_diagram_admin_agent}).\\
+Le funzionalit\'a principali dell'agente admin sono relative alla gestione del magazzino e all'esecuzione di comandi nel sistema. Ricercando una separazione dei privilegi, questo non \'e in grado di effettuare ordini.
 \begin{figure}[ht]
     \includegraphics[width=\textwidth]{section/design/figure/admin_agent/class_diagram.png}
     \caption{Diagramma delle classi dell'agente utilizzato per la comunicazione admin-sistema.}
@@ -64,6 +66,8 @@ L'ontologia rappresentante le operazioni definisce invece le azioni che possono 
 \end{figure}
 
 \subsubsection{User}
+L'agente user si occupa di permettere l'interazione degli utenti/acquirenti col sistema. Come gi\'a accennato, condivide alcuni tratti con l'agente admin: questi sono accomunati dall'estensione dell'agente \textit{Communicator} (vedasi Figura \ref{fig:class_diagram_user_agent}).\\
+Le funzionalit\'a principali dell'agente user consistono nella possibilit\'a di effettuare ordini e vederne lo stato (TODO). Non \'e invece dotato della capacit\'a di 'modificare' direttamente il magazzino, in quanto si tratta di una capacit\'a disponibile al solo amministratore.
 \begin{figure}[ht]
     \includegraphics[width=\textwidth]{section/design/figure/user_agent/class_diagram.png}
     \caption{Diagramma delle classi dell'agente utilizzato per la comunicazione user/client-sistema.}
@@ -83,7 +87,17 @@ L'ontologia rappresentante le operazioni definisce invece le azioni che possono 
 % (UML State diagram or Activity Diagram)
 
 Come già anticipato, gli agenti del sistema sono sviluppati tramite le tecnologie JADE e Jason. A causa di ciò, i modelli logici delle due tipologie di agenti differiscono, passando da un modello a \textit{behaviour} ad uno \textit{BDI}. Nello specifico, gli agenti sviluppati in JADE ed utilizzanti un modello a behaviour sono quelli relativi al client di interazione col sistema: Admin e User; gli altri agenti sono invece basati sul modello BDI.\\
-Di seguito verranno descritti i behaviour e la logica di ogni agente del sistema.
+Di seguito verranno descritti i behaviour e la logica di ogni agente del sistema. Inoltre, verr\'a descritto il comportamento dell'agente 'parziale' \textit{Communicator}, il quale funge da struttura base per gli agenti del lato client.
+
+\subsubsection{Communicator}
+Quest'entità parziale permette una gestione delle possibili failure della rete. In pratica, questa si occupa del reinvio dei messaggi in caso non si riceva risposta.\\
+L'alternaza dei behaviours \'e visibile nella Figura \ref{fig:communicator_state_diagrams} e rappresenta i comportamenti necessari alla risoluzione dell'errore.\\
+Si evidenzia inoltre come, in alternativa a questa forma 'reliable' di comunicazione, sia sempre possibile utilizzarne una 'unreliable' senza il reinvio dei messaggi.
+\begin{figure}[ht]
+    \includegraphics[width=\textwidth]{section/design/figure/agent/communicator_states.png}
+    \caption{Diagramma degli stati dell'agente \textit{Communicator}.}
+    \label{fig:communicator_state_diagrams}
+\end{figure}
 
 \subsubsection{Admin}
 \subsubsection{User}
@@ -99,9 +113,19 @@ Di seguito verranno descritti i behaviour e la logica di ogni agente del sistema
 % %
 % (UML Sequence Diagram)
 
-La comunicazione è un aspetto fondamentale del sistema e permette il funzionamento dello stesso. L'analisi delle interazioni risulta perciò un elemento di fondamentale importanza nella descrizione del design e funzionamento di AMW.\\
-Come già accennato, la comunicazione risulta in un certo qual modo complessa, in quanto richiede una conversione (effettuata automaticamente) da modello di comunicazione FIPA-ACL a KQML.\\
+La comunicazione è un aspetto fondamentale del sistema e determina il funzionamento dello stesso. L'analisi delle interazioni risulta perciò un elemento di fondamentale importanza nella descrizione del design e funzionamento di AMW.\\
+Come già accennato, la comunicazione risulta in un certo qual modo complessa, in quanto richiede una conversione (effettuata automaticamente) da modello di comunicazione FIPA-ACL a KQML. Inoltre, questa deve anche tenere conto di possibili failure di rete.\\
 Di seguito, le interazioni disponibili ed effettuate dai vari agenti saranno descritte ed analizzate.
+
+\subsubsection{Communicator}
+Abbiamo gi\'a detto come questo agente si occupi del reivio di messaggi in caso di un supposto failure di rete. Dato che non \'e possibile diagnosticare un errore di questo tipo in maniera certa, questa caratteristica richiede che ogni messaggio inviato abbia un codice di conversazione univoco. Ci\'o permette di identificare messaggi a cui si sia gi\'a precedentemente risposto e che quindi richiedano soltanto un nuovo invio della risposta.\\
+Questa tattica \'e presente per la maggior parte delle trasmissioni del sistema; l'agente \textit{Communicator} \'e tuttavia utilizzato soltanto per gli agenti JADE lato client.\\
+Un esempio di gestione di failure \'e visibile in Figura \ref{fig:communicator_sequence_diagram}.
+\begin{figure}[ht]\centering
+    \includegraphics[width=.5\textwidth]{section/design/figure/agent/communicator_interaction.png}
+    \caption{Esempio di gestione di failure di rete dell'agente \textit{Communicator}. Come precedentemente detto, per evitare una doppia 'risoluzione' della richiesta, \'e necessario che ogni messaggio abbia un identificativo che ne permetta il riconoscimento da parte (nell'esempio) di \textit{OtherAgent}.}
+    \label{fig:communicator_sequence_diagram}
+\end{figure}
 
 \subsubsection{Admin}
 \subsubsection{User}
