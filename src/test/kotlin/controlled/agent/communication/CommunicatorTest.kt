@@ -16,7 +16,8 @@ import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 class CommunicatorTest {
-    private val waitingTime = 1000L
+    private val receiveWaitingTime = 1000L
+    private val retryWaitingTime = 5000L
 
     private val communicatorName = "communicator-name" + Random.nextDouble()
     private val receiverName = "receiver-name" + Random.nextDouble()
@@ -35,7 +36,7 @@ class CommunicatorTest {
 
     @Test fun sendMessageShouldEffectivelyDeliverIt() {
         communicator.sendMessage(message())
-        Assert.assertNotNull(receiver.blockingReceive(waitingTime))
+        Assert.assertNotNull(receiver.blockingReceive(receiveWaitingTime))
     }
 
     @Test fun sendMessageShouldAllowToReceiveAResponse() {
@@ -43,7 +44,7 @@ class CommunicatorTest {
             receiver.send(receiver.blockingReceive().createReply())
         })
         communicator.sendMessage(message())
-            .get(waitingTime, TimeUnit.MILLISECONDS)                        // throws an exception if timeout elapse
+            .get(receiveWaitingTime, TimeUnit.MILLISECONDS)                 // throws an exception if timeout elapse
     }
 
     @Test fun sendMessageShouldAllowToMarshallResponse() {
@@ -52,19 +53,30 @@ class CommunicatorTest {
         })
         val result = communicator.sendMessage(message()) {
             it.content                                                      // extract content from the message
-        }.get(waitingTime, TimeUnit.MILLISECONDS)                           // throws an exception if timeout elapse
+        }.get(receiveWaitingTime, TimeUnit.MILLISECONDS)                    // throws an exception if timeout elapse
         Assert.assertTrue(result == "text")
     }
 
     @Test fun sendMessageShouldTryOvercomeNetworkFailures() {
-        val counter = Semaphore(0)
+        val tryCounter = Semaphore(0)
         receiver.addBehaviour(cyclicBehaviour {
             receiver.blockingReceive()
-            counter.release()
+            tryCounter.release()
         })
         communicator.sendMessage(message())
-        val succeeded = counter.tryAcquire(2, 5 * waitingTime, TimeUnit.MILLISECONDS)
+        val succeeded = tryCounter.tryAcquire(2, retryWaitingTime + receiveWaitingTime, TimeUnit.MILLISECONDS)
         Assert.assertTrue(succeeded)
+    }
+
+    @Test fun sendMessageShouldNotRetryAfterSuccesfulDelivery() {
+        val tryCounter = Semaphore(0)
+        receiver.addBehaviour(cyclicBehaviour {
+            receiver.send(receiver.blockingReceive().createReply())
+            tryCounter.release()
+        })
+        communicator.sendMessage(message())
+        val succeeded = tryCounter.tryAcquire(2, retryWaitingTime, TimeUnit.MILLISECONDS)
+        Assert.assertFalse(succeeded)
     }
 
     private fun message() = ACLMessage().apply { addReceiver(receiverAID) }
