@@ -1,6 +1,6 @@
 package controlled.agent.communication
 
-import common.SupportAgent
+import common.Communicator
 import common.TestAgents.proxy
 import common.TestAgents.register
 import controller.agent.Agents.cyclicBehaviour
@@ -19,7 +19,7 @@ class CommunicatorTest {
     private val receiverName = "receiver-name" + Random.nextDouble()
     private val receiverType = "receiver-type"
 
-    private val communicator = proxy(communicatorName, SupportAgent().javaClass.canonicalName).agent as SupportAgent
+    private val communicator = proxy(communicatorName, Communicator().javaClass.canonicalName).agent as Communicator
     private val receiver = proxy(receiverName).agent.apply { register(receiverName, receiverType) }
 
     @Test fun sendMessageShouldEffectivelyDeliverIt() {

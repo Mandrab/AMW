@@ -3,10 +3,10 @@ package common
 import controller.agent.Communicator
 import common.TestAgents.TestProxy
 
-class SupportAgent: Communicator() {
+class Communicator: Communicator() {
 
     override fun setup() {
         super.setup()
-        (arguments[0] as TestProxy<SupportAgent>).agent = this
+        (arguments[0] as TestProxy<common.Communicator>).agent = this
     }
 }
