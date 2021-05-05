@@ -33,9 +33,11 @@ object TestAgents {
             .run { start() }
     }
 
-    fun Agent.register(_name: String, _type: String) {
+    fun Agent.register(_name: String, vararg types: String) {
         DFService.register(this, defaultDF, DFAgentDescription().apply {
-            addServices(ServiceDescription().apply { name = _name; type = _type })
+            types.map {
+                addServices(ServiceDescription().apply { name = _name; type = it })
+            }
         })
     }
 }
