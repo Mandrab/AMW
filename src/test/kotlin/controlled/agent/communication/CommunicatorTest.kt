@@ -1,15 +1,11 @@
 package controlled.agent.communication
 
 import common.SupportAgent
-import common.TestAgents.find
 import common.TestAgents.proxy
 import common.TestAgents.register
 import controller.agent.Agents.cyclicBehaviour
-import jade.core.AID
-import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
@@ -23,16 +19,8 @@ class CommunicatorTest {
     private val receiverName = "receiver-name" + Random.nextDouble()
     private val receiverType = "receiver-type"
 
-    private lateinit var receiverAID: AID
-    private lateinit var communicator: SupportAgent
-    private lateinit var receiver: Agent
-
-    @Before fun setup() {
-        communicator = proxy(communicatorName, SupportAgent().javaClass.canonicalName).agent as SupportAgent
-        receiver = proxy(receiverName).agent
-        receiver.register(receiverName, receiverType)
-        receiverAID = communicator.find(receiverName, receiverType)
-    }
+    private val communicator = proxy(communicatorName, SupportAgent().javaClass.canonicalName).agent as SupportAgent
+    private val receiver = proxy(receiverName).agent.apply { register(receiverName, receiverType) }
 
     @Test fun sendMessageShouldEffectivelyDeliverIt() {
         communicator.sendMessage(message())
@@ -90,5 +78,5 @@ class CommunicatorTest {
         Assert.assertFalse(succeeded)
     }
 
-    private fun message() = ACLMessage().apply { addReceiver(receiverAID) }
+    private fun message() = ACLMessage().apply { addReceiver(receiver.aid) }
 }

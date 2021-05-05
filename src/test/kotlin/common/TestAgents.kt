@@ -1,6 +1,5 @@
 package common
 
-import jade.core.AID
 import jade.core.Agent
 import jade.core.ProfileImpl
 import jade.core.Runtime
@@ -39,8 +38,4 @@ object TestAgents {
             addServices(ServiceDescription().apply { name = _name; type = _type })
         })
     }
-
-    fun Agent.find(_name: String, _type: String): AID = DFService.search(this, DFAgentDescription().apply {
-            addServices(ServiceDescription().apply { name = _name; type = _type })
-        }).first().name
 }
