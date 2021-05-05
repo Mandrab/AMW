@@ -19,14 +19,21 @@ import org.junit.Assert
 import org.junit.Test
 import kotlin.random.Random
 
+/**
+ * Test class for user agent
+ * Some of the features are not tested here in that
+ * they are (or will) be tested later in more adequate places
+ *
+ * @author Paolo Baldini
+ */
 class AgentTest {
     private val receiveWaitingTime = 1000L
 
-    private val userName = "user-name" + Random.nextDouble()
-
     private val userAgent = Proxy().apply { Agents.start(false)(listOf(this).toTypedArray())(UserAgent::class.java) }
-    private val warehouseMapper = proxy(userName).agent.apply { register(MANAGEMENT_ITEMS.id, INFO_WAREHOUSE.id) }
-    private val orderManager = proxy(userName).agent.apply { register(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id) }
+    private val warehouseMapper = proxy(agentName()).agent.apply { register(MANAGEMENT_ITEMS.id, INFO_WAREHOUSE.id) }
+    private val orderManager = proxy(agentName()).agent.apply {
+        register(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id, INFO_ORDERS.id)
+    }
 
     @Test fun shopItemShouldRequireAListOfItemsFromItemManager() {
         userAgent.shopItems()
@@ -52,4 +59,14 @@ class AgentTest {
             result.contentObject.toString()
         )
     }
+
+    @Test fun ordersShouldSendARequestToAnOrderManager() {
+        userAgent.orders(user(client("x"), email("y"), address("z")))
+        val result = orderManager.blockingReceive(receiveWaitingTime)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(REQUEST, result.performative)
+        Assert.assertEquals("""info(client("x"),email("y"))""", result.contentObject.toString())
+    }
+
+    private fun agentName() = "agent" + Random.nextDouble()
 }
