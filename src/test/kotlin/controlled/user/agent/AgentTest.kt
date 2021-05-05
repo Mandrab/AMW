@@ -36,7 +36,7 @@ class AgentTest {
         Assert.assertEquals("info(warehouse)", result.contentObject.toString())
     }
 
-    @Test fun shopItemShouldSendARequestToAnOrderManager() {
+    @Test fun placeOrderShouldSendARequestToAnOrderManager() {
         userAgent.placeOrder(
             user(client("x"), email("y"), address("z")),
             listOf(
