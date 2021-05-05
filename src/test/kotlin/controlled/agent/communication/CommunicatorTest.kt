@@ -10,6 +10,11 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
+/**
+ * Test class for communicator abstract agent
+ *
+ * @author Paolo Baldini
+ */
 class CommunicatorTest {
     private val receiveWaitingTime = 1000L
     private val retryWaitingTime = 5000L
@@ -41,7 +46,7 @@ class CommunicatorTest {
         val result = communicator.sendMessage(message()) {
             it.content                                                      // extract content from the message
         }.get(receiveWaitingTime, TimeUnit.MILLISECONDS)                    // throws an exception if timeout elapse
-        Assert.assertTrue(result == "text")
+        Assert.assertEquals("text", result)
     }
 
     @Test fun sendMessageShouldTryOvercomeNetworkFailures() {
