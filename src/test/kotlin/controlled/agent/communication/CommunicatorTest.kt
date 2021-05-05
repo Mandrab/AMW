@@ -79,5 +79,16 @@ class CommunicatorTest {
         Assert.assertFalse(succeeded)
     }
 
+    @Test fun sendMessageShouldNotRetryIfSpecified() {
+        val tryCounter = Semaphore(0)
+        receiver.addBehaviour(cyclicBehaviour {
+            receiver.send(receiver.blockingReceive().createReply())
+            tryCounter.release()
+        })
+        communicator.sendMessage(message(), false) { }
+        val succeeded = tryCounter.tryAcquire(2, retryWaitingTime, TimeUnit.MILLISECONDS)
+        Assert.assertFalse(succeeded)
+    }
+
     private fun message() = ACLMessage().apply { addReceiver(receiverAID) }
 }
