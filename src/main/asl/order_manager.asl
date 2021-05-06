@@ -5,9 +5,9 @@
 { include("utility/cache.asl") }
 { include("utility/communication.asl") }
 { include("utility/literal.asl") }
-{ include("action/id_generator.asl") }
-{ include("action/info.asl") }
-{ include("action/request.asl") }
+{ include("order_manager/action/id_generator.asl") }
+{ include("order_manager/action/info.asl") }
+{ include("order_manager/action/request.asl") }
 
 /***********************************************************************************************************************
  Initial goals

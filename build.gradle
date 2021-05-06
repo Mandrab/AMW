@@ -42,12 +42,18 @@ group = "dev.mandrab.university.master.distributedsystems.amw"
 version = "1.0"
 
 // constants
-def DOCKER = [
-        CONTEXT: "build/docker",                            // docker context folder
-        HOME: "/home/agent",                                // set HOME environmental variable
-        RESOURCES: "res/docker"                             // folder where to put docker needed files
+def FOLDER = [
+        DOCKER: [
+                CONTEXT: "build/docker",                    // docker context folder
+                HOME: "/home/agent",                        // set HOME environmental variable
+                RESOURCES: "res/docker"                     // folder where to put docker needed files
+        ],
+        JASON: "jason-2.4",                                 // jason folder name
+        ASL: [
+                SOURCES: "src/main/asl",                    // asl agent folder files
+                COMMONS: "src/main/asl/utility"             // common asl agents folder files
+        ]
 ]
-def JASON_FOLDER = "jason-2.4"                              // jason folder name
 def MAIN_CONTAINER = new TaskTarget("main")
 def AGENTS = [
         1: "collection_point_manager",
@@ -67,32 +73,36 @@ AGENTS.collect { TaskTarget target ->                       // create tasks for 
         from "openjdk:11-jre-slim"                          // base image
         label(["maintainer": 'Paolo Baldini "paolobaldini01@gmail.com"'])   // set image maintainer
 
-        environmentVariable "HOME", DOCKER.HOME             // set HOME environmental variable
-        runCommand "mkdir -p $DOCKER.HOME"                  // create user (i.e., agent) home folder
+        environmentVariable "HOME", FOLDER.DOCKER.HOME      // set HOME environmental variable
+        runCommand "mkdir -p $FOLDER.DOCKER.HOME"           // create user (i.e., agent) home folder
 
         doFirst {
-            delete DOCKER.CONTEXT                           // delete files from previous builds
+            delete FOLDER.DOCKER.CONTEXT                    // delete files from previous builds
             copy {
                 from target.sourceFiles                     // copy of agent source files
-                into DOCKER.CONTEXT                         // docker build context directory
+                into FOLDER.DOCKER.CONTEXT                  // docker build context directory
             }
             copy {
-                from "$DOCKER.RESOURCES/$JASON_FOLDER/libs" // copy of jason files (from download task)
-                into "$DOCKER.CONTEXT/libs"                 // docker build context directory
+                from FOLDER.ASL.COMMONS                     // copy of agent common source files
+                into "$FOLDER.DOCKER.CONTEXT/utility"       // docker build context directory
+            }
+            copy {
+                from "$FOLDER.DOCKER.RESOURCES/$FOLDER.JASON/libs"  // copy of jason files (from download task)
+                into "$FOLDER.DOCKER.CONTEXT/libs"          // docker build context directory
             }
         }
 
-        copyFile ".", "$DOCKER.HOME/"                       // copy files needed by the agent to work
+        copyFile ".", "$FOLDER.DOCKER.HOME/"                // copy files needed by the agent to work
 
         entryPoint "java"                                   // system engine
-        defaultCommand "-cp", "$DOCKER.HOME/libs/*",        // set java classpath
+        defaultCommand "-cp", "$FOLDER.DOCKER.HOME/libs/*", // set java classpath
                 "jade.Boot",                                // run the agents in jade platform
                 "-container",                               // start peripheral container instead of a Main Container
                 "-host",                                    // connect to specific host (defined as next parameter)
                 "172.17.0.1",                               // address of gateway from bridge network to host machine
                 target.unique +                             // define random agent name in the system
                     ":jason.infra.jade.JadeAgArch(" +       // implementation of Jade Architecture to run Jason agents
-                    "$DOCKER.HOME/agent.asl)"               // run agent from its .asl main file
+                    "$FOLDER.DOCKER.HOME/${target.name}.asl)"   // run agent from its .asl main file
     }
 
     /** Build the agent image through the previously created Dockerfile */
@@ -175,13 +185,13 @@ task remove_containers(type: DefaultTask) { // TODO test
 /** Download jason zip data */
 task download_file(type: Download) {
     src "https://deac-riga.dl.sourceforge.net/project/jason/jason/version%202.4/jason-2.4.zip"
-    dest DOCKER.RESOURCES
+    dest FOLDER.DOCKER.RESOURCES
 }
 
 /** Unzip jason zip data */
 task unzip(type: Copy) {
-    def zipFile = file "$DOCKER.RESOURCES/jason-2.4.zip"    // zip file name
-    def outputDir = "$DOCKER.RESOURCES/$JASON_FOLDER"       // define output directory
+    def zipFile = file "$FOLDER.DOCKER.RESOURCES/jason-2.4.zip" // zip file name
+    def outputDir = "$FOLDER.DOCKER.RESOURCES/$FOLDER.JASON"// define output directory
 
     file outputDir mkdirs()                                 // create output process directory
 
@@ -219,7 +229,7 @@ task start_agent(type: JavaExec) {
     standardInput = System.in
     main "jade.Boot"
     args "-container"
-    args "${randomName(name)}:jason.infra.jade.JadeAgArch($path/$file)"
+    args "$name${new Random().nextDouble()}:jason.infra.jade.JadeAgArch($path/$file)"
 }
 
 /** Start main container and agents of the system */
@@ -235,7 +245,7 @@ task start_system(type: DefaultTask) {
 }
 
 /** Tests run depends on complete start of the system */
-test.dependsOn start_system
+//test.dependsOn start_system
 
 /**************************************************************************************************
  * UTILITY FUNCTIONS & CLASSES
@@ -256,9 +266,9 @@ private static String os(Object seed) { return OperatingSystem.current().isWindo
 
 class TaskTarget {
     private static final entitiesCounter = new AtomicInteger()
-    private String name
     private Integer level
     private String seed
+    public String name
 
     TaskTarget(String name, Integer level = 0, String seed = "") {
         this.name = name
@@ -280,6 +290,6 @@ class TaskTarget {
     @Lazy def dockerfile = "$level-$name${seed}_dockerfile"
 
     @Lazy def containerId = "amw:$name"
-    @Lazy def sourceFiles = ["src/main/asl/$name", "src/main/asl/common"]
+    @Lazy def sourceFiles = ["src/main/asl/${name}.asl", "src/main/asl/$name"]
     @Lazy def unique = "$name-${entitiesCounter.getAndIncrement()}"
 }
