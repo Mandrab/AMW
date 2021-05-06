@@ -40,4 +40,9 @@ object JADEAgents {
             }
         })
     }
+
+    fun Agent.shutdown() {
+        DFService.deregister(this, defaultDF)
+        doDelete()
+    }
 }

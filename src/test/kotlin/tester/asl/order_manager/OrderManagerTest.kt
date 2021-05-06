@@ -4,6 +4,8 @@ import common.ASLAgents
 import common.ASLAgents.start
 import common.JADEAgents.TestProxy
 import common.JADEAgents.proxy
+import common.JADEAgents.register
+import common.JADEAgents.shutdown
 import common.ontology.Services.ServiceSupplier.*
 import common.ontology.Services.ServiceType.*
 import common.ontology.dsl.abstraction.Address.address
@@ -18,15 +20,22 @@ import jade.core.AID
 import jade.core.Agent
 import org.junit.Test
 import jade.lang.acl.ACLMessage
-import jade.lang.acl.ACLMessage.CONFIRM
-import jade.lang.acl.ACLMessage.REQUEST
-import org.junit.After
+import jade.lang.acl.ACLMessage.*
 import org.junit.AfterClass
 import org.junit.Assert
 
 class OrderManagerTest {
-    private val waitingTime = 500L
-    private val agent = proxy().agent
+    companion object {
+        private const val waitingTime = 500L
+        private val agent = proxy().agent
+
+        @AfterClass fun terminate() {
+            ASLAgents.killAll()
+            agent.doDelete()
+        }
+
+        private fun proxy(): TestProxy<Agent> = proxy("tester.asl.order_manager.OrderManagerTest")
+    }
 
     @Test fun testerIsRegistering() = Assert.assertNotNull(agent)
 
@@ -37,35 +46,42 @@ class OrderManagerTest {
         Assert.assertEquals("[]", result.content)
     }
 
-    @Test fun orderWithNoItemsIsIgnored() = proxy().agent.run {
-        sendRequest("order('x', 'y', 'z')[]")
+    @Test fun orderWithNoItemsIsIgnored() = proxy().agent.apply {
+        sendRequest(order(client("x"), email("y"), address("z")).term().toString())
         Assert.assertNull(blockingReceive(waitingTime))
-    }
+    }.doDelete()
 
-    @Test fun submittedOrderShouldBeConfirmed() {
-        val agent = proxy().agent
-        agent.sendRequest(
+    @Test fun submittedOrderRequestShouldFailIfNoWarehouseAgentExists() = proxy().agent.apply {
+        sendRequest(
             order(client("x"), email("y"), address("z"))[
                     item(id("a"), quantity(2))
             ].term().toString()
         )
-        val result = agent.blockingReceive(waitingTime)
+        val result = blockingReceive(waitingTime)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(FAILURE, result.performative)
+    }.doDelete()
+
+    @Test fun submittedOrderShouldBeConfirmedIfRequiredAgentExists() = proxy().agent.apply {
+        val picker = proxy("warehouse_mapper").agent.apply {
+            register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)                   // order manager reject without mapper agent
+        }
+        val message = order(client("x"), email("y"), address("z"))[
+                item(id("a"), quantity(2))
+        ].term().toString()
+        sendRequest(message)
+        val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
         Assert.assertEquals(CONFIRM, result.performative)
-        Assert.assertEquals("order(client('x'), 'y', 'z')[item, i]", result.content)
-    }
-
-    private fun proxy(): TestProxy<Agent> = proxy("tester.asl.order_manager.OrderManagerTest")
+        Assert.assertEquals(message, result.content)
+        picker.shutdown()
+    }.doDelete()
 
     private fun orderManagerAID(): AID = start("order_manager")
 
-    private fun Agent.sendRequest(content: String) = send(ACLMessage().also {
-        it.addReceiver(orderManagerAID())
-        it.performative = REQUEST
-        it.content = content
+    private fun Agent.sendRequest(message: String) = send(ACLMessage().apply {
+        addReceiver(orderManagerAID())                                      // start a new agent every call
+        performative = REQUEST
+        content = message
     })
-
-    companion object {
-        @AfterClass fun terminate() = ASLAgents.killAll()
-    }
 }
