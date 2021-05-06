@@ -1,37 +1,29 @@
 package tester.asl.order_manager
 
-import common.TestAgent
+import common.ASLAgents.start
 import common.TestAgents.TestProxy
 import common.TestAgents.proxy
+import common.ontology.Services.ServiceSupplier.*
+import common.ontology.Services.ServiceType.*
+import jade.core.AID
 import jade.core.Agent
 import org.junit.Test
-import jade.domain.DFService
-
-import jade.domain.FIPAAgentManagement.DFAgentDescription
-import jade.domain.FIPAAgentManagement.ServiceDescription
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.ACLMessage.CONFIRM
 import jade.lang.acl.ACLMessage.REQUEST
 import org.junit.Assert
 
 class OrderManagerTest {
-    private val _name = "management(orders)"
-    private val _type = "accept(order)"
     private val waitingTime = 500L
     private val agent = proxy().agent
 
     @Test fun testerIsRegistering() = Assert.assertNotNull(agent)
 
-    @Test fun orderManagerExists() = Assert.assertTrue(agent.run {
-        DFService.search(this, DFAgentDescription().apply {
-            addServices(ServiceDescription().apply { name = _name; type = _type })
-        })}.isNotEmpty())
-
     @Test fun infoRequestReturnsEmptyListIfNoOrderHasBeenMade() = agent.run {
         sendRequest("info('', '')")
         val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
-        Assert.assertEquals(result.content, "[]")
+        Assert.assertEquals("[]", result.content)
     }
 
     @Test fun orderWithNoItemsIsIgnored() = proxy().agent.run {
@@ -44,16 +36,16 @@ class OrderManagerTest {
         agent.sendRequest("order('x', 'y', 'z')[item, i]")
         val result = agent.blockingReceive(waitingTime)
         Assert.assertNotNull(result)
-        Assert.assertEquals(result.performative, CONFIRM)
-        Assert.assertEquals(result.content, "order(client('x'), 'y', 'z')[item, i]")
+        Assert.assertEquals(CONFIRM, result.performative)
+        Assert.assertEquals("order(client('x'), 'y', 'z')[item, i]", result.content)
     }
 
     private fun proxy(): TestProxy<Agent> = proxy("tester.asl.order_manager.OrderManagerTest")
 
+    private fun orderManagerAID(): AID = start(agent, "order_manager", MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id)
+
     private fun Agent.sendRequest(content: String) = send(ACLMessage().also {
-        it.addReceiver(DFService.search(this, DFAgentDescription().apply {
-            addServices(ServiceDescription().apply { name = _name; type = _type })
-        }).first().name)
+        it.addReceiver(orderManagerAID())
         it.performative = REQUEST
         it.content = content
     })
