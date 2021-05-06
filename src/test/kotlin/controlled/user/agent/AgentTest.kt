@@ -2,8 +2,8 @@ package controlled.user.agent
 
 import controller.user.agent.Agent as UserAgent
 import controller.user.agent.Proxy
-import common.TestAgents.proxy
-import common.TestAgents.register
+import common.JADEAgents.proxy
+import common.JADEAgents.register
 import common.ontology.Services.ServiceSupplier.*
 import common.ontology.Services.ServiceType.*
 import common.ontology.dsl.abstraction.Address.address

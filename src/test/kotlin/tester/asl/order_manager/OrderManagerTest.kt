@@ -1,8 +1,8 @@
 package tester.asl.order_manager
 
 import common.ASLAgents.start
-import common.TestAgents.TestProxy
-import common.TestAgents.proxy
+import common.JADEAgents.TestProxy
+import common.JADEAgents.proxy
 import common.ontology.Services.ServiceSupplier.*
 import common.ontology.Services.ServiceType.*
 import jade.core.AID

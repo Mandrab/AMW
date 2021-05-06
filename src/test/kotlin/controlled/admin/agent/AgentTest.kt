@@ -2,8 +2,8 @@ package controlled.admin.agent
 
 import controller.admin.agent.Agent as AdminAgent
 import controller.admin.agent.Proxy
-import common.TestAgents.proxy
-import common.TestAgents.register
+import common.JADEAgents.proxy
+import common.JADEAgents.register
 import common.ontology.Services.ServiceSupplier.*
 import common.ontology.Services.ServiceType.*
 import common.ontology.dsl.abstraction.ID.id

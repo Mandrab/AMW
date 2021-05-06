@@ -1,7 +1,7 @@
 package controlled.agent.communication
 
 import controller.agent.Communicator
-import common.TestAgents.TestProxy
+import common.JADEAgents.TestProxy
 
 class Communicator: Communicator() {
 

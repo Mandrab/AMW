@@ -9,7 +9,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription
 import java.util.concurrent.Semaphore
 import kotlin.random.Random
 
-object TestAgents {
+object JADEAgents {
 
     /** Monitor proxy to communicate with the agent */
     class TestProxy<T: Agent> {
@@ -26,7 +26,7 @@ object TestAgents {
             }
     }
 
-    fun proxy(name: String, _class: String = TestAgent().javaClass.canonicalName) = TestProxy<Agent>().apply {
+    fun proxy(name: String, _class: String = JADEAgent().javaClass.canonicalName) = TestProxy<Agent>().apply {
         Runtime.instance()
             .createAgentContainer(ProfileImpl())
             .createNewAgent(name + Random.nextDouble(), _class, arrayOf(this))

@@ -1,7 +1,7 @@
 package controlled.agent.communication
 
-import common.TestAgents.proxy
-import common.TestAgents.register
+import common.JADEAgents.proxy
+import common.JADEAgents.register
 import controller.agent.Agents.cyclicBehaviour
 import jade.lang.acl.ACLMessage
 import org.junit.Assert
