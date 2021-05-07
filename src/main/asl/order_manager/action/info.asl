@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////// ORDER INFO //////////////////////////////////////////////////////
 
 +!kqml_received(Sender, achieve, info(Client, Email), MID)
-    <-  .println("required orders info");
-        .findall(order(ID, S), order(ID, S, user(Client, _, Email)), L);
+    <-  .println("[ORDER MANAGER] required orders info")
+        .findall(order(ID, S), order(ID, S, user(Client, Email, _)), L)
         .send(Sender, tell, L, MID).
