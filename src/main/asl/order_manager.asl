@@ -24,3 +24,5 @@
     <-  .df_register("management(orders)", "accept(order)");
         .df_register("management(orders)", "info(orders)");
         +set.                                                       // register service as order acceptor
+
+-!kqml_received(Sender, _, O, MsgID) <- .send(Sender, failure, O, MsgID).   // send failure but not cache response
