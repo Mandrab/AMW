@@ -6,6 +6,7 @@ import jade.domain.DFService
 import jade.domain.FIPAAgentManagement.DFAgentDescription
 import jade.domain.FIPAAgentManagement.ServiceDescription
 import jade.lang.acl.ACLMessage
+import jason.asSyntax.Literal
 
 class JADEAgent: Agent() {
     override fun setup() {
@@ -22,6 +23,9 @@ class JADEAgent: Agent() {
     }
 
     fun deregister() = DFService.deregister(this, defaultDF)
+
+    fun sendRequest(message: Literal, receiver: AID, performative: Int = ACLMessage.REQUEST) =
+        sendRequest(message.toString(), receiver, performative)
 
     fun sendRequest(message: String, receiver: AID, performative: Int = ACLMessage.REQUEST) =
         send(ACLMessage(performative).apply {
