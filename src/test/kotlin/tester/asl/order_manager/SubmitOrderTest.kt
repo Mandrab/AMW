@@ -65,7 +65,7 @@ class SubmitOrderTest: Framework() {
         warehouse.deregister()
 
         Assert.assertNotNull(result)
-        Assert.assertEquals(INFORM, result.performative)
+        Assert.assertEquals(INFORM_REF, result.performative)
         Assert.assertEquals(
             """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""",
             result.content

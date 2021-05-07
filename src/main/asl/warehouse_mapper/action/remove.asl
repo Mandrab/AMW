@@ -16,14 +16,14 @@
         .send(S, failure, remove(Item), MID).
 
 @removeItems[atomic]
-+!kqml_received(S, achieve, remove(items)[H|T], MID)
++!kqml_received(S, evaluate, remove(items)[H|T], MID)
     <-  .println("required items remotion");
         !are_sufficient([H|T]);
         !remove_all([H|T], [OH|OT]);
         +cache(MID, confirm, remove(items)[OH|OT]);
         .send(S, confirm, remove(items)[OH|OT], MID).
 
--!kqml_received(S, achieve, remove(items)[H|T], MID)
+-!kqml_received(S, evaluate, remove(items)[H|T], MID)
     <-  .println("failure in items remotion");
         +cache(MID, failure, remove(items)[H|T]);
         .send(S, failure, remove(items)[H|T], MID).

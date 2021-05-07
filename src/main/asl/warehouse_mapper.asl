@@ -2,10 +2,10 @@
  Pre-Processing Directives
  **********************************************************************************************************************/
 
-{ include("state/warehouse.asl") }                                  // initial state of the warehouse
-{ include("action/add.asl") }                                       // plans for items addition
-{ include("action/info.asl") }                                      // info of the warehouse
-{ include("action/remove.asl") }                                    // plans for items removal
+{ include("warehouse_mapper/state/warehouse.asl") }                 // initial state of the warehouse
+{ include("warehouse_mapper/action/add.asl") }                      // plans for items addition
+{ include("warehouse_mapper/action/info.asl") }                     // info of the warehouse
+{ include("warehouse_mapper/action/remove.asl") }                   // plans for items removal
 
 /***********************************************************************************************************************
  Initial goals
