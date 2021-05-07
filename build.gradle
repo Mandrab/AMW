@@ -245,7 +245,7 @@ task start_system(type: DefaultTask) {
 }
 
 /** Tests run depends on complete start of the system */
-//test.dependsOn start_system
+test.dependsOn MAIN_CONTAINER.start.background.container
 
 /**************************************************************************************************
  * UTILITY FUNCTIONS & CLASSES
