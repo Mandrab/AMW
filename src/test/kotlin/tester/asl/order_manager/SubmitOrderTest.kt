@@ -48,6 +48,26 @@ class SubmitOrderTest: Framework() {
         Assert.assertEquals(FAILURE, result.performative)
     }
 
+    @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = oneshotAgent {
+        register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
+        aid.let {
+            println(it)
+            oneshotAgent { sendRequest(
+                order(client("x"), email("y"), address("z"))[
+                        item(id("a"), quantity(1)),
+                        item(id("b"), quantity(2))
+                ].term(), start("order_manager").aid
+            ) }
+        }
+        val result = blockingReceive(waitingTime)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(REQUEST, result.performative)
+        Assert.assertEquals(
+            """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""",
+            result.content
+        )
+    }
+
     @Test fun submittedOrderShouldBeConfirmedIfRequiredAgentExists() = oneshotAgent {
         register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)   // act as WarehouseMapper: OrderManager reject orders without it
         oneshotAgent {

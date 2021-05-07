@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////// ORDER RECEPTION ////////////////////////////////////////////////////
 
 +!kqml_received(Sender, achieve, order(C, E, A)[H|T], MsgID)
-	<-  .println("[ORDER MANAGER] request for a new order")
+	<-  .println("[ORDER MANAGER] request for a new order");
 	    !new_ID(order, OID);                                        // generate an id for the order
 		+order(id(OID), status(check), user(C, E, A))[H|T];         // save order's info (status=checking for validity)
-		!random_agent("management(items)", "remove(item)", A2);     // find a warehouse manager agent
-        .send(A2, achieve, remove(items)[H|T], OID);                // ask for items reservation and positions
+		!random_agent("management(items)", "remove(item)", W);      // find a warehouse manager agent
+        .send(W, achieve, remove(items)[H|T], OID);                 // ask for items reservation and positions
         +cache(MsgID, confirm, order(C, E, A)[H|T]);
         .send(Sender, confirm, order(C, E, A)[H|T], OID).
 
