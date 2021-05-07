@@ -6,7 +6,7 @@ import java.util.concurrent.Semaphore
 class ASLAgent: JadeAgArch() {
 
     override fun setup() {
-        val monitor = arguments[1] as AIDMonitor
+        val monitor = arguments.first { it is AIDMonitor } as AIDMonitor
         monitor.agent = this
         super.setup()
     }

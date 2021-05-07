@@ -11,6 +11,7 @@ import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import controller.agent.communication.translation.out.OperationTerms.term
+import jade.lang.acl.ACLMessage.INFORM
 import org.junit.Test
 import org.junit.Assert
 
@@ -32,6 +33,7 @@ class InfoOrderTest: Framework() {
         )
         val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
+        Assert.assertEquals(INFORM, result.performative)
         Assert.assertEquals("[]", result.content)
     }
 
