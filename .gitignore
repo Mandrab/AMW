@@ -16,6 +16,7 @@ target
 ### Files
 ###################################################################################################
 
+**/TODO
 **/APDescription.txt
 **/MTPs-Main-Container.txt
 
@@ -26,5 +27,6 @@ target
 **/*.log
 **/*.out
 **/*.pdf
+**/*.png
 **/*.synctex.gz
 **/*.toc
