@@ -1,10 +1,33 @@
 package common
 
+import jade.core.AID
 import jade.core.Agent
+import jade.domain.DFService
+import jade.domain.FIPAAgentManagement.DFAgentDescription
+import jade.domain.FIPAAgentManagement.ServiceDescription
+import jade.lang.acl.ACLMessage
 
 class JADEAgent: Agent() {
     override fun setup() {
         super.setup()
-        (arguments[0] as JADEAgents.TestProxy<JADEAgent>).agent = this
+        (arguments[0] as JADEProxy<JADEAgent>).agent = this
     }
+
+    fun register(_name: String, vararg types: String) = this.apply {
+        DFService.register(this, defaultDF, DFAgentDescription().apply {
+            types.map {
+                addServices(ServiceDescription().apply { name = _name; type = it })
+            }
+        })
+    }
+
+    fun deregister() = DFService.deregister(this, defaultDF)
+
+    fun sendRequest(message: String, receiver: AID, performative: Int = ACLMessage.REQUEST) =
+        send(ACLMessage(performative).apply {
+            addReceiver(receiver)
+            content = message
+        })
+
+    operator fun invoke(action: JADEAgent.() -> Unit) = run(action)
 }
