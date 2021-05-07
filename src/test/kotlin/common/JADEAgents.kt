@@ -3,7 +3,6 @@ package common
 import jade.core.Agent
 import jade.core.ProfileImpl
 import jade.core.Runtime
-import java.util.concurrent.Semaphore
 import kotlin.random.Random
 
 object JADEAgents {

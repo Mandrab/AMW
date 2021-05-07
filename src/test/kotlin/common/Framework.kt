@@ -19,13 +19,18 @@ abstract class Framework {
 
     fun <T: Agent>agent(cls: Class<T>) = agent(Random.nextDouble().toString(), cls)
 
-    fun <T: Agent>agent(name: String, cls: Class<T>) = proxy(name, cls).agent.apply(agents::add)
+    fun <T: Agent>agent(name: String, cls: Class<T>): T = when(cls) {
+        ASLAgent::javaClass -> ASLAgents.start(name) as T
+        else -> proxy(name, cls).agent.apply(agents::add)
+    }
 
     fun oneshotAgent(action: JADEAgent.() -> Unit) = oneshotAgent(JADEAgent::class.java, action)
 
     fun <T: Agent>oneshotAgent(cls: Class<T>, action: T.() -> Unit) =
         oneshotAgent(Random.nextDouble().toString(), cls, action)
 
-    fun <T: Agent>oneshotAgent(name: String, cls: Class<T>, action: T.() -> Unit) =
-        proxy(name, cls).agent.apply(action).doDelete()
+    fun <T: Agent>oneshotAgent(name: String, cls: Class<T>, action: T.() -> Unit) = when(cls) {
+        ASLAgent::javaClass -> ASLAgents.start(name).apply { action(this as T) }.doDelete()
+        else -> proxy(name, cls).agent.apply(action).doDelete()
+    }
 }

@@ -28,7 +28,7 @@ class InfoOrderTest: Framework() {
     @Test fun infoRequestReturnsEmptyListIfNoOrderHasBeenMade() = agent {
         sendRequest(
             info(client("a"), email("b")).term(),
-            start("order_manager")
+            start("order_manager").aid
         )
         val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
@@ -40,15 +40,15 @@ class InfoOrderTest: Framework() {
             sendRequest(
                 order(client("x"), email("y"), address("z"))[
                         item(id("a"), quantity(2))
-                ].term(), it
+                ].term(), it.aid
             )
             sendRequest(
                 order(client("x"), email("y"), address("z"))[
                         item(id("a"), quantity(2))
-                ].term(), it
+                ].term(), it.aid
             )
             sendRequest(
-                info(client("x"), email("y")).term(), it
+                info(client("x"), email("y")).term(), it.aid
             )
         }
         val result = blockingReceive(waitingTime)

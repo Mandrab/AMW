@@ -1,9 +1,7 @@
 package controlled.admin.agent
 
+import common.Framework
 import controller.admin.agent.Agent as AdminAgent
-import controller.admin.agent.Proxy
-import common.JADEAgents.proxy
-import common.JADEAgents.register
 import common.ontology.Services.ServiceSupplier.*
 import common.ontology.Services.ServiceType.*
 import common.ontology.dsl.abstraction.ID.id
@@ -12,7 +10,6 @@ import common.ontology.dsl.abstraction.Position.position
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Shelf.shelf
-import controller.agent.Agents
 import jade.lang.acl.ACLMessage.REQUEST
 import org.junit.Assert
 import org.junit.Test
@@ -25,14 +22,12 @@ import kotlin.random.Random
  *
  * @author Paolo Baldini
  */
-class AgentTest {
+class AgentTest: Framework() {
     private val receiveWaitingTime = 1000L
 
-    private val adminAgent = Proxy().apply { Agents.start(false)(listOf(this).toTypedArray())(AdminAgent::class.java) }
-    private val commandManager = proxy(agentName()).agent.apply { register(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id) }
-    private val warehouseMapper = proxy(agentName()).agent.apply {
-        register(MANAGEMENT_ITEMS.id, STORE_ITEM.id, REMOVE_ITEM.id, INFO_WAREHOUSE.id)
-    }
+    private val adminAgent = agent(AdminAgent::class.java)
+    private val commandManager = agent().register(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id)
+    private val warehouseMapper = agent().register(MANAGEMENT_ITEMS.id, STORE_ITEM.id,REMOVE_ITEM.id,INFO_WAREHOUSE.id)
 
     @Test fun addCommandShouldSendRequestToCommandManager() {
         adminAgent.addCommand()
@@ -92,6 +87,4 @@ class AgentTest {
         Assert.assertEquals(REQUEST, result.performative)
         Assert.assertEquals("""info(warehouse)""", result.contentObject.toString())
     }
-
-    private fun agentName() = "agent" + Random.nextDouble()
 }

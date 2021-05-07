@@ -1,30 +1,27 @@
 package controlled.agent.communication
 
-import common.JADEAgents.proxy
-import common.JADEAgents.register
+import common.Framework
 import controller.agent.Agents.cyclicBehaviour
 import jade.lang.acl.ACLMessage
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * Test class for communicator abstract agent
  *
  * @author Paolo Baldini
  */
-class CommunicatorTest {
+class CommunicatorTest: Framework() {
     private val receiveWaitingTime = 1000L
     private val retryWaitingTime = 5000L
 
-    private val communicatorName = "communicator-name" + Random.nextDouble()
-    private val receiverName = "receiver-name" + Random.nextDouble()
+    private val receiverName = "receiver-name"
     private val receiverType = "receiver-type"
 
-    private val communicator = proxy(communicatorName, Communicator().javaClass.canonicalName).agent as Communicator
-    private val receiver = proxy(receiverName).agent.apply { register(receiverName, receiverType) }
+    private val communicator = agent(Communicator::class.java)
+    private val receiver = agent().register(receiverName, receiverType)
 
     @Test fun sendMessageShouldEffectivelyDeliverIt() {
         communicator.sendMessage(message())

@@ -1,6 +1,5 @@
 package common
 
-import jade.core.AID
 import jade.core.ProfileImpl
 import jade.core.Runtime
 import jade.util.ExtendedProperties
@@ -11,7 +10,7 @@ import kotlin.random.Random
 object ASLAgents {
     private val agents = HashMap<String, AgentController>()
 
-    fun start(agentName: String): AID = agentName.unique().let { name ->
+    fun start(agentName: String): ASLAgent = agentName.unique().let { name ->
         val monitor = ASLAgent.AIDMonitor()                                 // to get the agent aid
 
         val props = ExtendedProperties()                                    // define container properties
@@ -28,7 +27,7 @@ object ASLAgents {
             ).apply { start() }
         }
 
-        return monitor.aid
+        return monitor.agent
     }
 
     fun killAll() = agents.forEach { it.value.kill() }

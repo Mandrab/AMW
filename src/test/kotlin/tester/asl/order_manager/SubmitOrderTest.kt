@@ -29,7 +29,10 @@ class SubmitOrderTest: Framework() {
     @Test fun testerIsRegistering() = Assert.assertNotNull(agent)
 
     @Test fun orderWithNoItemsIsIgnored() = oneshotAgent {
-        sendRequest(order(client("x"), email("y"), address("z")).term(), orderManagerAID())
+        sendRequest(
+            order(client("x"), email("y"), address("z")).term(),
+            start("order_manager").aid
+        )
         Assert.assertNull(blockingReceive(waitingTime))
     }
 
@@ -38,7 +41,7 @@ class SubmitOrderTest: Framework() {
             order(client("x"), email("y"), address("z"))[
                     item(id("a"), quantity(2))
             ].term(),
-            orderManagerAID()
+            start("order_manager").aid
         )
         val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
@@ -51,7 +54,7 @@ class SubmitOrderTest: Framework() {
             val message = order(client("x"), email("y"), address("z"))[
                     item(id("a"), quantity(2))
             ].term().toString()
-            sendRequest(message, orderManagerAID())
+            sendRequest(message, start("order_manager").aid)
             val result = blockingReceive(waitingTime)
             Assert.assertNotNull(result)
             Assert.assertEquals(CONFIRM, result.performative)
@@ -59,6 +62,4 @@ class SubmitOrderTest: Framework() {
         }
         deregister()
     }
-
-    private fun orderManagerAID(): AID = start("order_manager")
 }
