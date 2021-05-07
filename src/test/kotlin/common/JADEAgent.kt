@@ -11,7 +11,8 @@ import jason.asSyntax.Literal
 class JADEAgent: Agent() {
     override fun setup() {
         super.setup()
-        (arguments[0] as JADEProxy<JADEAgent>).agent = this
+        @Suppress("UNCHECKED_CAST")
+        (arguments[0] as JADEProxy<JADEAgent>).setAgent(this)
     }
 
     fun register(_name: String, vararg types: String) = this.apply {

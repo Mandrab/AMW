@@ -5,13 +5,13 @@ import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.User.User
 import common.ontology.dsl.operation.Order.InfoOrder
+import controller.agent.AgentProxy
 import controller.agent.Communicator
 import controller.agent.communication.translation.`in`.Services.InfoWarehouse as InfoWarehouseIn
 import controller.agent.communication.translation.out.Services.InfoWarehouse as InfoWarehouseOut
 import controller.agent.communication.translation.`in`.Services.InfoOrders as InfoOrdersIn
 import controller.agent.communication.translation.out.Services.InfoOrders as InfoOrdersOut
 import controller.agent.communication.translation.out.Services.AcceptOrder
-import controller.user.agent.Proxy.Proxy
 import java.util.concurrent.Future
 
 /**
@@ -25,7 +25,8 @@ class Agent: Communicator() {
 
     override fun setup() {
         super.setup()
-        (arguments[0] as Proxy).setAgent(this)
+        @Suppress("UNCHECKED_CAST")
+        (arguments[0] as AgentProxy<Agent>).setAgent(this)
     }
 
     fun shutdown() = takeDown()

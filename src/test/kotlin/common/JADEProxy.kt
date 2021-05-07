@@ -1,5 +1,6 @@
 package common
 
+import controller.agent.AgentProxy
 import jade.core.Agent
 import java.util.concurrent.Semaphore
 
@@ -8,16 +9,24 @@ import java.util.concurrent.Semaphore
  *
  * @author Paolo Baldini
  */
-class JADEProxy<T: Agent> {
+class JADEProxy<T: Agent>: AgentProxy<T> {
     private val semaphore = Semaphore(0)
     private var _agent: T? = null
-    var agent: T
-        get() {
-            semaphore.acquire()
-            return _agent!!
-        }
-        set(value) {
-            _agent = value
-            semaphore.release(Int.MAX_VALUE)
-        }
+
+    fun getAgent(): T {
+        semaphore.acquire()
+        return _agent!!
+    }
+
+    override fun setAgent(agent: T) {
+        _agent = agent
+        semaphore.release(Int.MAX_VALUE)
+    }
+
+    override fun isAvailable(): Boolean { return semaphore.availablePermits() > 0 }
+
+    override fun shutdown() {
+        semaphore.acquire()
+        _agent!!.doDelete()
+    }
 }

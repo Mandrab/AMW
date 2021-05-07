@@ -21,7 +21,7 @@ abstract class Framework {
 
     fun <T: Agent>agent(name: String, cls: Class<T>): T = when(cls) {
         ASLAgent::javaClass -> ASLAgents.start(name) as T
-        else -> proxy(name, cls).agent.apply(agents::add)
+        else -> proxy(name, cls).getAgent().apply(agents::add)
     }
 
     fun oneshotAgent(action: JADEAgent.() -> Unit) = oneshotAgent(JADEAgent::class.java, action)
@@ -30,7 +30,7 @@ abstract class Framework {
         oneshotAgent(Random.nextDouble().toString(), cls, action)
 
     fun <T: Agent>oneshotAgent(name: String, cls: Class<T>, action: T.() -> Unit) = when(cls) {
-        ASLAgent::javaClass -> ASLAgents.start(name).apply { action(this as T) }.doDelete()
-        else -> proxy(name, cls).agent.apply(action).doDelete()
+        ASLAgent::javaClass -> ASLAgents.start(name).apply { @Suppress("UNCHECKED_CAST") action(this as T) }.doDelete()
+        else -> proxy(name, cls).getAgent().apply(action).doDelete()
     }
 }

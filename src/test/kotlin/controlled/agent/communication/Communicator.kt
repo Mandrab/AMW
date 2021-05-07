@@ -7,6 +7,7 @@ class Communicator: Communicator() {
 
     override fun setup() {
         super.setup()
-        (arguments[0] as JADEProxy<Communicator>).agent = this
+        @Suppress("UNCHECKED_CAST")
+        (arguments[0] as JADEProxy<Communicator>).setAgent(this)
     }
 }

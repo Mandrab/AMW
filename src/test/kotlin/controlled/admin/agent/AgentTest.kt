@@ -13,7 +13,6 @@ import common.ontology.dsl.abstraction.Shelf.shelf
 import jade.lang.acl.ACLMessage.REQUEST
 import org.junit.Assert
 import org.junit.Test
-import kotlin.random.Random
 
 /**
  * Test class for admin agent

@@ -3,7 +3,7 @@ package controller.admin.agent
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
-import controller.admin.agent.Proxy.Proxy
+import controller.agent.AgentProxy
 import controller.agent.Communicator
 import controller.agent.communication.translation.`in`.Services.InfoWarehouse as InfoWarehouseIn
 import controller.agent.communication.translation.out.Services.InfoWarehouse as InfoWarehouseOut
@@ -22,7 +22,8 @@ class Agent: Communicator() {
 
     override fun setup() {
         super.setup()
-        (arguments[0] as Proxy).setAgent(this)
+        @Suppress("UNCHECKED_CAST")
+        (arguments[0] as AgentProxy<Agent>).setAgent(this)
     }
 
     fun shutdown() = super.takeDown()
