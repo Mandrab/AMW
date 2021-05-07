@@ -46,7 +46,8 @@ class InfoOrderTest: Framework() {
             )
             sendRequest(
                 order(client("x"), email("y"), address("z"))[
-                        item(id("a"), quantity(2))
+                        item(id("a"), quantity(2)),
+                        item(id("b"), quantity(2))
                 ].term(), it.aid
             )
             sendRequest(
@@ -55,6 +56,7 @@ class InfoOrderTest: Framework() {
         }
         val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
+        Assert.assertEquals(INFORM, result.performative)
         Assert.assertEquals("[order(id(odr2),status(check)),order(id(odr1),status(check))]", result.content)
     }
 }

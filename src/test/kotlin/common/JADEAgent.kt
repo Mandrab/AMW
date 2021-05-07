@@ -7,6 +7,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription
 import jade.domain.FIPAAgentManagement.ServiceDescription
 import jade.lang.acl.ACLMessage
 import jason.asSyntax.Literal
+import kotlin.random.Random
 
 class JADEAgent: Agent() {
     override fun setup() {
@@ -26,13 +27,14 @@ class JADEAgent: Agent() {
     fun deregister() = DFService.deregister(this, defaultDF)
 
     fun sendRequest(message: Literal, receiver: AID, performative: Int = ACLMessage.REQUEST) =
-        sendRequest(message.toString(), receiver, performative)
+        apply { sendRequest(message.toString(), receiver, performative) }
 
     fun sendRequest(message: String, receiver: AID, performative: Int = ACLMessage.REQUEST) =
-        send(ACLMessage(performative).apply {
+        apply { send(ACLMessage(performative).apply {
             addReceiver(receiver)
             content = message
-        })
+            replyWith = Random.nextDouble().toString()
+        }) }
 
     operator fun invoke(action: JADEAgent.() -> Unit) = run(action)
 }

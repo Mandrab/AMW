@@ -15,7 +15,7 @@ class ASLAgent: JadeAgArch() {
 
     class AIDMonitor {
         private val semaphore: Semaphore = Semaphore(0)
-        private var _agent: ASLAgent = ASLAgent()
+        private lateinit var _agent: ASLAgent
         var agent: ASLAgent
             get() {
                 semaphore.acquire()

@@ -4,6 +4,7 @@ import jade.core.ProfileImpl
 import jade.core.Runtime
 import jade.util.ExtendedProperties
 import jade.wrapper.AgentController
+import utility.ExceptionWrapper.ensure
 import kotlin.collections.HashMap
 import kotlin.random.Random
 
@@ -17,7 +18,9 @@ object ASLAgents {
         props["main"] = "false"                                             // it is not the main jade container
 
         // start the agent
-        agents[agentName] ?.kill()
+        ensure {
+            agents[agentName] ?.kill()
+        }
         agents[agentName] = Runtime.instance().run {
             setCloseVM(true)
             createAgentContainer(ProfileImpl(props)).createNewAgent(
