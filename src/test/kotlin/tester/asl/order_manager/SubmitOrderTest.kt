@@ -12,11 +12,15 @@ import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
+import controller.agent.Agents.oneShotBehaviour
 import controller.agent.communication.translation.out.OperationTerms.term
+import jade.core.AID
 import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
 import org.junit.Assert
+import org.junit.Assert.fail
+import java.util.concurrent.Semaphore
 
 /**
  * Test class for OrderManager's accept order request
@@ -29,6 +33,10 @@ import org.junit.Assert
  */
 class SubmitOrderTest: Framework() {
     private val waitingTime = 500L
+    private val defaultOrder = order(client("x"), email("y"), address("z"))[
+            item(id("a"), quantity(1)),
+            item(id("b"), quantity(2))
+    ].term()
 
     @Test fun testerIsRegistering() = oneshotAgent(Assert::assertNotNull)
 
@@ -42,27 +50,13 @@ class SubmitOrderTest: Framework() {
     }
 
     @Test fun submittedOrderRequestShouldFailIfNoWarehouseAgentExists() = test {
-        val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
-
-        val result = agent().sendRequest(
-            order(client("x"), email("y"), address("z"))[
-                    item(id("a"), quantity(2))
-            ].term(), orderManagerAID
-        ).blockingReceive(waitingTime)
-
-        assert(result, FAILURE, """order(client("x"),email("y"),address("z"))[item(id("a"),quantity(2))]""")
+        val result = orderRequest().blockingReceive(waitingTime)
+        assert(result, FAILURE, defaultOrder)
     }
 
     @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = test {
         val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
-        val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
-
-        agent().sendRequest(
-            order(client("x"), email("y"), address("z"))[
-                    item(id("a"), quantity(1)),
-                    item(id("b"), quantity(2))
-            ].term(), orderManagerAID
-        ).blockingReceive(waitingTime)
+        orderRequest().blockingReceive(waitingTime)
 
         val result = warehouse.blockingReceive(waitingTime)
         warehouse.deregister()
@@ -72,38 +66,21 @@ class SubmitOrderTest: Framework() {
 
     @Test fun submittedOrderReceptionShouldBeConfirmedIfRequiredAgentExists() = test {
         val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
-        val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
-
-        val result = agent().sendRequest(
-            order(client("x"), email("y"), address("z"))[
-                    item(id("a"), quantity(2))
-            ].term(), orderManagerAID).blockingReceive(waitingTime)
+        val result = orderRequest().blockingReceive(waitingTime)
         warehouse.deregister()
 
-        assert(result, CONFIRM, """order(client("x"),email("y"),address("z"))[item(id("a"),quantity(2))]""")
+        assert(result, CONFIRM, defaultOrder)
     }
 
     @Test fun orderCanBeRefusedIfTheWarehouseHasNotTheItems() = test {
         val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
-        val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
-        val client = agent()
 
-        client.sendRequest(
-            order(client("x"), email("y"), address("z"))[
-                    item(id("a"), quantity(1)),
-                    item(id("b"), quantity(2))
-            ].term(), orderManagerAID
-        ).blockingReceive(waitingTime)
+        val received = warehouseResponse(false)
+        val client = orderRequest(orderManagerAID)
+        client.blockingReceive(waitingTime)
+        received.acquire(waitingTime.toInt())
 
-        var result = warehouse.blockingReceive(waitingTime)
-        warehouse.send(ACLMessage(FAILURE).apply {
-            addReceiver(result.sender)
-            content = result.content
-            replyWith = result.inReplyTo
-        })
-        warehouse.deregister()
-
-        result = client.sendRequest(
+        val result = client.sendRequest(
             info(client("x"), email("y")).term(), orderManagerAID
         ).blockingReceive(waitingTime)
 
@@ -112,28 +89,41 @@ class SubmitOrderTest: Framework() {
 
     @Test fun orderGetStatusRetrievingIfTheWarehouseHasTheItems() = test {
         val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
-        val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
-        val client = agent()
 
-        client.sendRequest(
-            order(client("x"), email("y"), address("z"))[
-                    item(id("a"), quantity(1)),
-                    item(id("b"), quantity(2))
-            ].term(), orderManagerAID
-        ).blockingReceive(waitingTime)
+        val received = warehouseResponse(true)
+        val client = orderRequest(orderManagerAID)
+        client.blockingReceive(waitingTime)
+        received.acquire(waitingTime.toInt())
 
-        var result = warehouse.blockingReceive(waitingTime)
-        warehouse.send(ACLMessage(CONFIRM).apply {
-            addReceiver(result.sender)
-            content = result.content
-            replyWith = result.inReplyTo
-        })
-        warehouse.deregister()
-
-        result = client.sendRequest(
+        val result = client.sendRequest(
             info(client("x"), email("y")).term(), orderManagerAID
         ).blockingReceive(waitingTime)
 
         assert(result, INFORM, "[order(id(odr1),status(retrieve))]")
+    }
+
+    private fun orderRequest(
+        aid: AID = agent("order_manager", ASLAgent::class.java).aid
+    ) = agent().apply {
+        sendRequest(
+            order(client("x"), email("y"), address("z"))[
+                    item(id("a"), quantity(1)),
+                    item(id("b"), quantity(2))
+            ].term(), aid
+        )
+    }
+
+    private fun warehouseResponse(confirmOrder: Boolean) = Semaphore(0).apply {
+        val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
+        warehouse.addBehaviour(oneShotBehaviour {
+            val result = warehouse.blockingReceive(waitingTime)
+            warehouse.send(ACLMessage(if (confirmOrder) CONFIRM else FAILURE).apply {
+                addReceiver(result.sender)
+                content = result.content
+                replyWith = result.inReplyTo
+            })
+            warehouse.deregister()
+            release(Int.MAX_VALUE)
+        })
     }
 }
