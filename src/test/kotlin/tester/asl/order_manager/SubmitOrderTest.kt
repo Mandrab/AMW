@@ -20,6 +20,10 @@ import org.junit.Assert
 
 /**
  * Test class for OrderManager's accept order request
+ * core tests:
+ *  - orders acceptance (correct and wrong format)
+ *  - lack of required agent(s) in the system
+ *  - lack of items
  *
  * @author Paolo Baldini
  */
@@ -114,5 +118,33 @@ class SubmitOrderTest: Framework() {
 
         Assert.assertNotNull(result)
         Assert.assertEquals("[order(id(odr1),status(refused))]", result.content)
+    }
+
+    @Test fun orderGetStatusRetrievingIfTheWarehouseHasTheItems() = test {
+        val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
+        val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
+        val client = agent()
+
+        client.sendRequest(
+            order(client("x"), email("y"), address("z"))[
+                    item(id("a"), quantity(1)),
+                    item(id("b"), quantity(2))
+            ].term(), orderManagerAID
+        ).blockingReceive(waitingTime)
+
+        var result = warehouse.blockingReceive(waitingTime)
+        warehouse.send(ACLMessage(CONFIRM).apply {
+            addReceiver(result.sender)
+            content = result.content
+            replyWith = result.inReplyTo
+        })
+        warehouse.deregister()
+
+        result = client.sendRequest(
+            info(client("x"), email("y")).term(), orderManagerAID
+        ).blockingReceive(waitingTime)
+
+        Assert.assertNotNull(result)
+        Assert.assertEquals("[order(id(odr1),status(retrieve))]", result.content)
     }
 }
