@@ -50,8 +50,7 @@ class SubmitOrderTest: Framework() {
             ].term(), orderManagerAID
         ).blockingReceive(waitingTime)
 
-        Assert.assertNotNull(result)
-        Assert.assertEquals(FAILURE, result.performative)
+        assert(result, FAILURE, """order(client("x"),email("y"),address("z"))[item(id("a"),quantity(2))]""")
     }
 
     @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = test {
@@ -68,28 +67,20 @@ class SubmitOrderTest: Framework() {
         val result = warehouse.blockingReceive(waitingTime)
         warehouse.deregister()
 
-        Assert.assertNotNull(result)
-        Assert.assertEquals(INFORM_REF, result.performative)
-        Assert.assertEquals(
-            """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""",
-            result.content
-        )
+        assert(result, INFORM_REF, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
     }
 
     @Test fun submittedOrderReceptionShouldBeConfirmedIfRequiredAgentExists() = test {
         val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
         val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
 
-        val message = order(client("x"), email("y"), address("z"))[
-                item(id("a"), quantity(2))
-        ].term().toString()
-
-        val result = agent().sendRequest(message, orderManagerAID).blockingReceive(waitingTime)
+        val result = agent().sendRequest(
+            order(client("x"), email("y"), address("z"))[
+                    item(id("a"), quantity(2))
+            ].term(), orderManagerAID).blockingReceive(waitingTime)
         warehouse.deregister()
 
-        Assert.assertNotNull(result)
-        Assert.assertEquals(CONFIRM, result.performative)
-        Assert.assertEquals(message, result.content)
+        assert(result, CONFIRM, """order(client("x"),email("y"),address("z"))[item(id("a"),quantity(2))]""")
     }
 
     @Test fun orderCanBeRefusedIfTheWarehouseHasNotTheItems() = test {
@@ -116,8 +107,7 @@ class SubmitOrderTest: Framework() {
             info(client("x"), email("y")).term(), orderManagerAID
         ).blockingReceive(waitingTime)
 
-        Assert.assertNotNull(result)
-        Assert.assertEquals("[order(id(odr1),status(refused))]", result.content)
+        assert(result, INFORM, "[order(id(odr1),status(refused))]")
     }
 
     @Test fun orderGetStatusRetrievingIfTheWarehouseHasTheItems() = test {
@@ -144,7 +134,6 @@ class SubmitOrderTest: Framework() {
             info(client("x"), email("y")).term(), orderManagerAID
         ).blockingReceive(waitingTime)
 
-        Assert.assertNotNull(result)
-        Assert.assertEquals("[order(id(odr1),status(retrieve))]", result.content)
+        assert(result, INFORM, "[order(id(odr1),status(retrieve))]")
     }
 }

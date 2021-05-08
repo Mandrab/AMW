@@ -2,7 +2,10 @@ package common
 
 import common.JADEAgents.proxy
 import jade.core.Agent
+import jade.lang.acl.ACLMessage
 import org.junit.AfterClass
+import org.junit.Assert
+import java.util.*
 import kotlin.random.Random
 
 abstract class Framework {
@@ -39,4 +42,11 @@ abstract class Framework {
     }.apply(action).doDelete()
 
     fun test(action: Framework.() -> Unit) = object: Framework() { }.run(action)
+
+    fun assert(message: ACLMessage, performative: Int, content: Any) {
+        Assert.assertNotNull(message)
+        Assert.assertEquals(performative, message.performative)
+        if (content is String) Assert.assertEquals(content, message.content)
+        else Assert.assertEquals(content.toString(), message.content)
+    }
 }
