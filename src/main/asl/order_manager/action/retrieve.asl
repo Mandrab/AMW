@@ -23,8 +23,9 @@
         -order(id(OID), _, U, point(PID));
         +order(id(OID), status(completed), U, point(PID)).
 
-/*
-+!kqml_received(Sender, confirm, retrieve(P, point(PID)), OID).
+// A failure should happen only if the robot is busy.
+// To avoid problems, let's retry until it is available.
 +!kqml_received(Sender, failure, retrieve(P, point(PID)), OID)
-    <-  .
-*/
+    <-  .println("[ORDER MANAGER] robot refused retrieval");
+        .wait(2500);
+        .send(Sender, evaluate, retrieve(P, point(PID)), OID).

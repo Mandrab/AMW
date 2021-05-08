@@ -30,6 +30,8 @@ import java.util.concurrent.Semaphore
  *  - lack of items
  *  - lack and wait for collection point manger
  *  - retrieval requests
+ * TODO:
+ *  - check test missing delivery / network errors
  *
  * @author Paolo Baldini
  */
@@ -197,6 +199,38 @@ class SubmitOrderTest: Framework() {
         Thread.sleep(waitingTime)
 
         assert(getInfo(client, orderManagerAID), INFORM, """[order(id(odr1),status(completed))]""")
+    }
+
+    @Test fun ifRobotPickerIsBusyOrderManagerWaitUntilItIsFree() = test {
+        val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
+        val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
+        val robotPicker = agent().register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
+        val received = warehouseResponse(true)
+        val client = orderRequest(orderManagerAID)
+        client.blockingReceive(waitingTime)
+        received.acquire(waitingTime.toInt())
+        var result = collectionPointManager.blockingReceive(waitingTime)
+        collectionPointManager.send(ACLMessage(CONFIRM).apply {
+            addReceiver(result.sender)
+            content = "point(pid)"
+            replyWith = result.inReplyTo
+        })
+        collectionPointManager.deregister()
+
+        result = robotPicker.blockingReceive(waitingTime)
+        robotPicker.send(ACLMessage(FAILURE).apply {
+            addReceiver(result.sender)
+            content = result.content
+            replyWith = result.inReplyTo
+        })
+        robotPicker.blockingReceive(waitingTime)
+
+        Thread.sleep(3000)
+
+        result = robotPicker.blockingReceive(waitingTime)
+        robotPicker.deregister()
+
+        assert(result, INFORM_REF, """retrieve(item(id("a"),quantity(1)),point(pid))""")
     }
 
     private fun orderRequest(
