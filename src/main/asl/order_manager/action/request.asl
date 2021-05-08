@@ -16,7 +16,7 @@
         -order(id(OID), status(check), U)[_];
         +order(id(OID), status(retrieve), U)[H|T];
         !random_agent("management(items)", "info(collection_points)", A);
-        .send(A, achieve, point, OID).
+        .send(A, evaluate, point, OID).
 
 +!kqml_received(Sender, failure, remove(items)[H|T], OID)
     <-  .println("[ORDER MANAGER] order refused by warehouse");

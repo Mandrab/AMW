@@ -102,6 +102,18 @@ class SubmitOrderTest: Framework() {
         assert(result, INFORM, "[order(id(odr1),status(retrieve))]")
     }
 
+    @Test fun orderInRetrievingCauseRequestToCollectionPointManager() = test {
+        val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
+        val received = warehouseResponse(true)
+        val client = orderRequest()
+        client.blockingReceive(waitingTime)
+        received.acquire(waitingTime.toInt())
+        val result = collectionPointManager.blockingReceive(waitingTime)
+        collectionPointManager.deregister()
+
+        assert(result, INFORM_REF, "point")
+    }
+
     private fun orderRequest(
         aid: AID = agent("order_manager", ASLAgent::class.java).aid
     ) = agent().apply {

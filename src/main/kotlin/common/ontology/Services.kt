@@ -26,6 +26,7 @@ object Services {
         ADD_COMMAND("add(command)"),
         ADD_VERSION("add(version)"),
         INFO_COMMANDS("info(commands)"),
+        INFO_COLLECTION_POINTS("info(collection_points)"),
         INFO_ORDERS("info(orders)"),
         INFO_WAREHOUSE("info(warehouse)"),
         EXEC_COMMAND("exec(command)"),
