@@ -114,6 +114,25 @@ class SubmitOrderTest: Framework() {
         assert(result, INFORM_REF, "point")
     }
 
+    @Test fun refuseFromCollectionPointManagerCauseAnotherRequest() = test {
+        val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
+        val received = warehouseResponse(true)
+        val client = orderRequest()
+        client.blockingReceive(waitingTime)
+        received.acquire(waitingTime.toInt())
+        var result = collectionPointManager.blockingReceive(waitingTime)
+        collectionPointManager.send(ACLMessage(FAILURE).apply {
+            addReceiver(result.sender)
+            content = result.content
+            replyWith = result.inReplyTo
+        })
+        Thread.sleep(3000)                                      // wait time in orderManager
+        result = collectionPointManager.blockingReceive(waitingTime)
+        collectionPointManager.deregister()
+
+        assert(result, INFORM_REF, "point")
+    }
+
     private fun orderRequest(
         aid: AID = agent("order_manager", ASLAgent::class.java).aid
     ) = agent().apply {

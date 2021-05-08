@@ -31,7 +31,7 @@
         +order(id(OID), status(retrieve), U, point(PID))[H|T];
         !retrieve_items(OID, [H|T], PID).
 
-+!kqml_received(Sender, failure, remove(items)[H|T], OID)
++!kqml_received(Sender, failure, point, OID)
     <-  .println("[ORDER MANAGER] collection point refused");
         .wait(2500);
-        .send(Sender, achieve, point, OID).
+        .send(Sender, evaluate, point, OID).
