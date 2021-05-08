@@ -16,12 +16,10 @@ import common.ontology.dsl.operation.Order.order
 import controller.agent.Agents.oneShotBehaviour
 import controller.agent.communication.translation.out.OperationTerms.term
 import jade.core.AID
-import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
 import org.junit.Assert
-import org.junit.Assert.fail
 import java.util.concurrent.Semaphore
 
 /**
@@ -30,6 +28,8 @@ import java.util.concurrent.Semaphore
  *  - orders acceptance (correct and wrong format)
  *  - lack of required agent(s) in the system
  *  - lack of items
+ *  - lack and wait for collection point manger
+ *  - retrieval requests
  *
  * @author Paolo Baldini
  */
@@ -159,7 +159,7 @@ class SubmitOrderTest: Framework() {
         val client = orderRequest(orderManagerAID)
         client.blockingReceive(waitingTime)
         received.acquire(waitingTime.toInt())
-        var result = collectionPointManager.blockingReceive(waitingTime)
+        val result = collectionPointManager.blockingReceive(waitingTime)
         collectionPointManager.send(ACLMessage(CONFIRM).apply {
             addReceiver(result.sender)
             content = "point(pid)"
@@ -167,12 +167,7 @@ class SubmitOrderTest: Framework() {
         })
         collectionPointManager.deregister()
 
-        result = robotPicker.blockingReceive(waitingTime)
-        robotPicker.send(ACLMessage(CONFIRM).apply {
-            addReceiver(result.sender)
-            content = result.content
-            replyWith = result.inReplyTo
-        })
+        robotAcceptRetrieval(robotPicker)
         robotPicker.blockingReceive(waitingTime)
         robotPicker.deregister()
         Thread.sleep(waitingTime)
@@ -180,15 +175,34 @@ class SubmitOrderTest: Framework() {
         assert(getInfo(client, orderManagerAID), INFORM, """[order(id(odr1),status(retrieve))]""")
     }
 
+    @Test fun orderStatusShouldChangeAfterLastElementIsRetrieved() = test {
+        val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
+        val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
+        val robotPicker = agent().register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
+        val received = warehouseResponse(true)
+        val client = orderRequest(orderManagerAID)
+        client.blockingReceive(waitingTime)
+        received.acquire(waitingTime.toInt())
+        val result = collectionPointManager.blockingReceive(waitingTime)
+        collectionPointManager.send(ACLMessage(CONFIRM).apply {
+            addReceiver(result.sender)
+            content = "point(pid)"
+            replyWith = result.inReplyTo
+        })
+        collectionPointManager.deregister()
+
+        robotAcceptRetrieval(robotPicker)
+        robotAcceptRetrieval(robotPicker)
+        robotPicker.deregister()
+        Thread.sleep(waitingTime)
+
+        assert(getInfo(client, orderManagerAID), INFORM, """[order(id(odr1),status(completed))]""")
+    }
+
     private fun orderRequest(
         aid: AID = agent("order_manager", ASLAgent::class.java).aid
     ) = agent().apply {
-        sendRequest(
-            order(client("x"), email("y"), address("z"))[
-                    item(id("a"), quantity(1)),
-                    item(id("b"), quantity(2))
-            ].term(), aid
-        )
+        sendRequest(defaultOrder, aid)
     }
 
     private fun warehouseResponse(confirmOrder: Boolean) = Semaphore(0).apply {
@@ -208,4 +222,13 @@ class SubmitOrderTest: Framework() {
     private fun getInfo(client: JADEAgent, orderManagerAID: AID) = client.sendRequest(
         info(client("x"), email("y")).term(), orderManagerAID
     ).blockingReceive(waitingTime)
+
+    private fun robotAcceptRetrieval(robotPicker: JADEAgent) {
+        val result = robotPicker.blockingReceive(waitingTime)
+        robotPicker.send(ACLMessage(CONFIRM).apply {
+            addReceiver(result.sender)
+            content = result.content
+            replyWith = result.inReplyTo
+        })
+    }
 }

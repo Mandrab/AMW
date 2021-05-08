@@ -10,16 +10,19 @@
 /////////////////////////////////////////////////// ROBOT PICKER's response
 
 +!kqml_received(Sender, confirm, retrieve(P, point(PID)), OID)
-    :   order(id(OID), S, U, point(PID))[P|T]
-    &   .empty(T)
+    :   order(id(OID), S, U, point(PID))[P|L]
+    &   L = [H|T]
+    &   H = item(_, _)
+    <-  .println("[ORDER MANAGER] item retrieved");
+        -order(id(OID), S, U, point(PID));
+        +order(id(OID), S, U, point(PID))[H|T].
+
++!kqml_received(Sender, confirm, retrieve(P, point(PID)), OID)
+    :   order(id(OID), S, U, point(PID))[P]
     <-  .println("[ORDER MANAGER] last item retrieved");
         -order(id(OID), _, U, point(PID));
         +order(id(OID), status(completed), U, point(PID)).
 
-+!kqml_received(Sender, confirm, retrieve(P, point(PID)), OID)
-    <-  .println("[ORDER MANAGER] item retrieved");
-        -order(id(OID), S, U, point(PID))[P|[H|T]];
-        +order(id(OID), S, U, point(PID))[H|T].
 /*
 +!kqml_received(Sender, confirm, retrieve(P, point(PID)), OID).
 +!kqml_received(Sender, failure, retrieve(P, point(PID)), OID)
