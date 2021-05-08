@@ -27,7 +27,7 @@
 
 +!kqml_received(Sender, confirm, point(PID), OID)
     <-  .println("[ORDER MANAGER] collection point confirmed");
-        -order(id(OID), status(check), U)[H|T];
+        -order(id(OID), status(retrieve), U)[H|T];
         +order(id(OID), status(retrieve), U, point(PID))[H|T];
         !retrieve_items(OID, [H|T], PID).
 

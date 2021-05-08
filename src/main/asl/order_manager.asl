@@ -8,6 +8,7 @@
 { include("order_manager/action/id_generator.asl") }
 { include("order_manager/action/info.asl") }
 { include("order_manager/action/request.asl") }
+{ include("order_manager/action/retrieve.asl") }
 
 /***********************************************************************************************************************
  Initial goals

@@ -3,6 +3,10 @@ package common
 import common.JADEAgents.proxy
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
+import org.hamcrest.BaseMatcher
+import org.hamcrest.Description
+import org.hamcrest.Matcher
+import org.hamcrest.StringDescription
 import org.junit.AfterClass
 import org.junit.Assert
 import kotlin.random.Random
