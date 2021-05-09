@@ -32,9 +32,7 @@ class InfoOrderTest: Framework() {
             start("order_manager").aid
         )
         val result = blockingReceive(waitingTime)
-        Assert.assertNotNull(result)
-        Assert.assertEquals(INFORM, result.performative)
-        Assert.assertEquals("[]", result.content)
+        assert(result, INFORM, "[]")
     }
 
     @Test fun infoRequestGivesResultsIfOrdersHasBeenMade() = agent {
@@ -55,8 +53,6 @@ class InfoOrderTest: Framework() {
             )
         }
         val result = blockingReceive(waitingTime)
-        Assert.assertNotNull(result)
-        Assert.assertEquals(INFORM, result.performative)
-        Assert.assertEquals("[order(id(odr2),status(check)),order(id(odr1),status(check))]", result.content)
+        assert(result, INFORM, "[order(id(odr2),status(check)),order(id(odr1),status(check))]")
     }
 }
