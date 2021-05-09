@@ -20,11 +20,10 @@
  Plans
 ***********************************************************************************************************************/
 
-@setup[atomic]
 +!setup : not set
-    <-  .df_register("management(orders)", "accept(order)");
-        .df_register("management(orders)", "info(orders)");
-        +set.                                                       // register service as order acceptor
+    <-  .df_register("management(orders)", "accept(order)");        // register service as order acceptor
+        .df_register("management(orders)", "info(orders)");         // register service as order informant
+        +set.                                                       // set setup-process ended
 
 +!kqml_received(Sender, _, Msg, MsgID)
     <-  .println("[ORDER MANAGER] unknown request");
