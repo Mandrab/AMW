@@ -11,10 +11,11 @@ import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Shelf.shelf
 import common.ontology.dsl.operation.Item.add
 import controller.agent.communication.translation.out.OperationTerms.term
-import jade.lang.acl.ACLMessage.CONFIRM
-import jade.lang.acl.ACLMessage.FAILURE
+import jade.lang.acl.ACLMessage
+import jade.lang.acl.ACLMessage.*
 import org.junit.Test
 import org.junit.Assert
+import kotlin.random.Random
 
 /**
  * Test class for WarehouseMapper's add item request.
@@ -77,5 +78,32 @@ class AddWarehouseTest {
         )
     } }
 
-    //@Test fun itemShouldBeAddedOnlyOnceIfTheMessageIsRecivedAgain()
+    @Test fun itemShouldBeAddedOnlyOnceIfTheMessageIsReceivedAgain() = test { agent()() {
+        val item = item(id("Item 5"), position(rack(3), shelf(1), quantity(3)))
+
+        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
+
+        val message = ACLMessage(REQUEST).apply {
+            addReceiver(warehouseMapperAID)
+            content = add(item).term().toString()
+            replyWith = Random.nextDouble().toString()
+        }
+
+        send(message)
+        val result1 = blockingReceive(waitingTime)
+
+        send(message)
+        val result2 = blockingReceive(waitingTime)
+
+        sendRequest("info(warehouse)", warehouseMapperAID)
+        val result3 = blockingReceive(waitingTime)
+
+        assert(result1, CONFIRM, add(item).term())
+        Assert.assertEquals(result1.performative, result2.performative)
+        Assert.assertEquals(result1.content, result2.content)
+        Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
+        Assert.assertTrue(
+            result3.content.apply { println(this) }.contains("""item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))""")
+        )
+    } }
 }
