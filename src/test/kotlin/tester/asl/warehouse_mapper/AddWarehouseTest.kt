@@ -16,24 +16,52 @@ import org.junit.Test
 import org.junit.Assert
 
 /**
- * Test class for WarehouseMapper's add item request
+ * Test class for WarehouseMapper's add item request.
+ * Those tests assume a knowledge about the initial state of the warehouse.
  *
  * @author Paolo Baldini
  */
 class AddWarehouseTest {
-    private val item = add(item(id("Item 999"), position(rack(999), shelf(999), quantity(999)))).term()
+    private val newItem = item(id("Item 999"), position(rack(999), shelf(999), quantity(999)))
+    private val item = item(id("Item 5"))[
+            position(rack(3), shelf(1), quantity(7)),
+            position(rack(3), shelf(2), quantity(9))
+    ]
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
     @Test fun addItemShouldSucceedIfThePositionIsFree() = test { agent()() {
         val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
-        sendRequest(item, warehouseMapperAID)
 
-        val result = blockingReceive(waitingTime)
-        assert(result, CONFIRM, item)
+        sendRequest(add(newItem).term(), warehouseMapperAID)
+        val result1 = blockingReceive(waitingTime)
+
+        sendRequest("info(warehouse)", warehouseMapperAID)
+        val result2 = blockingReceive(waitingTime)
+
+        assert(result1, CONFIRM, add(newItem).term())
+        Assert.assertTrue(
+            result2.content.contains("""item(id("Item 999"))[position(rack(999),shelf(999),quantity(999))]""")
+        )
     } }
 
-    //@Test fun addItemShouldSucceedIfSameItemIsAlreadyInThisPosition()
+    @Test fun addItemShouldSucceedIfSameItemIsAlreadyInThisPosition() = test { agent()() {
+        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
+
+        sendRequest(
+            add(item(id("Item 5"), position(rack(3), shelf(1), quantity(3)))).term(),
+            warehouseMapperAID
+        )
+        val result1 = blockingReceive(waitingTime)
+
+        sendRequest("info(warehouse)", warehouseMapperAID)
+        val result2 = blockingReceive(waitingTime)
+
+        assert(result1, CONFIRM, add(item(id("Item 5"), position(rack(3), shelf(1), quantity(3)))).term())
+        Assert.assertTrue(
+            result2.content.contains("""item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))""")
+        )
+    } }
 
     //@Test fun addItemShouldFailIfADifferentItemIsAlreadyInThisPosition()
 
