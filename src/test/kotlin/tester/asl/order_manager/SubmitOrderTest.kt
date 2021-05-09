@@ -16,11 +16,13 @@ import common.ontology.dsl.operation.Order.order
 import controller.agent.Agents.oneShotBehaviour
 import controller.agent.communication.translation.out.OperationTerms.term
 import jade.core.AID
+import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
 import org.junit.Assert
 import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
 
 /**
  * Test class for OrderManager's accept order request
@@ -30,13 +32,13 @@ import java.util.concurrent.Semaphore
  *  - lack of items
  *  - lack and wait for collection point manger
  *  - retrieval requests
- * TODO:
- *  - check test missing delivery / network errors
+ *  - missing message delivery / network errors
  *
  * @author Paolo Baldini
  */
 class SubmitOrderTest: Framework() {
     private val waitingTime = 500L
+    private val retryTime = 2000L
     private val defaultOrder = order(client("x"), email("y"), address("z"))[
             item(id("a"), quantity(1)),
             item(id("b"), quantity(2))
@@ -60,7 +62,7 @@ class SubmitOrderTest: Framework() {
 
     @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = test {
         val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
-        orderRequest().blockingReceive(waitingTime)
+        orderRequest().blockingReceive(waitingTime).apply { println(this) }
 
         val result = warehouse.blockingReceive(waitingTime)
         warehouse.deregister()
@@ -68,12 +70,26 @@ class SubmitOrderTest: Framework() {
         assert(result, INFORM_REF, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
     }
 
-    @Test fun submittedOrderReceptionShouldBeConfirmedIfRequiredAgentExists() = test {
+    @Test fun submittedOrderReceptionShouldBeConfirmedIfWarehouseManagerExists() = test {
         val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
         val result = orderRequest().blockingReceive(waitingTime)
         warehouse.deregister()
 
         assert(result, CONFIRM, defaultOrder)
+    }
+
+    @Test fun agentShouldKeepAskIfNoAnswerFromWarehouseManager() = test {
+        val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
+        val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
+
+        orderRequest(orderManagerAID)
+        val result1 = warehouse.blockingReceive(waitingTime)
+        val result2 = warehouse.blockingReceive(retryTime + waitingTime)
+        warehouse.deregister()
+
+        assert(result1, INFORM_REF, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
+        assert(result2, INFORM_REF, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
+        Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
     }
 
     @Test fun orderCanBeRefusedIfTheWarehouseHasNotTheItems() = test {
@@ -82,7 +98,8 @@ class SubmitOrderTest: Framework() {
         val received = warehouseResponse(false)
         val client = orderRequest(orderManagerAID)
         client.blockingReceive(waitingTime)
-        received.acquire(waitingTime.toInt())
+        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+        Thread.sleep(waitingTime)
 
         assert(getInfo(client, orderManagerAID), INFORM, "[order(id(odr1),status(refused))]")
     }
@@ -93,7 +110,8 @@ class SubmitOrderTest: Framework() {
         val received = warehouseResponse(true)
         val client = orderRequest(orderManagerAID)
         client.blockingReceive(waitingTime)
-        received.acquire(waitingTime.toInt())
+        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+        Thread.sleep(waitingTime)
 
         assert(getInfo(client, orderManagerAID), INFORM, "[order(id(odr1),status(retrieve))]")
     }
@@ -103,11 +121,28 @@ class SubmitOrderTest: Framework() {
         val received = warehouseResponse(true)
         val client = orderRequest()
         client.blockingReceive(waitingTime)
-        received.acquire(waitingTime.toInt())
+        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
         val result = collectionPointManager.blockingReceive(waitingTime)
         collectionPointManager.deregister()
 
         assert(result, INFORM_REF, "point")
+    }
+
+    @Test fun agentShouldKeepAskIfNoAnswerFromCollectionPointManager() = test {
+        val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
+        val received = warehouseResponse(true)
+        val client = orderRequest()
+
+        client.blockingReceive(waitingTime)
+        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+
+        val result1 = collectionPointManager.blockingReceive(waitingTime)
+        val result2 = collectionPointManager.blockingReceive(retryTime + waitingTime)
+        collectionPointManager.deregister()
+
+        assert(result1, INFORM_REF, "point")
+        assert(result2, INFORM_REF, "point")
+        Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
     }
 
     @Test fun refuseFromCollectionPointManagerCauseAnotherRequest() = test {
@@ -115,15 +150,10 @@ class SubmitOrderTest: Framework() {
         val received = warehouseResponse(true)
         val client = orderRequest()
         client.blockingReceive(waitingTime)
-        received.acquire(waitingTime.toInt())
-        var result = collectionPointManager.blockingReceive(waitingTime)
-        collectionPointManager.send(ACLMessage(FAILURE).apply {
-            addReceiver(result.sender)
-            content = result.content
-            replyWith = result.inReplyTo
-        })
+        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+        waitAndReply(collectionPointManager, FAILURE)
         Thread.sleep(3000)                                      // wait time in orderManager
-        result = collectionPointManager.blockingReceive(waitingTime)
+        val result = collectionPointManager.blockingReceive(waitingTime)
         collectionPointManager.deregister()
 
         assert(result, INFORM_REF, "point")
@@ -136,20 +166,16 @@ class SubmitOrderTest: Framework() {
         val received = warehouseResponse(true)
         val client = orderRequest(orderManagerAID)
         client.blockingReceive(waitingTime)
-        received.acquire(waitingTime.toInt())
-        var result = collectionPointManager.blockingReceive(waitingTime)
-        collectionPointManager.send(ACLMessage(CONFIRM).apply {
-            addReceiver(result.sender)
-            content = "point(pid)"
-            replyWith = result.inReplyTo
-        })
+        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+
+        waitAndReply(collectionPointManager, CONFIRM, "point(pid)")
         collectionPointManager.deregister()
 
-        result = robotPicker.blockingReceive(waitingTime)
+        val result1 = robotPicker.blockingReceive(waitingTime)
         val result2 = robotPicker.blockingReceive(waitingTime)
         robotPicker.deregister()
 
-        assert(result, INFORM_REF, """retrieve(item(id("a"),quantity(1)),point(pid))""")
+        assert(result1, INFORM_REF, """retrieve(item(id("a"),quantity(1)),point(pid))""")
         assert(result2, INFORM_REF, """retrieve(item(id("b"),quantity(2)),point(pid))""")
     }
 
@@ -160,16 +186,12 @@ class SubmitOrderTest: Framework() {
         val received = warehouseResponse(true)
         val client = orderRequest(orderManagerAID)
         client.blockingReceive(waitingTime)
-        received.acquire(waitingTime.toInt())
-        val result = collectionPointManager.blockingReceive(waitingTime)
-        collectionPointManager.send(ACLMessage(CONFIRM).apply {
-            addReceiver(result.sender)
-            content = "point(pid)"
-            replyWith = result.inReplyTo
-        })
+        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+
+        waitAndReply(collectionPointManager, CONFIRM, "point(pid)")
         collectionPointManager.deregister()
 
-        robotAcceptRetrieval(robotPicker)
+        waitAndReply(robotPicker)
         robotPicker.blockingReceive(waitingTime)
         robotPicker.deregister()
         Thread.sleep(waitingTime)
@@ -183,71 +205,51 @@ class SubmitOrderTest: Framework() {
         val robotPicker = agent().register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
         val received = warehouseResponse(true)
         val client = orderRequest(orderManagerAID)
+
         client.blockingReceive(waitingTime)
-        received.acquire(waitingTime.toInt())
-        val result = collectionPointManager.blockingReceive(waitingTime)
-        collectionPointManager.send(ACLMessage(CONFIRM).apply {
-            addReceiver(result.sender)
-            content = "point(pid)"
-            replyWith = result.inReplyTo
-        })
+        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+        waitAndReply(collectionPointManager, CONFIRM, "point(pid)")
         collectionPointManager.deregister()
 
-        robotAcceptRetrieval(robotPicker)
-        robotAcceptRetrieval(robotPicker)
+        waitAndReply(robotPicker)
+        waitAndReply(robotPicker)
         robotPicker.deregister()
         Thread.sleep(waitingTime)
 
         assert(getInfo(client, orderManagerAID), INFORM, """[order(id(odr1),status(completed))]""")
     }
 
-    @Test fun ifRobotPickerIsBusyOrderManagerWaitUntilItIsFree() = test {
+    @Test fun agentShouldKeepAskIfNoAnswerFromRobotPicker() = test {
         val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
         val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
         val robotPicker = agent().register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
         val received = warehouseResponse(true)
+
         val client = orderRequest(orderManagerAID)
         client.blockingReceive(waitingTime)
-        received.acquire(waitingTime.toInt())
-        var result = collectionPointManager.blockingReceive(waitingTime)
-        collectionPointManager.send(ACLMessage(CONFIRM).apply {
-            addReceiver(result.sender)
-            content = "point(pid)"
-            replyWith = result.inReplyTo
-        })
+        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+
+        waitAndReply(collectionPointManager, CONFIRM, "point(pid)")
         collectionPointManager.deregister()
 
-        result = robotPicker.blockingReceive(waitingTime)
-        robotPicker.send(ACLMessage(FAILURE).apply {
-            addReceiver(result.sender)
-            content = result.content
-            replyWith = result.inReplyTo
-        })
+        val result1 = robotPicker.blockingReceive(waitingTime)
         robotPicker.blockingReceive(waitingTime)
-
-        Thread.sleep(3000)
-
-        result = robotPicker.blockingReceive(waitingTime)
+        val result2 = robotPicker.blockingReceive(retryTime + waitingTime)
         robotPicker.deregister()
 
-        assert(result, INFORM_REF, """retrieve(item(id("a"),quantity(1)),point(pid))""")
+        assert(result1, INFORM_REF, """retrieve(item(id("a"),quantity(1)),point(pid))""")
+        assert(result2, INFORM_REF, """retrieve(item(id("a"),quantity(1)),point(pid))""")
+        Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
     }
 
-    private fun orderRequest(
-        aid: AID = agent("order_manager", ASLAgent::class.java).aid
-    ) = agent().apply {
+    private fun orderRequest(aid: AID = agent("order_manager", ASLAgent::class.java).aid) = agent().apply {
         sendRequest(defaultOrder, aid)
     }
 
     private fun warehouseResponse(confirmOrder: Boolean) = Semaphore(0).apply {
         val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
         warehouse.addBehaviour(oneShotBehaviour {
-            val result = warehouse.blockingReceive(waitingTime)
-            warehouse.send(ACLMessage(if (confirmOrder) CONFIRM else FAILURE).apply {
-                addReceiver(result.sender)
-                content = result.content
-                replyWith = result.inReplyTo
-            })
+            waitAndReply(warehouse, if (confirmOrder) CONFIRM else FAILURE)
             warehouse.deregister()
             release(Int.MAX_VALUE)
         })
@@ -257,12 +259,12 @@ class SubmitOrderTest: Framework() {
         info(client("x"), email("y")).term(), orderManagerAID
     ).blockingReceive(waitingTime)
 
-    private fun robotAcceptRetrieval(robotPicker: JADEAgent) {
-        val result = robotPicker.blockingReceive(waitingTime)
-        robotPicker.send(ACLMessage(CONFIRM).apply {
+    private fun waitAndReply(agent: Agent, performative: Int = CONFIRM, message: String? = null) {
+        val result = agent.blockingReceive(waitingTime)
+        agent.send(ACLMessage(performative).apply {
             addReceiver(result.sender)
-            content = result.content
             replyWith = result.inReplyTo
+            content = message ?: result.content
         })
     }
 }
