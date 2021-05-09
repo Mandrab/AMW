@@ -1,7 +1,8 @@
 package tester.asl.order_manager
 
+import common.ASLAgent
 import common.ASLAgents.start
-import common.Framework
+import common.Framework.Companion.test
 import common.ontology.dsl.abstraction.Address.address
 import common.ontology.dsl.abstraction.Client.client
 import common.ontology.dsl.abstraction.Email.email
@@ -20,22 +21,21 @@ import org.junit.Assert
  *
  * @author Paolo Baldini
  */
-class InfoOrderTest: Framework() {
+class InfoOrderTest {
     private val waitingTime = 500L
-    private val agent = agent()
 
-    @Test fun testerIsRegistering() = Assert.assertNotNull(agent)
+    @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
-    @Test fun infoRequestReturnsEmptyListIfNoOrderHasBeenMade() = agent {
+    @Test fun infoRequestReturnsEmptyListIfNoOrderHasBeenMade() = test { agent()() {
         sendRequest(
             info(client("a"), email("b")).term(),
-            start("order_manager").aid
+            agent("order_manager", ASLAgent::class.java).aid
         )
         val result = blockingReceive(waitingTime)
         assert(result, INFORM, "[]")
-    }
+    } }
 
-    @Test fun infoRequestGivesResultsIfOrdersHasBeenMade() = agent {
+    @Test fun infoRequestGivesResultsIfOrdersHasBeenMade() = test { agent()() {
         start("order_manager").let {
             sendRequest(
                 order(client("x"), email("y"), address("z"))[
@@ -54,5 +54,5 @@ class InfoOrderTest: Framework() {
         }
         val result = blockingReceive(waitingTime)
         assert(result, INFORM, "[order(id(odr2),status(check)),order(id(odr1),status(check))]")
-    }
+    } }
 }

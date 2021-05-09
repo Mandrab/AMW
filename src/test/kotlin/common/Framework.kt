@@ -3,10 +3,6 @@ package common
 import common.JADEAgents.proxy
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
-import org.hamcrest.BaseMatcher
-import org.hamcrest.Description
-import org.hamcrest.Matcher
-import org.hamcrest.StringDescription
 import org.junit.AfterClass
 import org.junit.Assert
 import kotlin.random.Random
@@ -19,6 +15,8 @@ abstract class Framework {
             ASLAgents.killAll()
             agents.forEach(Agent::doDelete)
         }
+
+        fun test(action: Framework.() -> Unit) = object: Framework() { }.run(action)
     }
 
     fun agent() = agent(Random.nextDouble().toString(), JADEAgent::class.java)
@@ -43,8 +41,6 @@ abstract class Framework {
             ASLAgents.start(name) as T
         else -> proxy(name, cls).getAgent()
     }.apply(action).doDelete()
-
-    fun test(action: Framework.() -> Unit) = object: Framework() { }.run(action)
 
     fun assert(message: ACLMessage, performative: Int, content: Any) {
         Assert.assertNotNull(message)

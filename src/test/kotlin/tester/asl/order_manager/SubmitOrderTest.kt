@@ -2,6 +2,7 @@ package tester.asl.order_manager
 
 import common.ASLAgent
 import common.Framework
+import common.Framework.Companion.test
 import common.JADEAgent
 import common.ontology.Services.ServiceType.*
 import common.ontology.Services.ServiceSupplier.*
@@ -36,7 +37,7 @@ import java.util.concurrent.TimeUnit
  *
  * @author Paolo Baldini
  */
-class SubmitOrderTest: Framework() {
+class SubmitOrderTest {
     private val waitingTime = 500L
     private val retryTime = 2000L
     private val defaultOrder = order(client("x"), email("y"), address("z"))[
@@ -44,7 +45,7 @@ class SubmitOrderTest: Framework() {
             item(id("b"), quantity(2))
     ].term()
 
-    @Test fun testerIsRegistering() = oneshotAgent(Assert::assertNotNull)
+    @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
     @Test fun orderWithNoItemsIsIgnored() = test {
         val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
@@ -242,11 +243,10 @@ class SubmitOrderTest: Framework() {
         Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
     }
 
-    private fun orderRequest(aid: AID = agent("order_manager", ASLAgent::class.java).aid) = agent().apply {
-        sendRequest(defaultOrder, aid)
-    }
+    private fun Framework.orderRequest(aid: AID = agent("order_manager", ASLAgent::class.java).aid) =
+        agent().apply { sendRequest(defaultOrder, aid) }
 
-    private fun warehouseResponse(confirmOrder: Boolean) = Semaphore(0).apply {
+    private fun Framework.warehouseResponse(confirmOrder: Boolean) = Semaphore(0).apply {
         val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
         warehouse.addBehaviour(oneShotBehaviour {
             waitAndReply(warehouse, if (confirmOrder) CONFIRM else FAILURE)
