@@ -23,4 +23,13 @@ class InfoWarehouseTest {
         Assert.assertEquals(INFORM, result.performative)
         Assert.assertTrue(result.content.startsWith('[') && result.content.endsWith(']'))
     } }
+
+    @Test fun infoRequestShouldReturnAListContainingItems() = test { agent()() {
+        sendRequest("info(warehouse)", agent("warehouse_mapper", ASLAgent::class.java).aid)
+        val result = blockingReceive(waitingTime)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(INFORM, result.performative)
+        // initial belief:
+        Assert.assertTrue(result.content.contains("""item(id("Item 2"))[position(rack(2),shelf(4),quantity(1))]"""))
+    } }
 }
