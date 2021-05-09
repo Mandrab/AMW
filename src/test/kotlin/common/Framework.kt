@@ -9,6 +9,8 @@ import kotlin.random.Random
 
 abstract class Framework {
     companion object {
+        const val waitingTime = 500L
+        const val retryTime = 2000L
         private val agents = mutableListOf<Agent>()
 
         @AfterClass fun terminate() {

@@ -2,6 +2,8 @@ package tester.asl.order_manager
 
 import common.ASLAgent
 import common.Framework
+import common.Framework.Companion.waitingTime
+import common.Framework.Companion.retryTime
 import common.Framework.Companion.test
 import common.JADEAgent
 import common.ontology.Services.ServiceType.*
@@ -38,8 +40,6 @@ import java.util.concurrent.TimeUnit
  * @author Paolo Baldini
  */
 class SubmitOrderTest {
-    private val waitingTime = 500L
-    private val retryTime = 2000L
     private val defaultOrder = order(client("x"), email("y"), address("z"))[
             item(id("a"), quantity(1)),
             item(id("b"), quantity(2))
@@ -47,13 +47,15 @@ class SubmitOrderTest {
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
-    @Test fun orderWithNoItemsIsIgnored() = test {
+    @Test fun orderWithNoItemsIsNotAccepted() = test {
         val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
         val result = agent().sendRequest(
             order(client("x"), email("y"), address("z")).term(),
             orderManagerAID
         ).blockingReceive(waitingTime)
-        Assert.assertNull(result)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(FAILURE, result.performative)
+        Assert.assertTrue(result.content.startsWith("error(unknown,"))
     }
 
     @Test fun submittedOrderRequestShouldFailIfNoWarehouseAgentExists() = test {
