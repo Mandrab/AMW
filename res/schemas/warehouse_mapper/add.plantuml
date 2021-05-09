@@ -1,0 +1,9 @@
+@startuml
+Admin -> Warehouse_mapper: achieve: add(item(id(I), position(rack(R),shelf(S),quantity(Q))))
+Warehouse_mapper -> Admin: failure: add(item(id(I), position(rack(R),shelf(S),quantity(Q))))
+@enduml
+
+@startuml
+Admin -> Warehouse_mapper: achieve: add(item(id(I), position(rack(R),shelf(S),quantity(Q))))
+Warehouse_mapper -> Admin: confirm: add(item(id(I), position(rack(R),shelf(S),quantity(Q))))
+@enduml

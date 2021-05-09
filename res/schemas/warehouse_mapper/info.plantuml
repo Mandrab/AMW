@@ -1,0 +1,4 @@
+@startuml
+Client -> Warehouse_mapper: achieve: info(warehouse)
+Warehouse_mapper -> Client: tell: [item(id(I), reserved(RQ))[position(rack(R),shelf(S),quantity(Q)), ...]
+@enduml
