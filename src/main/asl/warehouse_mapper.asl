@@ -23,5 +23,10 @@
 		.df_register("management(items)", "remove(item)");          // register for remove items from the warehouse
 		+set.                                                       // set setup-process ended
 
-// unknown messages management
-+!kqml_received(Sender, _, Msg, MsgID) <- .println("unknown message"); .send(Sender, failure, error(unknown, Msg), MsgID).
++!kqml_received(Sender, _, Msg, MsgID)
+    <-  .println("[WAREHOUSE MAPPER] unknown request");
+        .send(Sender, failure, error(unknown, Msg), MsgID).         // send failure but not cache response
+
+-!kqml_received(Sender, _, O, MsgID)
+    <-  .println("[WAREHOUSE MAPPER] failed request");
+        .send(Sender, failure, O, MsgID).                           // send failure but not cache response
