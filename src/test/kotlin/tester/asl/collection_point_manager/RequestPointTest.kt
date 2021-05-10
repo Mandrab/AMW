@@ -36,7 +36,7 @@ class RequestPointTest {
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
-    @Test fun requestForPointShoulReturnIt() = test {
+    @Test fun requestForPointShouldReturnIt() = test {
         val collectionPointManagerAID = agent("collection_point_manager", ASLAgent::class.java).aid
         val result = agent().sendRequest(
             "point",
@@ -44,5 +44,21 @@ class RequestPointTest {
             INFORM
         ).blockingReceive(waitingTime)
         assert(result, CONFIRM, """point(pid(0),x(50),y(50))""")
+    }
+
+    @Test fun twoRequestsShouldReturnDifferentPoints() = test {
+        val collectionPointManagerAID = agent("collection_point_manager", ASLAgent::class.java).aid
+        val result1 = agent().sendRequest(
+            "point",
+            collectionPointManagerAID,
+            INFORM
+        ).blockingReceive(waitingTime)
+        val result2 = agent().sendRequest(
+            "point",
+            collectionPointManagerAID,
+            INFORM
+        ).blockingReceive(waitingTime)
+        assert(result1, CONFIRM, """point(pid(0),x(50),y(50))""")
+        assert(result2, CONFIRM, """point(pid(1),x(50),y(70))""")
     }
 }
