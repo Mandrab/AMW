@@ -1,25 +1,27 @@
 ///////////////////////////////////////////////////// ITEM PICKING /////////////////////////////////////////////////////
 
-+!kqml_received(Sender, tell, retrieve(P, PID), OID)                // request of item picking
-    :   pick(_)                                                     // already picking or ...
-    |   execute(_)                                                  // already executing something
-    <-  .println("[ROBOT PICKER] item retrieval not available");
-        .send(Sender, failure, retrieve(P, PID), OID).              // fail the required task
-
 +!kqml_received(Sender, tell, retrieve(P, PID), MID)                // request of item picking
-    <-  .println("[ROBOT PICKER] item retrieval");
-        +pick(P, PID)[client(Sender), mid(MID)];                    // generate the event for picking
+    <-  .println("[ROBOT PICKER] request for item retrieval");
+        !set_pick(P, PID, Sender, MID);
         !cached_response(
             Sender,
             in(tell, retrieve(P, PID), MID),
             out(confirm, retrieve(P, PID), MID)                     // accept request
-        ).                                                          // cache the response and send it
+        );                                                          // cache the response and send it
+        !pick.                                                      // start picking
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
 
-+pick(Item, PID)[client(Client), mid(MID)]
-	<-  .wait(500);                                                 // fake execution time
-        -pick(Item, PID)                                            // task completed
+@setTask[atomic]
++!set_pick(P, PID, Sender, MID)
+    :   not pick(_, _)                                              // not already picking and ...
+    &   not execute(_, _)                                           // not already executing something
+    <-  +pick(P, PID)[client(Sender), mid(MID)].                    // set pick target data
+
++!pick
+    :   pick(Item, PID)[client(Client), mid(MID)]
+	<-  .wait(250);                                                 // fake execution time
+	    -pick(Item, PID);                                           // task completed
 		!ensure_send(
 		    Client,
 		    confirm, retrieve(Item, PID),                           // confirm task completion

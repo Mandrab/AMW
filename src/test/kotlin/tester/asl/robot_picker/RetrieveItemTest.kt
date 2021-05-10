@@ -12,7 +12,7 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 class RetrieveItemTest {
-    private val waitingTime = 1500L
+    private val waitingTime = 2000L
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
@@ -22,5 +22,18 @@ class RetrieveItemTest {
             pickerAID, INFORM).blockingReceive(waitingTime)
 
         assert(result, CONFIRM, "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))")
+    }
+
+    @Test fun justOneOutOfTwoItemPickRequestShouldBeAcceptedByRobot() = test {
+        val pickerAID = agent("robot_picker", ASLAgent::class.java).aid
+        val client = agent()
+
+        client.sendRequest("retrieve(position(rack(1), shelf(2), quantity(3)), point(pid1))", pickerAID, INFORM)
+        client.sendRequest("retrieve(position(rack(1), shelf(2), quantity(3)), point(pid1))", pickerAID, INFORM)
+        val result1 = client.blockingReceive(waitingTime)
+        val result2 = client.blockingReceive(waitingTime)
+
+        assert(result1, CONFIRM, "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))")
+        assert(result2, FAILURE, "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))")
     }
 }
