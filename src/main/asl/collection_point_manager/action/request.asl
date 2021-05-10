@@ -22,12 +22,16 @@
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
 
+@reservationAlreadyPresent[atomic]
++!reserve(OID, PID, X, Y)
+    :   point(PID)[x(X), y(Y), reservedFor(OID)].                   // a point is already assigned to this order
+
 @reservation[atomic]
 +!reserve(OID, PID, X, Y)
     :   not point(_)[_, _, reservedFor(OID)]                        // no point is already assigned to this order
     &   point(PID)[x(X), y(Y)]
     &   not point(PID)[x(X), y(Y), reservedFor(_)]                  // available collection point exists
-	<-  .println(aaa);-point(PID);
+	<-  -point(PID);
 	    +point(PID)[x(X), y(Y), reservedFor(OID)].                  // reserve point for given order
 
 @free[atomic]
