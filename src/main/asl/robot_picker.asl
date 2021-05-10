@@ -3,10 +3,11 @@
  **********************************************************************************************************************/
 
 { include("action/item_picker.asl") }                               // include plans for items picking
-{ include("action/script_executor.asl") }                           // include plans for scripts execution
-{ include("action/command_executor.asl") }                          // include plans for commands execution
-{ include("action/move.asl") }                                      // include plans for motion
-{ include("action/geo-localization.asl") }
+{ include("robot_picker/action/script_executor.asl") }              // include plans for scripts execution
+{ include("robot_picker/action/command_executor.asl") }             // include plans for commands execution
+{ include("robot_picker/action/move.asl") }                         // include plans for motion
+{ include("robot_picker/action/geo-localization.asl") }
+{ include("robot_picker/action/job.asl") }
 
 /***********************************************************************************************************************
  Initial beliefs and rules
@@ -31,40 +32,12 @@
 		.df_register("executor(command)", "exec(command)");         // register for pick items
 		+activity(default);                                         // setup default activity
         +state(available);                                          // set as available to achieve unordinary operations
-        +set;                                                       // set process ended
-		!work.                                                      // start working
+        +set.                                                       // set process ended
 
-///////////////////////////////////////////////////////// JOBS /////////////////////////////////////////////////////////
++!kqml_received(Sender, _, Msg, MsgID)
+    <-  .println("[ORDER MANAGER] unknown request");
+        .send(Sender, failure, error(unknown, Msg), MsgID).         // send failure but not cache response
 
-///////////////////////////// DEFAULT
-
-+!work : activity(default)                                          // only if achieving default activity
-	<-  !move_by(5, 6);
-	    .println("Doing stuffs ...");
-		.wait(1000);                                                // fake execution time
-		!work.                                                      // restart to work
-
-///////////////////////////// PICKING
-
-+!work : activity(picking)[client(Client),item(id(ID),item(Item))]  // only if picking
-	<-  Item = item(id(IID))[H|T];                                  // TODO docu che in teoria potrebbe non esserci l'oggetto e nel caso dovrebbe cercare da qualche altra parte
-	    .println("Picking ...");
-	    !!remove(item(IID),_);                                      // TODO la posizione non è spacificata perchè non è implementata la ricerca di cui sopra
-	    .wait(1000);                                                // fake execution time
-		.send(Client,complete,retrieve(Item));                      // confirm task completion
-        -+activity(default);                                        // setup default activity
-        -+state(available);                                         // set as available to achieve unordinary operations
-        !work.                                                      // restart to work
-
-///////////////////////////// SCRIPT EXECUTION
-
-+!work : activity(executing)[ client(Client), script(Script) ]      // only if executing script
-	<-  !main[source(script)];                                      // run the main intention of the script
-		!remove_plans(0);                                           // remove all plans with label in the form of "lN"
-		-+activity(default);                                        // at end, setup default activity
-        -+state(available);                                         // set as available to achieve unordinary operations
-        !work.                                                      // restart to work
-
-///////////////////////////// IDLE
-
-+!work : activity(_).
+-!kqml_received(Sender, _, O, MsgID)
+    <-  .println("[ORDER MANAGER] failed request");
+        .send(Sender, failure, O, MsgID).                           // send failure but not cache response
