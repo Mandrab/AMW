@@ -3,16 +3,22 @@
 +!kqml_received(Sender, tell, point, OID)
 	<-  .println("[COLLECTION POINT MANAGER] collection point request");
 	    !reserve(OID, PID, X, Y);
-	    +cache(OID, confirm, point(pid(PID), x(X), y(Y)));
-	    .send(Sender, confirm, point(pid(PID), x(X), y(Y)), OID).
+	    !cached_response(
+            Sender,
+            in(tell, point, OID),
+            out(confirm, point(pid(PID), x(X), y(Y)), OID)
+        ).                                                          // cache the response and send it
 
 ///////////////////////////// POINT SET FREE
 
 @free_point[atomic]
 +!kqml_received(Sender, tell, free, OID)
     <-  !free(OID);
-        +cache(OID, confirm, order(C, E, A)[H|T]);
-        .send(Sender, confirm, free(OrderID), OID).
+        !cached_response(
+            Sender,
+            in(tell, free, OID),
+            out(confirm, free, OID)
+        ).                                                          // cache the response and send it
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
 
