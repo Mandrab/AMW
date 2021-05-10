@@ -100,6 +100,7 @@ class RemoveWarehouseTest {
                 + """[position(rack(3),shelf(1),quantity(7)),"""
                 + """position(rack(3),shelf(2),quantity(5))]""")
         Assert.assertFalse(result2.content.contains("""position(rack(3),shelf(1)"""))
+        Assert.assertTrue(result2.content.contains("""position(rack(3),shelf(2),quantity(4))]"""))
     } }
 /*
     @Test fun addItemShouldSucceedIfSameItemIsAlreadyInThisPosition() = test { agent()() {
