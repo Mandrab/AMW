@@ -8,9 +8,11 @@ import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Item.remove
 import controller.agent.communication.translation.out.OperationTerms.term
+import jade.lang.acl.ACLMessage
 import jade.lang.acl.ACLMessage.*
 import org.junit.Test
 import org.junit.Assert
+import kotlin.random.Random
 
 /**
  * Test class for WarehouseMapper's remove item request.
@@ -102,49 +104,15 @@ class RemoveWarehouseTest {
         Assert.assertFalse(result2.content.contains("""position(rack(3),shelf(1)"""))
         Assert.assertTrue(result2.content.contains("""position(rack(3),shelf(2),quantity(4))]"""))
     } }
-/*
-    @Test fun addItemShouldSucceedIfSameItemIsAlreadyInThisPosition() = test { agent()() {
-        val item = item(id("Item 5"), position(rack(3), shelf(1), quantity(3)))
 
-        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
-
-        sendRequest(add(item).term(), warehouseMapperAID)
-        val result1 = blockingReceive(waitingTime)
-
-        sendRequest("info(warehouse)", warehouseMapperAID)
-        val result2 = blockingReceive(waitingTime)
-
-        assert(result1, CONFIRM, add(item).term())
-        Assert.assertTrue(
-            result2.content.contains("""item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))""")
-        )
-    } }
-
-    @Test fun addItemShouldFailIfADifferentItemIsAlreadyInThisPosition() = test { agent()() {
-        val item = item(id("Item 999"), position(rack(3), shelf(1), quantity(3)))
-
-        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
-
-        sendRequest(add(item).term(), warehouseMapperAID)
-        val result1 = blockingReceive(waitingTime)
-
-        sendRequest("info(warehouse)", warehouseMapperAID)
-        val result2 = blockingReceive(waitingTime)
-
-        assert(result1, FAILURE, add(item).term())
-        Assert.assertTrue(
-            result2.content.contains("""item(id("Item 5"))[position(rack(3),shelf(1),quantity(7))""")
-        )
-    } }
-
-    @Test fun itemShouldBeAddedOnlyOnceIfTheMessageIsReceivedAgain() = test { agent()() {
-        val item = item(id("Item 5"), position(rack(3), shelf(1), quantity(3)))
+    @Test fun itemShouldBeRemovedOnlyOnceIfTheMessageIsReceivedAgain() = test { agent()() {
+        val item = item(id("Item 5"), quantity(12))
 
         val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
 
         val message = ACLMessage(REQUEST).apply {
             addReceiver(warehouseMapperAID)
-            content = add(item).term().toString()
+            content = remove(item).term().toString()
             replyWith = Random.nextDouble().toString()
         }
 
@@ -157,12 +125,13 @@ class RemoveWarehouseTest {
         sendRequest("info(warehouse)", warehouseMapperAID)
         val result3 = blockingReceive(waitingTime)
 
-        assert(result1, CONFIRM, add(item).term())
+        assert(result1, CONFIRM, remove(item).term().toString()
+                + """[position(rack(3),shelf(1),quantity(7)),"""
+                + """position(rack(3),shelf(2),quantity(5))]""")
         Assert.assertEquals(result1.performative, result2.performative)
         Assert.assertEquals(result1.content, result2.content)
         Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
-        Assert.assertTrue(
-            result3.content.apply { println(this) }.contains("""item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))""")
-        )
-    } }*/
+        Assert.assertFalse(result3.content.contains("""position(rack(3),shelf(1)"""))
+        Assert.assertTrue(result3.content.contains("""position(rack(3),shelf(2),quantity(4))]"""))
+    } }
 }
