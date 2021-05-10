@@ -61,4 +61,19 @@ class RequestPointTest {
         assert(result1, CONFIRM, """point(pid(0),x(50),y(50))""")
         assert(result2, CONFIRM, """point(pid(1),x(50),y(70))""")
     }
+
+    @Test fun requestShouldFailIfEveryPointIsAlreadyReserved() = test {
+        val collectionPointManagerAID = agent("collection_point_manager", ASLAgent::class.java).aid
+        val client = agent()
+
+        val requests = generateSequence {
+            client.sendRequest(
+                "point",
+                collectionPointManagerAID,
+                INFORM
+            ).blockingReceive(waitingTime)
+        }.take(7).toList()
+        requests.take(6).forEach { Assert.assertEquals(CONFIRM, it.performative) }
+        assert(requests.last(), FAILURE, "point")
+    }
 }
