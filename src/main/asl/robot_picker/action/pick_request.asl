@@ -6,20 +6,26 @@
     <-  .println("[ROBOT PICKER] item retrieval not available");
         .send(Sender, failure, retrieve(P, PID), OID).              // fail the required task
 
-+!kqml_received(Sender, tell, retrieve(P, PID), OID)                // request of item picking
++!kqml_received(Sender, tell, retrieve(P, PID), MID)                // request of item picking
     <-  .println("[ROBOT PICKER] item retrieval");
-        +pick(P, PID)[client(Sender)];                              // generate the event for picking
-        .send(Sender, confirm, retrieve(P, PID), OID).              // accept request
+        +pick(P, PID)[client(Sender), mid(MID)];                    // generate the event for picking
+        !cached_response(
+            Sender,
+            in(tell, retrieve(P, PID), MID),
+            out(confirm, retrieve(P, PID), MID)                     // accept request
+        ).                                                          // cache the response and send it
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
 
-+pick(item(id(ID),item(Item)))[client(Client)]
-	<-  Item = item(id(IID))[H|T];                                  // TODO docu che in teoria potrebbe non esserci l'oggetto e nel caso dovrebbe cercare da qualche altra parte
-	    !!remove(item(IID),_);                                      // TODO la posizione non è spacificata perchè non è implementata la ricerca di cui sopra
-	    .wait(1000);                                                // fake execution time
-		.send(Client,complete,retrieve(Item));                      // confirm task completion
-        -+activity(default);                                        // setup default activity
-        -+state(available).                                         // set as available to achieve unordinary operations
++pick(Item, PID)[client(Client), mid(MID)]
+	<-  .wait(500);                                                 // fake execution time
+        -pick(Item, PID)                                            // task completed
+		!ensure_send(
+		    Client,
+		    confirm, retrieve(Item, PID),                           // confirm task completion
+		    MID, unique
+        ).                                                          // msgid is unique from order_manager
+        // TODO HE IS WAITING THE CONFIRMATION MESSAGE FROM ORDER MANAGER!!!
 /*
 +!remove(item(ID),position(rack(R),shelf(S),quantity(_)))
     <-  !random_agent("management(items)","remove(item)",Provider);
