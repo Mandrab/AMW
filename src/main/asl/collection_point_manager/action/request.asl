@@ -13,7 +13,8 @@
 
 @free_point[atomic]
 +!kqml_received(Sender, tell, free, OID)
-    <-  !free(OID);
+    <-  .println("[COLLECTION POINT MANAGER] collection point free");
+        !free(OID);
         !cached_response(
             Sender,
             in(tell, free, OID),
@@ -39,12 +40,3 @@
     :   point(PointID)[x(X), y(Y), reservedFor(OrderID)]
     <-  -point(PointID);
         +point(PointID)[x(X), y(Y), state(available)].
-
-@accepted_proposal[atomic]
-+!check_accepted(_,OrderID,_)
-    :   point(PointID)[state(reserved),by(OrderID)].
-
-@timeout_proposal[atomic]
-+!check_accepted(Sender, OrderID, MsgID)
-    <-  !free(OrderID);
-        .send(Sender, failure, point(OrderID), MsgID).
