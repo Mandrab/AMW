@@ -125,18 +125,51 @@ class RemoveWarehouseTest {
     } }
 
     @Test fun removeItemsShouldFailIfOneIsNotInTheWarehouse() = test { agent()() {
+        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
+
         val item1 = item(id("Item 5"), quantity(1))
         val item2 = item(id("Item 999"), quantity(1))
 
-        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
-
         sendRequest("remove(items)[${item1.term()},${item2.term()}]", warehouseMapperAID, INFORM)
-        val result1 = blockingReceive(waitingTime)
+        val result = blockingReceive(waitingTime)
 
-        assert(result1, FAILURE, "remove(items)[${item1.term()},${item2.term()}]")
+        assert(result, FAILURE, "remove(items)[${item1.term()},${item2.term()}]")
         checkWarehouseState(warehouseMapperAID, """item(id("Item 5"))[""" +
                 """position(rack(3),shelf(1),quantity(7)),""" +
                 """position(rack(3),shelf(2),quantity(9))]""")
+    } }
+
+    @Test fun removeItemsShouldFailIfOneIsRequiredInTooHighQuantity() = test { agent()() {
+        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
+
+        val item1 = item(id("Item 2"), quantity(1))
+        val item2 = item(id("Item 5"), quantity(999))
+
+        sendRequest("remove(items)[${item1.term()},${item2.term()}]", warehouseMapperAID, INFORM)
+        val result = blockingReceive(waitingTime)
+
+        assert(result, FAILURE, "remove(items)[${item1.term()},${item2.term()}]")
+        checkWarehouseState(warehouseMapperAID, """item(id("Item 2"))[position(rack(2),shelf(4),quantity(1))]""")
+        checkWarehouseState(warehouseMapperAID, """item(id("Item 5"))[""" +
+                """position(rack(3),shelf(1),quantity(7)),""" +
+                """position(rack(3),shelf(2),quantity(9))]""")
+    } }
+
+    @Test fun removedItemsPositionShouldMatchWithTheDecrementPosition() = test { agent()() {
+        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
+
+        val item1 = item(id("Item 2"), quantity(1))
+        val item2 = item(id("Item 5"), quantity(1))
+
+        sendRequest("remove(items)[${item1.term()},${item2.term()}]", warehouseMapperAID, INFORM)
+        val result = blockingReceive(waitingTime)
+
+        assert(result, CONFIRM, """remove(items)[""" +
+                """position(rack(2),shelf(4),quantity(1)),""" +
+                """position(rack(3),shelf(1),quantity(1))]""")
+
+        checkWarehouseState(warehouseMapperAID, """item(id("Item 2"))""", false)
+        checkWarehouseState(warehouseMapperAID, """position(rack(3),shelf(1),quantity(6))""")
     } }
 
     private fun JADEAgent.checkWarehouseState(warehouseMapperAID: AID, string: String, contain: Boolean = true) {
