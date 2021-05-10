@@ -3,11 +3,14 @@ package tester.asl.warehouse_mapper
 import common.ASLAgent
 import common.Framework.Companion.waitingTime
 import common.Framework.Companion.test
+import common.JADEAgent
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Item.remove
+import controller.agent.communication.translation.out.AbstractionTerms.term
 import controller.agent.communication.translation.out.OperationTerms.term
+import jade.core.AID
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.ACLMessage.*
 import org.junit.Test
@@ -25,33 +28,25 @@ class RemoveWarehouseTest {
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
     @Test fun removeItemShouldFailIfItIsNotInTheWarehouse() = test { agent()() {
+        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
         val item = item(id("Item 999"), quantity(1))
 
-        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
-
-        sendRequest(remove(item).term(), warehouseMapperAID)
+        sendRequest(remove(item).term(), warehouseMapperAID, INFORM)
         val result1 = blockingReceive(waitingTime)
-
-        sendRequest("info(warehouse)", warehouseMapperAID)
-        val result2 = blockingReceive(waitingTime)
-
         assert(result1, FAILURE, remove(item).term())
-        Assert.assertFalse(result2.content.contains("""item(id("Item 999"))"""))
+
+        checkWarehouseState(warehouseMapperAID, """item(id("Item 999"))""", false)
     } }
 
     @Test fun removeItemShouldFailIfGreaterRequestThanAvailable() = test { agent()() {
+        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
         val item = item(id("Item 5"), quantity(999))
 
-        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
-
-        sendRequest(remove(item).term(), warehouseMapperAID)
+        sendRequest(remove(item).term(), warehouseMapperAID, INFORM)
         val result1 = blockingReceive(waitingTime)
-
-        sendRequest("info(warehouse)", warehouseMapperAID)
-        val result2 = blockingReceive(waitingTime)
-
         assert(result1, FAILURE, remove(item).term())
-        Assert.assertFalse(result2.content.contains("""item(id("Item 999"))"""))
+
+        checkWarehouseState(warehouseMapperAID, """item(id("Item 999"))""", false)
     } }
 
     @Test fun removeItemShouldDecreaseNumberOfItemInTheWarehouse() = test { agent()() {
@@ -59,17 +54,13 @@ class RemoveWarehouseTest {
 
         val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
 
-        sendRequest(remove(item).term(), warehouseMapperAID)
+        sendRequest(remove(item).term(), warehouseMapperAID, INFORM)
         val result1 = blockingReceive(waitingTime)
-
-        sendRequest("info(warehouse)", warehouseMapperAID)
-        val result2 = blockingReceive(waitingTime)
-
         assert(result1, CONFIRM, remove(item).term().toString() + """[position(rack(3),shelf(1),quantity(1))]""")
-        Assert.assertTrue(result2.content.contains("""item(id("Item 5"))[""" +
+
+        checkWarehouseState(warehouseMapperAID, """item(id("Item 5"))[""" +
                 """position(rack(3),shelf(1),quantity(6)),""" +
                 """position(rack(3),shelf(2),quantity(9))]""")
-        )
     } }
 
     @Test fun removedItemPositionShouldMatchWithTheDecrementPosition() = test { agent()() {
@@ -77,14 +68,12 @@ class RemoveWarehouseTest {
 
         val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
 
-        sendRequest(remove(item).term(), warehouseMapperAID)
+        sendRequest(remove(item).term(), warehouseMapperAID, INFORM)
         val result1 = blockingReceive(waitingTime)
 
-        sendRequest("info(warehouse)", warehouseMapperAID)
-        val result2 = blockingReceive(waitingTime)
-
         assert(result1, CONFIRM, remove(item).term().toString() + """[position(rack(3),shelf(1),quantity(1))]""")
-        Assert.assertTrue(result2.content.contains("""position(rack(3),shelf(1),quantity(6))"""))
+
+        checkWarehouseState(warehouseMapperAID, """position(rack(3),shelf(1),quantity(6))""")
     } }
 
     @Test fun forLargeRequestShouldBeAbleToDecrementQuantityInMultiplePositions() = test { agent()() {
@@ -92,7 +81,7 @@ class RemoveWarehouseTest {
 
         val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
 
-        sendRequest(remove(item).term(), warehouseMapperAID)
+        sendRequest(remove(item).term(), warehouseMapperAID, INFORM)
         val result1 = blockingReceive(waitingTime)
 
         sendRequest("info(warehouse)", warehouseMapperAID)
@@ -110,7 +99,7 @@ class RemoveWarehouseTest {
 
         val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
 
-        val message = ACLMessage(REQUEST).apply {
+        val message = ACLMessage(INFORM).apply {
             addReceiver(warehouseMapperAID)
             content = remove(item).term().toString()
             replyWith = Random.nextDouble().toString()
@@ -134,4 +123,26 @@ class RemoveWarehouseTest {
         Assert.assertFalse(result3.content.contains("""position(rack(3),shelf(1)"""))
         Assert.assertTrue(result3.content.contains("""position(rack(3),shelf(2),quantity(4))]"""))
     } }
+
+    @Test fun removeItemsShouldFailIfOneIsNotInTheWarehouse() = test { agent()() {
+        val item1 = item(id("Item 5"), quantity(1))
+        val item2 = item(id("Item 999"), quantity(1))
+
+        val warehouseMapperAID = agent("warehouse_mapper", ASLAgent::class.java).aid
+
+        sendRequest("remove(items)[${item1.term()},${item2.term()}]", warehouseMapperAID, INFORM)
+        val result1 = blockingReceive(waitingTime)
+
+        assert(result1, FAILURE, "remove(items)[${item1.term()},${item2.term()}]")
+        checkWarehouseState(warehouseMapperAID, """item(id("Item 5"))[""" +
+                """position(rack(3),shelf(1),quantity(7)),""" +
+                """position(rack(3),shelf(2),quantity(9))]""")
+    } }
+
+    private fun JADEAgent.checkWarehouseState(warehouseMapperAID: AID, string: String, contain: Boolean = true) {
+        sendRequest("info(warehouse)", warehouseMapperAID)
+        val result = blockingReceive(waitingTime)
+        val test: (Boolean) -> Unit = if (contain) Assert::assertTrue else Assert::assertFalse
+        test(result.content.contains(string))
+    }
 }

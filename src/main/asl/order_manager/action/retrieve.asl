@@ -6,7 +6,7 @@
 +!retrieve(OID, P, PID)
     <-  !ensure_send(
             description("executor(item_picker)", "retrieve(item)"), // send message to a collection point manager
-            evaluate, retrieve(P, point(PID)), OID                  // ask for items reservation and positions
+            tell, retrieve(P, point(PID)), OID                      // ask for items reservation and positions
         ).
 
 /////////////////////////////////////////////////// ROBOT PICKER's response

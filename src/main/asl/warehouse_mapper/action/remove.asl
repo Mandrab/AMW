@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////// REMOVE ITEM /////////////////////////////////////////////////////
 
 @removeItem[atomic]
-+!kqml_received(S, achieve, remove(Item), MID)
++!kqml_received(S, tell, remove(Item), MID)
     :   Item = item(ID, quantity(Q))
     <-  .println("[WAREHOUSE MAPPER] required item removal");
         !is_sufficient(ID, Q);
@@ -10,7 +10,7 @@
         .send(S, confirm, remove(Item)[OH|OT], MID).
 
 @removeItems[atomic]
-+!kqml_received(S, evaluate, remove(items)[H|T], MID)
++!kqml_received(S, tell, remove(items)[H|T], MID)
     <-  .println("[WAREHOUSE MAPPER] required items removal");
         !are_sufficient([H|T]);
         !remove_all([H|T], [OH|OT]);

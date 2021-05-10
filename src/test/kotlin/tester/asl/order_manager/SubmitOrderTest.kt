@@ -70,7 +70,7 @@ class SubmitOrderTest {
         val result = warehouse.blockingReceive(waitingTime)
         warehouse.deregister()
 
-        assert(result, INFORM_REF, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
+        assert(result, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
     }
 
     @Test fun submittedOrderReceptionShouldBeConfirmedIfWarehouseManagerExists() = test {
@@ -90,8 +90,8 @@ class SubmitOrderTest {
         val result2 = warehouse.blockingReceive(retryTime + waitingTime)
         warehouse.deregister()
 
-        assert(result1, INFORM_REF, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
-        assert(result2, INFORM_REF, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
+        assert(result1, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
+        assert(result2, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
         Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
     }
 
@@ -128,7 +128,7 @@ class SubmitOrderTest {
         val result = collectionPointManager.blockingReceive(waitingTime)
         collectionPointManager.deregister()
 
-        assert(result, INFORM_REF, "point")
+        assert(result, INFORM, "point")
     }
 
     @Test fun agentShouldKeepAskIfNoAnswerFromCollectionPointManager() = test {
@@ -143,8 +143,8 @@ class SubmitOrderTest {
         val result2 = collectionPointManager.blockingReceive(retryTime + waitingTime)
         collectionPointManager.deregister()
 
-        assert(result1, INFORM_REF, "point")
-        assert(result2, INFORM_REF, "point")
+        assert(result1, INFORM, "point")
+        assert(result2, INFORM, "point")
         Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
     }
 
@@ -159,7 +159,7 @@ class SubmitOrderTest {
         val result = collectionPointManager.blockingReceive(waitingTime)
         collectionPointManager.deregister()
 
-        assert(result, INFORM_REF, "point")
+        assert(result, INFORM, "point")
     }
 
     @Test fun confirmFromCollectionPointManagerCauseStartOfItemsPick() = test {
@@ -178,8 +178,8 @@ class SubmitOrderTest {
         val result2 = robotPicker.blockingReceive(waitingTime)
         robotPicker.deregister()
 
-        assert(result1, INFORM_REF, """retrieve(item(id("a"),quantity(1)),point(pid))""")
-        assert(result2, INFORM_REF, """retrieve(item(id("b"),quantity(2)),point(pid))""")
+        assert(result1, INFORM, """retrieve(item(id("a"),quantity(1)),point(pid))""")
+        assert(result2, INFORM, """retrieve(item(id("b"),quantity(2)),point(pid))""")
     }
 
     @Test fun orderStatusShouldChangeOnlyWhenAllItemsAreRetrieved() = test {
@@ -240,8 +240,8 @@ class SubmitOrderTest {
         val result2 = robotPicker.blockingReceive(retryTime + waitingTime)
         robotPicker.deregister()
 
-        assert(result1, INFORM_REF, """retrieve(item(id("a"),quantity(1)),point(pid))""")
-        assert(result2, INFORM_REF, """retrieve(item(id("a"),quantity(1)),point(pid))""")
+        assert(result1, INFORM, """retrieve(item(id("a"),quantity(1)),point(pid))""")
+        assert(result2, INFORM, """retrieve(item(id("a"),quantity(1)),point(pid))""")
         Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
     }
 

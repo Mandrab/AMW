@@ -6,7 +6,7 @@
 		+order(id(OID), status(check), user(C, E, A))[H|T];         // save order's info (status=checking for validity)
         !ensure_send(
             description("management(items)", "remove(item)"),       // send message to a warehouse manager
-            evaluate, remove(items)[H|T], OID                       // ask for items reservation and positions
+            tell, remove(items)[H|T], OID                           // ask for items reservation and positions
         );
         +cache(MsgID, confirm, order(C, E, A)[H|T]);
         .send(Sender, confirm, order(C, E, A)[H|T], OID).           // TODO: cache has a wrong msgid (because changes)
@@ -20,7 +20,7 @@
         +order(id(OID), status(retrieve), U)[H|T];
         !ensure_send(
             description("management(items)", "info(collection_points)"),// send message to a collection point manager
-            evaluate, point, OID                                    // ask for items reservation and positions
+            tell, point, OID                                        // ask for items reservation and positions
         ).
 
 +!kqml_received(Sender, failure, remove(items)[H|T], MID)
