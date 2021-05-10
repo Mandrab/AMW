@@ -25,7 +25,11 @@
     <-  .println("[ORDER MANAGER] last item retrieved");
         !response_received(MID, OID);                               // confirm ensure_send reception and get original id
         -order(id(OID), _, U, point(PID));
-        +order(id(OID), status(completed), U, point(PID)).
+        +order(id(OID), status(completed), U, point(PID));
+        !ensure_send(
+            description("management(items)", "info(collection_points)"),
+            tell, free, OID
+        ).// TODO TEST
 
 // A failure should happen only if the robot is busy.
 // To avoid problems, let's retry until it is available.

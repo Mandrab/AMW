@@ -2,6 +2,7 @@
  Pre-Processing Directives
  **********************************************************************************************************************/
 
+{ include("utility/cache.asl") }
 { include("collection_point_manager/state/collection_points.asl") }
 { include("collection_point_manager/action/request.asl") }
 
