@@ -2,12 +2,8 @@
  Pre-Processing Directives
  **********************************************************************************************************************/
 
-{ include("action/item_picker.asl") }                               // include plans for items picking
-{ include("robot_picker/action/script_executor.asl") }              // include plans for scripts execution
-{ include("robot_picker/action/command_executor.asl") }             // include plans for commands execution
-{ include("robot_picker/action/move.asl") }                         // include plans for motion
-{ include("robot_picker/action/geo-localization.asl") }
-{ include("robot_picker/action/job.asl") }
+{ include("robot_picker/action/pick_request.asl") }
+{ include("robot_picker/action/script_request.asl") }
 
 /***********************************************************************************************************************
  Initial beliefs and rules

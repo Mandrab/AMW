@@ -3,17 +3,18 @@
 +!kqml_received(Sender, tell, retrieve(P, PID), OID)                // request of item picking
     :   pick(_)                                                     // already picking or ...
     |   execute(_)                                                  // already executing something
-    <-  .send(Sender, failure, retrieve(P, PID)).                   // fail the required task
+    <-  .println("[ROBOT PICKER] item retrieval not available");
+        .send(Sender, failure, retrieve(P, PID), OID).              // fail the required task
 
 +!kqml_received(Sender, tell, retrieve(P, PID), OID)                // request of item picking
-    <-  +pick(P, PID)[client(Sender)];                              // generate the event for picking
-        .send(Sender, confirm, retrieve(P, PID), MID).              // accept request
+    <-  .println("[ROBOT PICKER] item retrieval");
+        +pick(P, PID)[client(Sender)];                              // generate the event for picking
+        .send(Sender, confirm, retrieve(P, PID), OID).              // accept request
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
 
 +pick(item(id(ID),item(Item)))[client(Client)]
-	<-  .println("[ROBOT PICKER] picking items");
-	    Item = item(id(IID))[H|T];                                  // TODO docu che in teoria potrebbe non esserci l'oggetto e nel caso dovrebbe cercare da qualche altra parte
+	<-  Item = item(id(IID))[H|T];                                  // TODO docu che in teoria potrebbe non esserci l'oggetto e nel caso dovrebbe cercare da qualche altra parte
 	    !!remove(item(IID),_);                                      // TODO la posizione non è spacificata perchè non è implementata la ricerca di cui sopra
 	    .wait(1000);                                                // fake execution time
 		.send(Client,complete,retrieve(Item));                      // confirm task completion
