@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////// ORDER RECEPTION ////////////////////////////////////////////////////
 
-+!kqml_received(Sender, achieve, order(C, E, A)[H|T], MsgID)
++!kqml_received(Sender, achieve, order(C, E, A)[H|T], MID)
 	<-  .println("[ORDER MANAGER] request for a new order");
 	    !new_ID(order, OID);                                        // generate an id for the order
 		+order(id(OID), status(check), user(C, E, A))[H|T];         // save order's info (status=checking for validity)
@@ -8,8 +8,11 @@
             description("management(items)", "remove(item)"),       // send message to a warehouse manager
             tell, remove(items)[H|T], OID                           // ask for items reservation and positions
         );
-        +cache(MsgID, confirm, order(C, E, A)[H|T]);
-        .send(Sender, confirm, order(C, E, A)[H|T], OID).           // TODO: cache has a wrong msgid (because changes)
+        !cached_response(
+            Sender,
+            in(achieve, order(C, E, A)[H|T], MID),
+            out(confirm, order(C, E, A)[H|T], OID)
+        ).                                                          // cache the response and send it
 
 /////////////////////////////////////////////////// WAREHOUSE MANAGER's response
 
