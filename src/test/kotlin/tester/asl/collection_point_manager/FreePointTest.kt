@@ -1,7 +1,5 @@
 package tester.asl.collection_point_manager
 
-import framework.ASLAgent
-import framework.Framework
 import framework.Framework.ASL
 import framework.Framework.Utility.agent
 import framework.Framework.test
@@ -9,7 +7,6 @@ import framework.Messaging.compareTo
 import framework.Messaging.minus
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
-import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
 import org.junit.Assert
