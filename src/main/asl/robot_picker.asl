@@ -2,6 +2,8 @@
  Pre-Processing Directives
  **********************************************************************************************************************/
 
+{ include("utility/cache.asl") }
+{ include("utility/communication.asl") }
 { include("robot_picker/action/pick_request.asl") }
 { include("robot_picker/action/script_request.asl") }
 
@@ -26,8 +28,6 @@
 +!setup : not set
 	<-  .df_register("executor(item_picker)", "retrieve(item)");    // register for pick items
 		.df_register("executor(command)", "exec(command)");         // register for pick items
-		+activity(default);                                         // setup default activity
-        +state(available);                                          // set as available to achieve unordinary operations
         +set.                                                       // set process ended
 
 +!kqml_received(Sender, _, Msg, MsgID)
