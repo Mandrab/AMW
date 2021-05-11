@@ -28,7 +28,9 @@ object Messaging {
         val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
         Assert.assertEquals(message.performative, result.performative)
-        Assert.assertEquals(message.content, result.content)
+        result.content
+            ?.let { Assert.assertEquals(it, result.content) }
+            ?: Assert.assertEquals(message.contentObject.toString(), result.content)
         message.replyWith ?.let { Assert.assertEquals(it, result.replyWith) }
     }
 
