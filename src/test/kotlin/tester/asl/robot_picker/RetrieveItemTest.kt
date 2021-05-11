@@ -17,6 +17,7 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 class RetrieveItemTest {
+    private val retrieveTime = 1000L                                        // fake time: it is simulated
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
@@ -30,5 +31,27 @@ class RetrieveItemTest {
         agent .. INFORM + "retrieve(position(rack(1), shelf(2), quantity(3)), point(pid1))" - "abc" > ASL.robotPicker
         agent < FAILURE + "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))" - "abc"
         agent < CONFIRM + "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))" - "123"
+    }
+
+    @Test fun robotShouldSendConfirmationForPickCompletion() = test {
+        agent .. INFORM + "retrieve(position(rack(1), shelf(2), quantity(3)), point(pid1))" - "123" > ASL.robotPicker
+        agent < CONFIRM + "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))" - "123"
+
+        Thread.sleep(retrieveTime)
+
+        agent < CONFIRM + "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))[complete]" - "123"
+    }
+
+    @Test fun robotShouldEnsureRetrievalConfirmationToBeDelivered() = test {
+        agent .. INFORM + "retrieve(position(rack(1), shelf(2), quantity(3)), point(pid1))" - "123" > ASL.robotPicker
+        agent < CONFIRM + "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))" - "123"
+
+        Thread.sleep(retrieveTime)
+
+        agent < CONFIRM + "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))[complete]" - "123"
+
+        Thread.sleep(retryTime)
+
+        agent < CONFIRM + "retrieve(position(rack(1),shelf(2),quantity(3)),point(pid1))[complete]" - "123"
     }
 }
