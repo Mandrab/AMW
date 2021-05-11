@@ -23,9 +23,9 @@
         +set.                                                       // set process ended
 
 +!kqml_received(Sender, _, Msg, MsgID)
-    <-  .println("[ORDER MANAGER] unknown request");
+    <-  .println("[ROBOT PICKER] unknown request");
         .send(Sender, failure, error(unknown, Msg), MsgID).         // send failure but not cache response
 
 -!kqml_received(Sender, _, O, MsgID)
-    <-  .println("[ORDER MANAGER] failed request");
+    <-  .println("[ROBOT PICKER] failed request");
         .send(Sender, failure, O, MsgID).                           // send failure but not cache response

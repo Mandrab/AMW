@@ -34,6 +34,8 @@ messageID(0).
 
 -timeout(_, _, _, _).                                               // message got a response
 
++!response_received(MID) <- -message(_, _, _, MID).                 // remove message waiting flag
+
 +!response_received(TMID, TOID)
     <-  .term2string(TMID, MID);                                    // make atom a string
         .reverse(MID, RMID);                                        // uniqueness of id is at the end: 'xxxmidyyy'

@@ -1,5 +1,9 @@
 ///////////////////////////////////////////////////// ITEM PICKING /////////////////////////////////////////////////////
 
+// TODO implement comfirmation (with caching) in order manager
++!kqml_received(Sender, tell, retrieve(P, PID)[complete], MID)      // confirmation of message reception
+    <-  !response_received(MID).
+
 +!kqml_received(Sender, tell, retrieve(P, PID), MID)                // request of item picking
     <-  .println("[ROBOT PICKER] request for item retrieval");
         !set_pick(P, PID, Sender, MID);
@@ -27,4 +31,3 @@
 		    confirm, retrieve(Item, PID)[complete],                 // confirm task completion
 		    MID, unique
         ).                                                          // msgid is unique from order_manager
-        // TODO HE IS WAITING THE CONFIRMATION MESSAGE FROM ORDER MANAGER!!!
