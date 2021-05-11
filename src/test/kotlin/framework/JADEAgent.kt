@@ -10,6 +10,7 @@ import jason.asSyntax.Literal
 import kotlin.random.Random
 
 class JADEAgent: Agent() {
+    private var registered = false
 
     override fun setup() {
         super.setup()
@@ -18,6 +19,7 @@ class JADEAgent: Agent() {
     }
 
     fun register(_name: String, vararg types: String) = this.apply {
+        registered = true
         DFService.register(this, defaultDF, DFAgentDescription().apply {
             types.map {
                 addServices(ServiceDescription().apply { name = _name; type = it })
@@ -25,7 +27,10 @@ class JADEAgent: Agent() {
         })
     }
 
-    fun deregister() = DFService.deregister(this, defaultDF)
+    fun deregister() {
+        if (registered) DFService.deregister(this, defaultDF)
+        registered = false
+    }
 
     fun sendRequest(message: Literal, receiver: AID, performative: Int = ACLMessage.REQUEST) =
         apply { sendRequest(message.toString(), receiver, performative) }
@@ -38,4 +43,9 @@ class JADEAgent: Agent() {
         }) }
 
     operator fun invoke(action: JADEAgent.() -> Unit) = run(action)
+
+    override fun doDelete() {
+        deregister()
+        super.doDelete()
+    }
 }

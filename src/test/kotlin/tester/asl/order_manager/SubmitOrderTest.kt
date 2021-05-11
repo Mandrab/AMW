@@ -1,7 +1,9 @@
 package tester.asl.order_manager
 
 import framework.ASLAgent
-import framework.Framework
+import framework.Framework.ASL
+import framework.Framework.JADE
+import framework.Framework.Utility.agent
 import framework.Framework.waitingTime
 import framework.Framework.test
 import framework.JADEAgent
@@ -17,6 +19,10 @@ import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import controller.agent.Agents.oneShotBehaviour
 import controller.agent.communication.translation.out.OperationTerms.term
+import framework.Framework
+import framework.Messaging.compareTo
+import framework.Messaging.plus
+import framework.Messaging.rangeTo
 import jade.core.AID
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
@@ -47,43 +53,36 @@ class SubmitOrderTest {
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
     @Test fun orderWithNoItemsIsNotAccepted() = test {
-        val result = agent().sendRequest(
-            order(client("x"), email("y"), address("z")).term(),
-            agent("order_manager", ASLAgent::class.java).aid
-        ).blockingReceive(waitingTime)
+        agent .. REQUEST + order(client("x"), email("y"), address("z")).term() > ASL.orderManager
+
+        val result = agent.blockingReceive(waitingTime)
         Assert.assertNotNull(result)
         Assert.assertEquals(FAILURE, result.performative)
         Assert.assertTrue(result.content.startsWith("error(unknown,"))
     }
 
     @Test fun submittedOrderRequestShouldFailIfNoWarehouseAgentExists() = test {
-        val result = orderRequest().blockingReceive(waitingTime)
-        assert(result, FAILURE, defaultOrder)
+        placeOrder() < FAILURE + defaultOrder
     }
 
-    @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = test { warehouseMapper
-        orderRequest().blockingReceive(waitingTime)
-
-        val result = warehouseMapper.blockingReceive(waitingTime)
-        warehouseMapper.deregister()
-
-        assert(result, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
+    @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = test {
+        JADE.warehouseMapper
+        placeOrder().blockingReceive(waitingTime)
+        JADE.warehouseMapper < INFORM + """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]"""
     }
 
-    @Test fun submittedOrderReceptionShouldBeConfirmedIfWarehouseManagerExists() = test { warehouseMapper
-        val result = orderRequest().blockingReceive(waitingTime)
-        warehouseMapper.deregister()
-
-        assert(result, CONFIRM, defaultOrder)
+    @Test fun submittedOrderReceptionShouldBeConfirmedIfWarehouseManagerExists() = test {
+        JADE.warehouseMapper
+        placeOrder() < CONFIRM + defaultOrder
     }
 
-    @Test fun agentShouldKeepAskIfNoAnswerFromWarehouseManager() = test { warehouseMapper
-        val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
+    @Test fun agentShouldKeepAskIfNoAnswerFromWarehouseManager() = test {
+        JADE.warehouseMapper
+        val orderManagerAID = ASL.orderManager.aid
 
-        orderRequest(orderManagerAID)
-        val result1 = warehouseMapper.blockingReceive(waitingTime)
-        val result2 = warehouseMapper.blockingReceive(retryTime + waitingTime)
-        warehouseMapper.deregister()
+        placeOrder(orderManagerAID)
+        val result1 = JADE.warehouseMapper.blockingReceive(waitingTime)
+        val result2 = JADE.warehouseMapper.blockingReceive(retryTime + waitingTime)
 
         assert(result1, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
         assert(result2, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
@@ -94,7 +93,7 @@ class SubmitOrderTest {
         val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
 
         val received = warehouseResponse(false)
-        val client = orderRequest(orderManagerAID)
+        val client = placeOrder(orderManagerAID)
         client.blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
         Thread.sleep(waitingTime)
@@ -106,7 +105,7 @@ class SubmitOrderTest {
         val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
 
         val received = warehouseResponse(true)
-        val client = orderRequest(orderManagerAID)
+        val client = placeOrder(orderManagerAID)
         client.blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
         Thread.sleep(waitingTime)
@@ -117,7 +116,7 @@ class SubmitOrderTest {
     @Test fun orderInRetrievingCauseRequestToCollectionPointManager() = test {
         val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
         val received = warehouseResponse(true)
-        val client = orderRequest()
+        val client = placeOrder()
         client.blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
         val result = collectionPointManager.blockingReceive(waitingTime)
@@ -129,7 +128,7 @@ class SubmitOrderTest {
     @Test fun agentShouldKeepAskIfNoAnswerFromCollectionPointManager() = test {
         val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
         val received = warehouseResponse(true)
-        val client = orderRequest()
+        val client = placeOrder()
 
         client.blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
@@ -146,7 +145,7 @@ class SubmitOrderTest {
     @Test fun refuseFromCollectionPointManagerCauseAnotherRequest() = test {
         val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
         val received = warehouseResponse(true)
-        val client = orderRequest()
+        val client = placeOrder()
         client.blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
         waitAndReply(collectionPointManager, FAILURE)
@@ -162,7 +161,7 @@ class SubmitOrderTest {
         val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
         val robotPicker = agent().register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
         val received = warehouseResponse(true)
-        val client = orderRequest(orderManagerAID)
+        val client = placeOrder(orderManagerAID)
         client.blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
 
@@ -182,7 +181,7 @@ class SubmitOrderTest {
         val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
         val robotPicker = agent().register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
         val received = warehouseResponse(true)
-        val client = orderRequest(orderManagerAID)
+        val client = placeOrder(orderManagerAID)
         client.blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
 
@@ -202,7 +201,7 @@ class SubmitOrderTest {
         val collectionPointManager = agent().register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
         val robotPicker = agent().register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
         val received = warehouseResponse(true)
-        val client = orderRequest(orderManagerAID)
+        val client = placeOrder(orderManagerAID)
 
         client.blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
@@ -223,7 +222,7 @@ class SubmitOrderTest {
         val robotPicker = agent().register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
         val received = warehouseResponse(true)
 
-        val client = orderRequest(orderManagerAID)
+        val client = placeOrder(orderManagerAID)
         client.blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
 
@@ -240,7 +239,7 @@ class SubmitOrderTest {
         Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
     }
 
-    private fun Framework.orderRequest(aid: AID = agent("order_manager", ASLAgent::class.java).aid) =
+    private fun Framework.placeOrder(aid: AID = agent("order_manager", ASLAgent::class.java).aid) =
         agent().apply { sendRequest(defaultOrder, aid) }
 
     private fun Framework.warehouseResponse(confirmOrder: Boolean) = Semaphore(0).apply {

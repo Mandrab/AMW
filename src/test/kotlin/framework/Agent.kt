@@ -16,6 +16,7 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 object Messaging {
+    private const val waitingTime = 500L
 
     class Message(performative: Int): ACLMessage(performative) {
         lateinit var senderAgent: Agent
@@ -24,7 +25,8 @@ object Messaging {
     operator fun Agent.rangeTo(message: Message) = message.apply { senderAgent = this@rangeTo; sender = aid }
 
     operator fun Agent.compareTo(message: Message) = 0.apply {
-        val result = blockingReceive()
+        val result = blockingReceive(waitingTime)
+        Assert.assertNotNull(result)
         Assert.assertEquals(message.performative, result.performative)
         Assert.assertEquals(message.content, result.content)
         message.replyWith ?.let { Assert.assertEquals(it, result.replyWith) }
