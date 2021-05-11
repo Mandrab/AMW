@@ -1,9 +1,9 @@
 package tester.asl.warehouse_mapper
 
-import common.ASLAgent
-import common.Framework.Companion.waitingTime
-import common.Framework.Companion.test
-import common.JADEAgent
+import framework.ASLAgent
+import framework.Framework.waitingTime
+import framework.Framework.test
+import framework.JADEAgent
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity

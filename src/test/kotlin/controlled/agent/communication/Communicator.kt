@@ -1,6 +1,6 @@
 package controlled.agent.communication
 
-import common.JADEProxy
+import framework.JADEProxy
 import controller.agent.Communicator
 
 class Communicator: Communicator() {

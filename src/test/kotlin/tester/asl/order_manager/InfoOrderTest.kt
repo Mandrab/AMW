@@ -1,9 +1,8 @@
 package tester.asl.order_manager
 
-import common.ASLAgent
-import common.ASLAgents.start
-import common.Framework.Companion.waitingTime
-import common.Framework.Companion.test
+import framework.ASLAgent
+import framework.ASLAgents.start
+import framework.Framework.test
 import common.ontology.dsl.abstraction.Address.address
 import common.ontology.dsl.abstraction.Client.client
 import common.ontology.dsl.abstraction.Email.email

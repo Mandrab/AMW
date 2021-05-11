@@ -1,7 +1,7 @@
 package tester.asl.robot_picker
 
-import common.ASLAgent
-import common.Framework.Companion.test
+import framework.ASLAgent
+import framework.Framework.test
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
 import org.junit.Assert

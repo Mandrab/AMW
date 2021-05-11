@@ -1,8 +1,8 @@
 package tester.asl.collection_point_manager
 
-import common.ASLAgent
-import common.Framework.Companion.waitingTime
-import common.Framework.Companion.test
+import framework.ASLAgent
+import framework.Framework.waitingTime
+import framework.Framework.test
 import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*

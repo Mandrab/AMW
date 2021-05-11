@@ -1,11 +1,10 @@
 package tester.asl.order_manager
 
-import common.ASLAgent
-import common.Framework
-import common.Framework.Companion.waitingTime
-import common.Framework.Companion.retryTime
-import common.Framework.Companion.test
-import common.JADEAgent
+import framework.ASLAgent
+import framework.Framework
+import framework.Framework.waitingTime
+import framework.Framework.test
+import framework.JADEAgent
 import common.ontology.Services.ServiceType.*
 import common.ontology.Services.ServiceSupplier.*
 import common.ontology.dsl.abstraction.Address.address
@@ -48,10 +47,9 @@ class SubmitOrderTest {
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
     @Test fun orderWithNoItemsIsNotAccepted() = test {
-        val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
         val result = agent().sendRequest(
             order(client("x"), email("y"), address("z")).term(),
-            orderManagerAID
+            agent("order_manager", ASLAgent::class.java).aid
         ).blockingReceive(waitingTime)
         Assert.assertNotNull(result)
         Assert.assertEquals(FAILURE, result.performative)
@@ -63,32 +61,29 @@ class SubmitOrderTest {
         assert(result, FAILURE, defaultOrder)
     }
 
-    @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = test {
-        val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
-        orderRequest().blockingReceive(waitingTime).apply { println(this) }
+    @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = test { warehouseMapper
+        orderRequest().blockingReceive(waitingTime)
 
-        val result = warehouse.blockingReceive(waitingTime)
-        warehouse.deregister()
+        val result = warehouseMapper.blockingReceive(waitingTime)
+        warehouseMapper.deregister()
 
         assert(result, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
     }
 
-    @Test fun submittedOrderReceptionShouldBeConfirmedIfWarehouseManagerExists() = test {
-        val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
+    @Test fun submittedOrderReceptionShouldBeConfirmedIfWarehouseManagerExists() = test { warehouseMapper
         val result = orderRequest().blockingReceive(waitingTime)
-        warehouse.deregister()
+        warehouseMapper.deregister()
 
         assert(result, CONFIRM, defaultOrder)
     }
 
-    @Test fun agentShouldKeepAskIfNoAnswerFromWarehouseManager() = test {
+    @Test fun agentShouldKeepAskIfNoAnswerFromWarehouseManager() = test { warehouseMapper
         val orderManagerAID = agent("order_manager", ASLAgent::class.java).aid
-        val warehouse = agent().register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id)
 
         orderRequest(orderManagerAID)
-        val result1 = warehouse.blockingReceive(waitingTime)
-        val result2 = warehouse.blockingReceive(retryTime + waitingTime)
-        warehouse.deregister()
+        val result1 = warehouseMapper.blockingReceive(waitingTime)
+        val result2 = warehouseMapper.blockingReceive(retryTime + waitingTime)
+        warehouseMapper.deregister()
 
         assert(result1, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
         assert(result2, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")

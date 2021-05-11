@@ -1,6 +1,6 @@
 package controlled.user.agent
 
-import common.Framework
+import framework.Framework
 import controller.user.agent.Agent as UserAgent
 import common.ontology.Services.ServiceSupplier.*
 import common.ontology.Services.ServiceType.*
@@ -11,10 +11,10 @@ import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.User.user
+import framework.Framework.test
 import jade.lang.acl.ACLMessage.REQUEST
 import org.junit.Assert
 import org.junit.Test
-import kotlin.random.Random
 
 /**
  * Test class for user agent
@@ -23,23 +23,19 @@ import kotlin.random.Random
  *
  * @author Paolo Baldini
  */
-class AgentTest: Framework() {
+class AgentTest {
     private val receiveWaitingTime = 1000L
 
-    private val userAgent = agent(UserAgent::class.java)
-    private val warehouseMapper = agent().register(MANAGEMENT_ITEMS.id, INFO_WAREHOUSE.id)
-    private val orderManager = agent().register(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id, INFO_ORDERS.id)
-
-    @Test fun shopItemShouldRequireAListOfItemsFromItemManager() {
-        userAgent.shopItems()
+    @Test fun shopItemShouldRequireAListOfItemsFromItemManager() = test { warehouseMapper
+        agent(UserAgent::class.java).shopItems()
         val result = warehouseMapper.blockingReceive(receiveWaitingTime)
         Assert.assertNotNull(result)
         Assert.assertEquals(REQUEST, result.performative)
         Assert.assertEquals("info(warehouse)", result.contentObject.toString())
     }
 
-    @Test fun placeOrderShouldSendARequestToAnOrderManager() {
-        userAgent.placeOrder(
+    @Test fun placeOrderShouldSendARequestToAnOrderManager() = test { orderManager
+        agent(UserAgent::class.java).placeOrder(
             user(client("x"), email("y"), address("z")),
             listOf(
                 item(id("a"), quantity(1)),
@@ -55,8 +51,8 @@ class AgentTest: Framework() {
         )
     }
 
-    @Test fun ordersShouldSendARequestToAnOrderManager() {
-        userAgent.orders(user(client("x"), email("y"), address("z")))
+    @Test fun ordersShouldSendARequestToAnOrderManager() = test { orderManager
+        agent(UserAgent::class.java).orders(user(client("x"), email("y"), address("z")))
         val result = orderManager.blockingReceive(receiveWaitingTime)
         Assert.assertNotNull(result)
         Assert.assertEquals(REQUEST, result.performative)

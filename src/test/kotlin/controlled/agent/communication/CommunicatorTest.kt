@@ -1,7 +1,8 @@
 package controlled.agent.communication
 
-import common.Framework
+import framework.Framework
 import controller.agent.Agents.cyclicBehaviour
+import framework.Framework.test
 import jade.lang.acl.ACLMessage
 import org.junit.Assert
 import org.junit.Test
@@ -13,68 +14,67 @@ import java.util.concurrent.TimeUnit
  *
  * @author Paolo Baldini
  */
-class CommunicatorTest: Framework() {
+class CommunicatorTest {
     private val receiveWaitingTime = 1000L
     private val retryWaitingTime = 5000L
 
     private val receiverName = "receiver-name"
     private val receiverType = "receiver-type"
 
-    private val communicator = agent(Communicator::class.java)
-    private val receiver = agent().register(receiverName, receiverType)
+    private val receiver = Framework.agent().register(receiverName, receiverType)
 
-    @Test fun sendMessageShouldEffectivelyDeliverIt() {
-        communicator.sendMessage(message())
+    @Test fun sendMessageShouldEffectivelyDeliverIt() = test {
+        agent(Communicator::class.java).sendMessage(message())
         Assert.assertNotNull(receiver.blockingReceive(receiveWaitingTime))
     }
 
-    @Test fun sendMessageShouldAllowToReceiveAResponse() {
+    @Test fun sendMessageShouldAllowToReceiveAResponse() = test {
         receiver.addBehaviour(cyclicBehaviour {
             receiver.send(receiver.blockingReceive().createReply())
         })
-        communicator.sendMessage(message())
+        agent(Communicator::class.java).sendMessage(message())
             .get(receiveWaitingTime, TimeUnit.MILLISECONDS)                 // throws an exception if timeout elapse
     }
 
-    @Test fun sendMessageShouldAllowToMarshallResponse() {
+    @Test fun sendMessageShouldAllowToMarshallResponse() = test {
         receiver.addBehaviour(cyclicBehaviour {
             receiver.send(receiver.blockingReceive().createReply().apply { content = "text" })
         })
-        val result = communicator.sendMessage(message()) {
+        val result = agent(Communicator::class.java).sendMessage(message()) {
             it.content                                                      // extract content from the message
         }.get(receiveWaitingTime, TimeUnit.MILLISECONDS)                    // throws an exception if timeout elapse
         Assert.assertEquals("text", result)
     }
 
-    @Test fun sendMessageShouldTryOvercomeNetworkFailures() {
+    @Test fun sendMessageShouldTryOvercomeNetworkFailures() = test {
         val tryCounter = Semaphore(0)
         receiver.addBehaviour(cyclicBehaviour {
             receiver.blockingReceive()
             tryCounter.release()
         })
-        communicator.sendMessage(message())
+        agent(Communicator::class.java).sendMessage(message())
         val succeeded = tryCounter.tryAcquire(2, retryWaitingTime + receiveWaitingTime, TimeUnit.MILLISECONDS)
         Assert.assertTrue(succeeded)
     }
 
-    @Test fun sendMessageShouldNotRetryAfterSuccessfulDelivery() {
+    @Test fun sendMessageShouldNotRetryAfterSuccessfulDelivery() = test {
         val tryCounter = Semaphore(0)
         receiver.addBehaviour(cyclicBehaviour {
             receiver.send(receiver.blockingReceive().createReply())
             tryCounter.release()
         })
-        communicator.sendMessage(message())
+        agent(Communicator::class.java).sendMessage(message())
         val succeeded = tryCounter.tryAcquire(2, retryWaitingTime, TimeUnit.MILLISECONDS)
         Assert.assertFalse(succeeded)
     }
 
-    @Test fun sendMessageShouldNotRetryIfSpecified() {
+    @Test fun sendMessageShouldNotRetryIfSpecified() = test {
         val tryCounter = Semaphore(0)
         receiver.addBehaviour(cyclicBehaviour {
             receiver.send(receiver.blockingReceive().createReply())
             tryCounter.release()
         })
-        communicator.sendMessage(message(), false) { }
+        agent(Communicator::class.java).sendMessage(message(), false) { }
         val succeeded = tryCounter.tryAcquire(2, retryWaitingTime, TimeUnit.MILLISECONDS)
         Assert.assertFalse(succeeded)
     }
