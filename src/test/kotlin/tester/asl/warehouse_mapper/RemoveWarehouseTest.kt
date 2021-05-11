@@ -4,24 +4,19 @@ import framework.Framework.ASL
 import framework.Framework.Utility.agent
 import framework.Framework.waitingTime
 import framework.Framework.test
-import framework.JADEAgent
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Item.remove
 import controller.agent.communication.translation.out.AbstractionTerms.term
 import controller.agent.communication.translation.out.OperationTerms.term
-import framework.Framework
 import framework.Messaging.compareTo
 import framework.Messaging.minus
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
-import jade.core.AID
-import jade.lang.acl.ACLMessage
 import jade.lang.acl.ACLMessage.*
 import org.junit.Test
 import org.junit.Assert
-import kotlin.random.Random
 
 /**
  * Test class for WarehouseMapper's remove item request.

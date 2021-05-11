@@ -1,6 +1,5 @@
 package tester.asl.warehouse_mapper
 
-import framework.ASLAgent
 import framework.Framework.ASL
 import framework.Framework.Utility.agent
 import framework.Framework.test
@@ -16,11 +15,9 @@ import framework.Messaging.compareTo
 import framework.Messaging.minus
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
-import jade.lang.acl.ACLMessage
 import jade.lang.acl.ACLMessage.*
 import org.junit.Test
 import org.junit.Assert
-import kotlin.random.Random
 
 /**
  * Test class for WarehouseMapper's add item request.
