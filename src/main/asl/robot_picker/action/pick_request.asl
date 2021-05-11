@@ -1,17 +1,12 @@
 ///////////////////////////////////////////////////// ITEM PICKING /////////////////////////////////////////////////////
 
 // TODO implement comfirmation (with caching) in order manager
-+!kqml_received(Sender, tell, retrieve(P, PID)[complete], MID)      // confirmation of message reception
++!kqml_received(Sender, confirm, retrieve(P, PID), MID)             // confirmation of message reception
     <-  !response_received(MID).
 
 +!kqml_received(Sender, tell, retrieve(P, PID), MID)                // request of item picking
     <-  .println("[ROBOT PICKER] request for item retrieval");
         !set_pick(P, PID, Sender, MID);
-        !cached_response(
-            Sender,
-            in(tell, retrieve(P, PID), MID),
-            out(confirm, retrieve(P, PID), MID)                     // accept request
-        );                                                          // cache the response and send it
         !pick.                                                      // start picking
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
@@ -24,10 +19,10 @@
 
 +!pick
     :   pick(Item, PID)[client(Client), mid(MID)]
-	<-  .wait(1000);                                                // fake execution time
+	<-  .wait(500);                                                 // fake execution time
 	    -pick(Item, PID);                                           // task completed
 		!ensure_send(
 		    Client,
-		    confirm, retrieve(Item, PID)[complete],                 // confirm task completion
+		    confirm, retrieve(Item, PID),                           // confirm task completion
 		    MID, unique
         ).                                                          // msgid is unique from order_manager
