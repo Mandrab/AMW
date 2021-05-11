@@ -17,7 +17,6 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 class RetrieveItemTest {
-    private val waitingTime = 2000L
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
