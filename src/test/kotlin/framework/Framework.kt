@@ -45,22 +45,38 @@ object Framework {
         else Assert.assertEquals(content.toString().trim(), message.content)
     }
 
-    val orderManager: JADEAgent get() = getOrBuild("order_manager") {
-        register(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id, INFO_ORDERS.id)
-    }
-    val warehouseMapper: JADEAgent get() = getOrBuild("warehouse_mapper") {
-        register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id, STORE_ITEM.id, INFO_WAREHOUSE.id)
-    }
-    val robotPicker: JADEAgent get() = getOrBuild("robot_picker") {
-        register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
-    }
-    val collectionPointManager: JADEAgent get() = getOrBuild("collection_point_manager") {
-        register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
-    }
-    val commandManager = getOrBuild("command_manager") {
-        register(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id)
+    object Utility {
+        val agent get() = agents["agent"]?.let { it as JADEAgent } ?: agent("agent", JADEAgent::class.java)
     }
 
-    private fun getOrBuild(name: String, init: JADEAgent.() -> JADEAgent): JADEAgent =
-        agents[name] ?.let { it as JADEAgent } ?: agent(name, JADEAgent::class.java).init()
+    object JADE {
+        val orderManager get() = getOrBuild("jade_order_manager") {
+                register(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id, INFO_ORDERS.id)
+            }
+        val warehouseMapper get() = getOrBuild("jade_warehouse_mapper") {
+                register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id, STORE_ITEM.id, INFO_WAREHOUSE.id)
+            }
+        val robotPicker get() = getOrBuild("jade_robot_picker") {
+                register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
+            }
+        val collectionPointManager get() = getOrBuild("jade_collection_point_manager") {
+                register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
+            }
+        val commandManager get() = getOrBuild("jade_command_manager") {
+            register(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id)
+        }
+
+        private fun getOrBuild(name: String, init: JADEAgent.() -> JADEAgent): JADEAgent =
+            agents[name]?.let { it as JADEAgent } ?: agent(name, JADEAgent::class.java).init()
+    }
+
+    object ASL {
+        val orderManager get() = getOrBuild("order_manager")
+        val warehouseMapper get() = getOrBuild("warehouse_mapper")
+        val robotPicker get() = getOrBuild("robot_picker")
+        val collectionPointManager get() = getOrBuild("collection_point_manager")
+        val commandManager get() = getOrBuild("command_manager")
+
+        private fun getOrBuild(name: String) = agents[name]?.let { it as ASLAgent } ?: agent(name, ASLAgent::class.java)
+    }
 }
