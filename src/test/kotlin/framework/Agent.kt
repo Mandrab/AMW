@@ -31,7 +31,7 @@ object Messaging {
         result.content
             ?.let { Assert.assertEquals(it, result.content) }
             ?: Assert.assertEquals(message.contentObject.toString(), result.content)
-        message.replyWith ?.let { Assert.assertEquals(it, result.replyWith) }
+        message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
     }
 
     operator fun Int.plus(message: Any) = Message(this).apply { content = message.toString() }

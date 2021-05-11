@@ -1,8 +1,14 @@
 package tester.asl.collection_point_manager
 
 import framework.ASLAgent
-import framework.Framework.waitingTime
+import framework.Framework
+import framework.Framework.ASL
+import framework.Framework.Utility.agent
 import framework.Framework.test
+import framework.Messaging.compareTo
+import framework.Messaging.minus
+import framework.Messaging.plus
+import framework.Messaging.rangeTo
 import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
@@ -18,64 +24,37 @@ class FreePointTest {
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
     @Test fun freeOfANonOccupiedPointShouldFail() = test {
-        val collectionPointManagerAID = agent("collection_point_manager", ASLAgent::class.java).aid
-        val result = agent().sendRequest("free", collectionPointManagerAID, INFORM).blockingReceive(waitingTime)
-
-        assert(result, FAILURE, "free")
+        agent .. INFORM + "free" > ASL.collectionPointManager
+        agent < FAILURE + "free"
     }
 
     @Test fun freeOfAnOccupiedPointShouldSucceed() = test {
-        val collectionPointManagerAID = agent("collection_point_manager", ASLAgent::class.java).aid
-        val message = ACLMessage(INFORM).apply {
-            addReceiver(collectionPointManagerAID)
-            replyWith = "1234567890"
-        }
-
         val client1 = agent()
-        message.apply {
-            content = "point"
-            sender = client1.aid
-        }
-        val result1 = client1.apply { send(message) }.blockingReceive(waitingTime)
-        val client2 = agent()
-        message.apply {
-            content = "free"
-            sender = client2.aid
-        }
-        val result2 = client2.apply { send(message) }.blockingReceive(waitingTime)
+        client1 .. INFORM + "point" - "1234567890" > ASL.collectionPointManager
+        client1 < CONFIRM + """point(pid(0),x(50),y(50))""" - "1234567890"
 
-        assert(result1, CONFIRM, """point(pid(0),x(50),y(50))""")
-        assert(result2, CONFIRM, "free")
-        Assert.assertEquals("1234567890", result2.inReplyTo)
+        client1 .. INFORM + "free" - "1234567890" > ASL.collectionPointManager
+        client1 < CONFIRM + "free" - "1234567890"
+    }
+
+    @Test fun occupiedPointShouldNotBeReturned() = test {
+        val client1 = agent()
+        client1 .. INFORM + "point" - "1234567890" > ASL.collectionPointManager
+        client1 < CONFIRM + """point(pid(0),x(50),y(50))""" - "1234567890"
+
+        client1 .. INFORM + "point" - "abcdefghij" > ASL.collectionPointManager
+        client1 < CONFIRM + """point(pid(1),x(50),y(70))""" - "abcdefghij"
     }
 
     @Test fun afterFreeAPointShouldBeAgainAvailable() = test {
-        val collectionPointManagerAID = agent("collection_point_manager", ASLAgent::class.java).aid
-        val message = ACLMessage(INFORM).apply {
-            addReceiver(collectionPointManagerAID)
-            replyWith = "1234567890"
-        }
-
         val client1 = agent()
-        message.apply {
-            content = "point"
-            sender = client1.aid
-        }
-        val result1 = client1.apply { send(message) }.blockingReceive(waitingTime)
-        val client2 = agent()
-        message.apply {
-            content = "free"
-            sender = client2.aid
-        }
-        client2.apply { send(message) }.blockingReceive(waitingTime)
+        client1 .. INFORM + "point" - "1234567890" > ASL.collectionPointManager
+        client1 < CONFIRM + """point(pid(0),x(50),y(50))""" - "1234567890"
 
-        message.apply {
-            content = "point"
-            sender = client1.aid
-        }
-        val result2 = client1.sendRequest("point", collectionPointManagerAID, INFORM)
-            .blockingReceive(waitingTime)
+        client1 .. INFORM + "free" - "1234567890" > ASL.collectionPointManager
+        client1 < CONFIRM + "free" - "1234567890"
 
-        assert(result2, CONFIRM, """point(pid(0),x(50),y(50))""")
+        client1 .. INFORM + "point" - "1234567890" > ASL.collectionPointManager
+        client1 < CONFIRM + """point(pid(0),x(50),y(50))""" - "1234567890"
     }
 }
