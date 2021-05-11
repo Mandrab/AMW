@@ -20,7 +20,7 @@
 
 +!pick
     :   pick(Item, PID)[client(Client), mid(MID)]
-	<-  .wait(250);                                                 // fake execution time
+	<-  .wait(1000);                                                // fake execution time
 	    -pick(Item, PID);                                           // task completed
 		!ensure_send(
 		    Client,

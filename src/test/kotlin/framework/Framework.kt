@@ -14,7 +14,7 @@ object Framework {
 
     private val agents = HashMap<String, Agent>()
 
-    fun test(action: Framework.() -> Unit) = run(action).apply { agents.values.onEach(Agent::doDelete).clear() }
+    fun test(action: Framework.() -> Unit) = run(action).apply { agents.values.onEach(Agent::doDelete); agents.clear() }
 
     fun agent() = agent(nextDouble().toString(), JADEAgent::class.java)
 
