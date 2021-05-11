@@ -1,5 +1,6 @@
-package common
+package framework
 
+import common.JADEProxy
 import jade.core.Agent
 import jade.core.ProfileImpl
 import jade.core.Runtime

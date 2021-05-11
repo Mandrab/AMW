@@ -1,4 +1,4 @@
-package common
+package framework
 
 import controller.agent.AgentProxy
 import jade.core.Agent

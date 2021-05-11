@@ -1,5 +1,6 @@
-package common
+package framework
 
+import common.JADEProxy
 import jade.core.AID
 import jade.core.Agent
 import jade.domain.DFService
@@ -10,6 +11,7 @@ import jason.asSyntax.Literal
 import kotlin.random.Random
 
 class JADEAgent: Agent() {
+
     override fun setup() {
         super.setup()
         @Suppress("UNCHECKED_CAST")

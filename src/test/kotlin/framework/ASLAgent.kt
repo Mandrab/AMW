@@ -1,4 +1,4 @@
-package common
+package framework
 
 import jason.infra.jade.JadeAgArch
 import java.util.concurrent.Semaphore
