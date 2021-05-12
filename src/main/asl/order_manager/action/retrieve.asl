@@ -14,10 +14,9 @@
 @itemRetrieved[atomic]
 +!kqml_received(Sender, confirm, retrieve(P, point(PID))[mid(EMID)], MID)
     :   order(id(OID), S, U, point(PID))[P|L]
-    &   L = [H|T]
-    &   H = item(_, _)                                              // other items has to be retrieved
+    &   L = [position(_, _, _)|T]                                   // other items has to be retrieved
     <-  .println("[ORDER MANAGER] item retrieved");
-        !response_received(EMID);                                    // confirm ensure_send reception and get original id
+        !response_received(EMID);                                   // confirm ensure_send reception and get original id
         -order(id(OID), S, U, point(PID));
         +order(id(OID), S, U, point(PID))[H|T];
         !cached_response(
@@ -42,6 +41,9 @@
             description("management(items)", "info(collection_points)"),
             tell, free(OID)
         ).// TODO TEST
+
++!kqml_received(Sender, confirm, free(OID)[mid(MID)], _)// TODO TEST
+    <-  !response_received(EMID).
 
 // A failure should happen only if the robot is busy.
 // To avoid problems, let's retry until it is available.

@@ -9,18 +9,18 @@
         !cached_response(
             Sender,
             in(tell, remove(Item), MID),
-            out(confirm, remove(Item)[OH|OT], MID)
+            out(confirm, remove(Item)[OH|OT])
         ).                                                          // cache the response and send it
 
 @removeItems[atomic]
-+!kqml_received(Sender, tell, remove(items)[H|T], MID)
++!kqml_received(Sender, achieve, remove(items, OID)[mid(EMID)|[H|T]], MID)
     <-  .println("[WAREHOUSE MAPPER] required items removal");
         !are_sufficient([H|T]);
         !remove_all([H|T], [OH|OT]);
         !cached_response(
             Sender,
             in(tell, remove(items)[H|T], MID),
-            out(confirm, remove(items)[OH|OT], MID)
+            out(confirm, remove(items, OID)[mid(EMID)|[OH|OT]])
         ).                                                          // cache the response and send it
 
 /***********************************************************************************************************************

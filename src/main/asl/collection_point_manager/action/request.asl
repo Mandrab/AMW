@@ -1,24 +1,24 @@
 ///////////////////////////////////////////// COLLECTION POINT RESERVATION /////////////////////////////////////////////
 
-+!kqml_received(Sender, tell, point, OID)
++!kqml_received(Sender, achieve, point(OID)[mid(EMID)], MID)
 	<-  .println("[COLLECTION POINT MANAGER] collection point request");
 	    !reserve(OID, PID, X, Y);
 	    !cached_response(
             Sender,
-            in(tell, point, OID),
-            out(confirm, point(pid(PID), x(X), y(Y)), OID)
+            in(tell, point(OID), MID),
+            out(confirm, point(pid(PID), x(X), y(Y))[mid(EMID)])
         ).                                                          // cache the response and send it
 
 ///////////////////////////// POINT SET FREE
 
 @free_point[atomic]
-+!kqml_received(Sender, tell, free, OID)
++!kqml_received(Sender, tell, free(OID)[mid(EMID)], MID)
     <-  .println("[COLLECTION POINT MANAGER] collection point free");
         !free(OID);
         !cached_response(
             Sender,
-            in(tell, free, OID),
-            out(confirm, free, OID)
+            in(tell, free, MID),
+            out(confirm, free(OID)[mid(EMID)])
         ).                                                          // cache the response and send it
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////

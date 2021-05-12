@@ -34,7 +34,7 @@
 
 /////////////////////////////////////////////////// COLLECTION POINT's response
 
-+!kqml_received(Sender, confirm, point(PID)[mid(MID)], _)
++!kqml_received(Sender, confirm, point(PID, _, _)[mid(MID)], _)
     <-  .println("[ORDER MANAGER] collection point confirmed");
         !response_received(MID);                                    // confirm ensure_send reception and get original id
         -order(id(OID), status(retrieve), U)[H|T];

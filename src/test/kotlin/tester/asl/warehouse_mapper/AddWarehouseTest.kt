@@ -61,7 +61,7 @@ class AddWarehouseTest {
         agent .. REQUEST + add(item).term() > ASL.warehouseMapper
         agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
 
-        agent < FAILURE + add(item).term()
+        agent < FAILURE + "error(${add(item).term().toString().trim()})"
         val result = agent.blockingReceive(waitingTime)
         Assert.assertTrue(result.content.contains(
             """item(id("Item 5"))[position(rack(3),shelf(1),quantity(7))"""

@@ -26,10 +26,10 @@
 
 +!kqml_received(_, failure, _, _).                                  // failure are already managed automatically
 
-+!kqml_received(Sender, _, Msg, MsgID)
++!kqml_received(Sender, _, M, _)
     <-  .println("[WAREHOUSE MAPPER] unknown request");
-        .send(Sender, failure, error(unknown, Msg), MsgID).         // send failure but not cache response
+        .send(Sender, failure, unknown(M)).                         // send failure but not cache response
 
--!kqml_received(Sender, _, O, MsgID)
+-!kqml_received(Sender, _, M, _)
     <-  .println("[WAREHOUSE MAPPER] failed request");
-        .send(Sender, failure, O, MsgID).                           // send failure but not cache response
+        .send(Sender, failure, error(M)).                           // send failure but not cache response
