@@ -28,7 +28,7 @@ object Messaging {
     operator fun Agent.rangeTo(message: Message) = message.apply {
         senderAgent = this@rangeTo
         sender = aid
-        message.mid ?.let { inReplyTo = it.value }
+        message.mid ?.let { replyWith = it.value }
     }
 
     operator fun Agent.compareTo(message: Message) = 0.apply {

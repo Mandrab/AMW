@@ -47,6 +47,7 @@ object Framework {
 
     object Utility {
         val agent get() = agents["agent"]?.let { it as JADEAgent } ?: agent("agent", JADEAgent::class.java)
+        val mid = Messaging.MID()
     }
 
     object JADE {

@@ -26,9 +26,7 @@ import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
-import jade.lang.acl.MessageTemplate
 import org.junit.Assert
-import org.junit.Assert.fail
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
