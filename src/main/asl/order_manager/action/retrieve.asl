@@ -11,6 +11,7 @@
 
 /////////////////////////////////////////////////// ROBOT PICKER's response
 
+@itemRetrieved[atomic]
 +!kqml_received(Sender, confirm, retrieve(P, point(PID)), MID)
     :   order(id(OID), S, U, point(PID))[P|L]
     &   L = [H|T]
@@ -18,14 +19,25 @@
     <-  .println("[ORDER MANAGER] item retrieved");
         !response_received(MID, OID);                               // confirm ensure_send reception and get original id
         -order(id(OID), S, U, point(PID));
-        +order(id(OID), S, U, point(PID))[H|T].
+        +order(id(OID), S, U, point(PID))[H|T];
+        !cached_response(
+            Sender,
+            in(confirm, retrieve(P, point(PID)), MID),
+            out(confirm, retrieve(P, point(PID)), MID)
+        ).                                                          // cache the response and send it
 
+@lastItemRetrieved[atomic]
 +!kqml_received(Sender, confirm, retrieve(P, point(PID)), MID)
     :   order(id(OID), S, U, point(PID))[P]
     <-  .println("[ORDER MANAGER] last item retrieved");
         !response_received(MID, OID);                               // confirm ensure_send reception and get original id
         -order(id(OID), _, U, point(PID));
         +order(id(OID), status(completed), U, point(PID));
+        !cached_response(
+            Sender,
+            in(confirm, retrieve(P, point(PID)), MID),
+            out(confirm, retrieve(P, point(PID)), MID)
+        );                                                          // cache the response and send it
         !ensure_send(
             description("management(items)", "info(collection_points)"),
             tell, free, OID

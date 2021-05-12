@@ -44,4 +44,4 @@ messageID(0).
         .delete(0, I+1, RMID, OMID);                                // remove uniqueness from mid: 'yyydim' -> 'xxx'
         .reverse(OMID, OID);                                        // reverse again the message id
         .term2string(TOID, OID);                                    // make atom a string
-        -message(_, _, _, MID).                                     // remove message waiting flag
+        -message(_, _, _, TMID).                                    // remove message waiting flag

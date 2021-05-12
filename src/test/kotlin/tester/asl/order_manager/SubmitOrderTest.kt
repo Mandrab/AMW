@@ -15,8 +15,10 @@ import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import controller.agent.Agents.oneShotBehaviour
 import controller.agent.communication.translation.out.OperationTerms.term
+import framework.Framework.Utility.mid
 import framework.Messaging
 import framework.Messaging.compareTo
+import framework.Messaging.minus
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
 import jade.core.AID
@@ -24,7 +26,9 @@ import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
+import jade.lang.acl.MessageTemplate
 import org.junit.Assert
+import org.junit.Assert.fail
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
@@ -41,6 +45,8 @@ import java.util.concurrent.TimeUnit
  * @author Paolo Baldini
  */
 class SubmitOrderTest {
+    private val retrieveItemMessage1 = """retrieve(item(id("a"),quantity(1)),point(pid))"""
+    private val retrieveItemMessage2 = """retrieve(item(id("b"),quantity(2)),point(pid))"""
     private val defaultOrder = order(client("x"), email("y"), address("z"))[
             item(id("a"), quantity(1)),
             item(id("b"), quantity(2))
@@ -72,12 +78,13 @@ class SubmitOrderTest {
         JADE.warehouseMapper
         placeOrder()
 
-        val result1 = JADE.warehouseMapper.blockingReceive(waitingTime)
-        val result2 = JADE.warehouseMapper.blockingReceive(retryTime + waitingTime)
+        val mid1 = Messaging.MID()
+        JADE.warehouseMapper < INFORM + """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""" - mid
 
-        assert(result1, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
-        assert(result2, INFORM, """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""")
-        Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
+        Thread.sleep(retryTime)
+
+        JADE.warehouseMapper < INFORM + """remove(items)[item(id("a"),quantity(1)),item(id("b"),quantity(2))]""" - mid1
+        Assert.assertEquals(mid.value, mid1.value)
     }
 
     @Test fun orderCanBeRefusedIfTheWarehouseHasNotTheItems() = test {
@@ -169,16 +176,20 @@ class SubmitOrderTest {
     }
 
     @Test fun orderStatusShouldChangeAfterLastElementIsRetrieved() = test {
-        JADE.collectionPointManager
-        JADE.robotPicker
+        JADE.collectionPointManager; JADE.robotPicker
 
         val received = warehouseResponse(true)
         placeOrder().blockingReceive(waitingTime)
         received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
         waitAndReply(JADE.collectionPointManager, CONFIRM, "point(pid)")
 
-        waitAndReply(JADE.robotPicker)
-        waitAndReply(JADE.robotPicker)
+        val mid1 = Messaging.MID()
+        JADE.robotPicker <= INFORM + retrieveItemMessage1 - mid
+        JADE.robotPicker <= INFORM + retrieveItemMessage2 - mid1
+
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage1 - mid > ASL.orderManager
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage2 - mid1 > ASL.orderManager
+
         Thread.sleep(waitingTime)
 
         ordersInfo() < INFORM + """[order(id(odr1),status(completed))]"""
@@ -195,14 +206,40 @@ class SubmitOrderTest {
 
         waitAndReply(JADE.collectionPointManager, CONFIRM, "point(pid)")
 
-        val result1 = JADE.robotPicker.blockingReceive(waitingTime)
-        JADE.robotPicker.blockingReceive(waitingTime)
-        val result2 = JADE.robotPicker.blockingReceive(retryTime + waitingTime)
-        JADE.robotPicker.deregister()
+        JADE.robotPicker <= INFORM + retrieveItemMessage1 - mid
+        JADE.robotPicker <= INFORM + retrieveItemMessage2
 
-        assert(result1, INFORM, """retrieve(item(id("a"),quantity(1)),point(pid))""")
-        assert(result2, INFORM, """retrieve(item(id("a"),quantity(1)),point(pid))""")
-        Assert.assertEquals(result1.inReplyTo, result2.inReplyTo)
+        Thread.sleep(retryTime)
+
+        val mid1 = Messaging.MID()
+        JADE.robotPicker <= INFORM + retrieveItemMessage1 - mid1
+
+        Assert.assertEquals(mid.value, mid1.value)
+    }
+
+    @Test fun agentShouldConfirmRobotMessageReception() = test { JADE.collectionPointManager; JADE.robotPicker
+        val retrieveItem1 = """retrieve(item(id("a"),quantity(1)),point(pid))"""
+        val retrieveItem2 = """retrieve(item(id("b"),quantity(2)),point(pid))"""
+
+        val receivedRequest = warehouseResponse(true)
+
+        placeOrder().blockingReceive(waitingTime)
+        receivedRequest.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+
+        waitAndReply(JADE.collectionPointManager, CONFIRM, "point(pid)")
+
+        val mid1 = Messaging.MID()
+        JADE.robotPicker <= INFORM + retrieveItem1 - mid
+        JADE.robotPicker <= INFORM + retrieveItem2 - mid1
+
+        JADE.robotPicker .. CONFIRM + retrieveItem1 - mid > ASL.orderManager
+        JADE.robotPicker .. CONFIRM + retrieveItem2 - mid1 > ASL.orderManager
+
+        JADE.robotPicker <= CONFIRM + retrieveItem1
+        JADE.robotPicker <= CONFIRM + retrieveItem2
+
+        val result = JADE.robotPicker.blockingReceive(retryTime + waitingTime)
+        Assert.assertNull(result)
     }
 
     private fun placeOrder(aid: AID = ASL.orderManager.aid) = agent.apply { sendRequest(defaultOrder, aid) }
@@ -236,5 +273,6 @@ class SubmitOrderTest {
             ?.let { Assert.assertTrue(result.content.contains(it)) }
             ?: Assert.assertTrue(result.content.contains(message.contentObject.toString().trim()))
         message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
+        message.mid ?.let { it.value = result.inReplyTo }
     }
 }
