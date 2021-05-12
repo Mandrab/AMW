@@ -1,13 +1,13 @@
 //////////////////////////////////////////////////// ITEMS ADDITION ////////////////////////////////////////////////////
 
 @addItem[atomic]
-+!kqml_received(Sender, achieve, add(Item), MID)
++!kqml_received(Sender, achieve, add(Item)[mid(MID)], _)
     <-  .println("[WAREHOUSE MAPPER] request for item addition");
         !feasible_slot(Item);                                       // succeed if slot can contain this kind of item
         !add(Item);                                                 // add the item in that position
         !cached_response(
             Sender,
-            in(achieve, add(Item), MID),
+            in(achieve, add(Item)[mid(MID)]),
             out(confirm, add(Item))                                 // confirm storing
         ).                                                          // cache the response and send it
 

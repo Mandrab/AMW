@@ -1,26 +1,26 @@
 ////////////////////////////////////////////////////// REMOVE ITEM /////////////////////////////////////////////////////
 
 @removeItem[atomic]
-+!kqml_received(Sender, tell, remove(Item), MID)
++!kqml_received(Sender, tell, remove(Item)[mid(MID)], _)
     :   Item = item(ID, quantity(Q))
     <-  .println("[WAREHOUSE MAPPER] required item removal");
         !is_sufficient(ID, Q);
         !remove(ID, Q, [OH|OT]);
         !cached_response(
             Sender,
-            in(tell, remove(Item), MID),
+            in(tell, remove(Item)[mid(MID)]),
             out(confirm, remove(Item)[OH|OT])
         ).                                                          // cache the response and send it
 
 @removeItems[atomic]
-+!kqml_received(Sender, achieve, remove(items, OID)[mid(EMID)|[H|T]], MID)
++!kqml_received(Sender, achieve, remove(items, OID)[mid(MID)|[H|T]], _)
     <-  .println("[WAREHOUSE MAPPER] required items removal");
         !are_sufficient([H|T]);
         !remove_all([H|T], [OH|OT]);
         !cached_response(
             Sender,
-            in(tell, remove(items)[H|T], MID),
-            out(confirm, remove(items, OID)[mid(EMID)|[OH|OT]])
+            in(tell, remove(items, OID)[mid(MID)|[H|T]]),
+            out(confirm, remove(items, OID)[mid(MID)|[OH|OT]])
         ).                                                          // cache the response and send it
 
 /***********************************************************************************************************************
