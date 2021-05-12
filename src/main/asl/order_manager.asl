@@ -25,10 +25,12 @@
         .df_register("management(orders)", "info(orders)");         // register service as order informant
         +set.                                                       // set setup-process ended
 
++!kqml_received(_, failure, _, _).                                  // failure are already managed automatically
+
 +!kqml_received(Sender, _, Msg, MsgID)
     <-  .println("[ORDER MANAGER] unknown request");
         .send(Sender, failure, error(unknown, Msg), MsgID).         // send failure but not cache response
 
--!kqml_received(Sender, _, O, MsgID)
+-!kqml_received(Sender, _, Msg, MsgID)
     <-  .println("[ORDER MANAGER] failed request");
-        .send(Sender, failure, O, MsgID).                           // send failure but not cache response
+        .send(Sender, failure, Msg, MsgID).                         // send failure but not cache response

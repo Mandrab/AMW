@@ -20,6 +20,8 @@
     <-  .df_register("management(items)", "info(collection_points)");   // register service as collection points manager
         +set.
 
++!kqml_received(_, failure, _, _).                                  // failure are already managed automatically
+
 +!kqml_received(Sender, _, Msg, MsgID)
     <-  .println("[COLLECTION POINT MANAGER] unknown request");
         .send(Sender, failure, error(unknown, Msg), MsgID).         // send failure but not cache response
