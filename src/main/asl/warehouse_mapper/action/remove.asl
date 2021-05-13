@@ -9,7 +9,7 @@
         !cached_response(
             Sender,
             in(tell, remove(Item)[mid(MID)]),
-            out(confirm, remove(Item)[OH|OT])
+            out(confirm, remove(Item)[mid(MID)|[OH|OT]])
         ).                                                          // cache the response and send it
 
 @removeItems[atomic]
