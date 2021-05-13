@@ -31,7 +31,7 @@ class MessagePassingTest {
             item(ID.id("Item 2"), quantity(1))
     ].term()
 
-    @Test fun orderPropagation() = test {
+    @Test fun orderPropagation() = test(filterLogs = true) {
         robotPicker; collectionPointManager; warehouseMapper; orderManager
 
         recordLogs = true

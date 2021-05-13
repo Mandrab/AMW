@@ -15,16 +15,17 @@ object Framework {
     val agents = HashMap<String, Agent>()
     var recordLogs: Boolean = false
 
-    fun test(action: Framework.() -> Unit) = apply { filterLogs() }.apply(action).run {
-        agents.values.onEach(Agent::doDelete)
-        agents.clear()
+    fun test(filterLogs: Boolean = false, action: Framework.() -> Unit) = apply { if (filterLogs) filterLogs() }
+        .apply(action).run {
+            agents.values.onEach(Agent::doDelete)
+            agents.clear()
 
-        caughtLogs.removeAll { ! expectedLogs.contains(it) }
-        Assert.assertArrayEquals("$caughtLogs\n$expectedLogs", caughtLogs.toTypedArray(), expectedLogs.toTypedArray())
+            caughtLogs.removeAll { ! expectedLogs.contains(it) }
+            Assert.assertArrayEquals("$caughtLogs\n$expectedLogs", caughtLogs.toTypedArray(), expectedLogs.toTypedArray())
 
-        caughtLogs.clear()
-        expectedLogs.clear()
-    }
+            caughtLogs.clear()
+            expectedLogs.clear()
+        }
 
     operator fun String.unaryMinus() = expectedLogs.add(this)
 
