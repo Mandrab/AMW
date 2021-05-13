@@ -1,4 +1,4 @@
-package controlled.agent.communication.translation.`in`
+package controller.agent.communication.translation.`in`
 
 import common.ontology.dsl.abstraction.*
 import common.ontology.dsl.abstraction.Address.address

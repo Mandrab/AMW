@@ -1,9 +1,9 @@
 package tester.asl.order_manager
 
-import framework.Framework.ASL
-import framework.Framework.JADE
+import framework.AMWSpecificFramework.ASL
+import framework.AMWSpecificFramework.JADE
+import framework.AMWSpecificFramework.waitingTime
 import framework.Framework.Utility.agent
-import framework.Framework.waitingTime
 import framework.Framework.test
 import common.ontology.dsl.abstraction.Address.address
 import common.ontology.dsl.abstraction.Client.client
@@ -14,7 +14,8 @@ import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import controller.agent.communication.translation.out.OperationTerms.term
-import framework.Framework.Utility.mid
+import framework.AMWSpecificFramework.mid
+import framework.AMWSpecificFramework.retryTime
 import framework.Messaging
 import framework.Messaging.compareTo
 import framework.Messaging.plus
@@ -214,7 +215,7 @@ class SubmitOrderTest {
         JADE.robotPicker <= CONFIRM + retrieveItemMessage(1, 3)
         JADE.robotPicker <= CONFIRM + retrieveItemMessage(2, 4)
 
-        val result = JADE.robotPicker.blockingReceive(retryTime + waitingTime).apply { println(this) }
+        val result = JADE.robotPicker.blockingReceive(retryTime + waitingTime)
         Assert.assertNull(result)
     }
 
@@ -236,8 +237,8 @@ class SubmitOrderTest {
         val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
         Assert.assertEquals(message.performative, result.performative)
-        message.content.apply { println(this) }
-            ?.let { Assert.assertTrue(result.content.apply { println(this) }.contains(it)) }
+        message.content
+            ?.let { Assert.assertTrue(result.content.contains(it)) }
             ?: Assert.assertTrue(result.content.contains(message.contentObject.toString().trim()))
         message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
         message.mid ?.let { it.value = result.inReplyTo }

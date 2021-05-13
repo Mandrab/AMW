@@ -1,6 +1,7 @@
 package tester.asl.collection_point_manager
 
-import framework.Framework.ASL
+import framework.AMWSpecificFramework.ASL
+import framework.AMWSpecificFramework.waitingTime
 import framework.Framework.Utility.agent
 import framework.Framework.test
 import framework.Messaging.compareTo
@@ -33,9 +34,11 @@ class RequestPointTest {
 
     @Test fun requestShouldFailIfEveryPointIsAlreadyReserved() = test { var i = 0
         val requests = generateSequence { agent .. REQUEST + "point($i)[mid(${i++})]" > ASL.collectionPointManager }
-            .take(7).toList().map { agent.blockingReceive(waitingTime) }
-        requests.take(6).forEach { Assert.assertEquals(CONFIRM, it.performative) }
-        assert(requests.last(), FAILURE, "point(6)[mid(6)]")
+            .take(6).toList()
+            .map { agent.blockingReceive(waitingTime) }
+            .forEach { Assert.assertEquals(CONFIRM, it.performative) }
+        agent .. REQUEST + "point($i)[mid(${i++})]" > ASL.collectionPointManager
+        agent <= FAILURE + "point(6)[mid(6)]"
     }
 
     @Test fun pointForAnAlreadySubmitterOrderShouldBeTheSame() = test {

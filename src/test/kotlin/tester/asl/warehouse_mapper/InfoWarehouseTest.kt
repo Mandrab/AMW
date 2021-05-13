@@ -1,6 +1,7 @@
 package tester.asl.warehouse_mapper
 
-import framework.Framework.ASL
+import framework.AMWSpecificFramework.ASL
+import framework.AMWSpecificFramework.waitingTime
 import framework.Framework.Utility.agent
 import framework.Framework.test
 import framework.Messaging.compareTo

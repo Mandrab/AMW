@@ -11,7 +11,7 @@ import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import controller.agent.communication.translation.out.OperationTerms.term
-import framework.Framework.ASL
+import framework.AMWSpecificFramework.ASL
 import framework.Messaging.compareTo
 import framework.Messaging.plus
 import framework.Messaging.rangeTo

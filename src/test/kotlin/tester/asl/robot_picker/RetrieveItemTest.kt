@@ -1,9 +1,11 @@
 package tester.asl.robot_picker
 
 import framework.Messaging.plus
-import framework.Framework.ASL
+import framework.AMWSpecificFramework.ASL
+import framework.AMWSpecificFramework.mid
+import framework.AMWSpecificFramework.retryTime
+import framework.AMWSpecificFramework.waitingTime
 import framework.Framework.Utility.agent
-import framework.Framework.Utility.mid
 import framework.Framework.test
 import framework.Messaging.compareTo
 import framework.Messaging.rangeTo

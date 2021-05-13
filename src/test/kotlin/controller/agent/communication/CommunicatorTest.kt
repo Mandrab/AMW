@@ -1,9 +1,9 @@
-package controlled.agent.communication
+package controller.agent.communication
 
-import framework.Framework
 import controller.agent.Agents.cyclicBehaviour
+import framework.AMWSpecificFramework.Test.communicator
+import framework.Framework.Utility.agent
 import framework.Framework.test
-import framework.JADEAgent
 import jade.lang.acl.ACLMessage
 import org.junit.Assert
 import org.junit.Test
@@ -19,66 +19,64 @@ class CommunicatorTest {
     private val receiveWaitingTime = 1000L
     private val retryWaitingTime = 5000L
 
-    private val receiverName = "receiver-name"
-    private val receiverType = "receiver-type"
+    private val agentName = "agent-name"
+    private val agentType = "agent-type"
 
-    private val receiver = Framework.agent(JADEAgent::class.java).register(receiverName, receiverType)
-
-    @Test fun sendMessageShouldEffectivelyDeliverIt() = test {
-        agent(Communicator::class.java).sendMessage(message())
-        Assert.assertNotNull(receiver.blockingReceive(receiveWaitingTime))
+    @Test fun sendMessageShouldEffectivelyDeliverIt() = test { agent.register(agentName, agentType)
+        communicator.sendMessage(message())
+        Assert.assertNotNull(agent.blockingReceive(receiveWaitingTime))
     }
 
-    @Test fun sendMessageShouldAllowToReceiveAResponse() = test {
-        receiver.addBehaviour(cyclicBehaviour {
-            receiver.send(receiver.blockingReceive().createReply())
+    @Test fun sendMessageShouldAllowToReceiveAResponse() = test { agent.register(agentName, agentType)
+        agent.addBehaviour(cyclicBehaviour {
+            agent.send(agent.blockingReceive().createReply())
         })
-        agent(Communicator::class.java).sendMessage(message())
+        communicator.sendMessage(message())
             .get(receiveWaitingTime, TimeUnit.MILLISECONDS)                 // throws an exception if timeout elapse
     }
 
-    @Test fun sendMessageShouldAllowToMarshallResponse() = test {
-        receiver.addBehaviour(cyclicBehaviour {
-            receiver.send(receiver.blockingReceive().createReply().apply { content = "text" })
+    @Test fun sendMessageShouldAllowToMarshallResponse() = test { agent.register(agentName, agentType)
+        agent.addBehaviour(cyclicBehaviour {
+            agent.send(agent.blockingReceive().createReply().apply { content = "text" })
         })
-        val result = agent(Communicator::class.java).sendMessage(message()) {
+        val result = communicator.sendMessage(message()) {
             it.content                                                      // extract content from the message
         }.get(receiveWaitingTime, TimeUnit.MILLISECONDS)                    // throws an exception if timeout elapse
         Assert.assertEquals("text", result)
     }
 
-    @Test fun sendMessageShouldTryOvercomeNetworkFailures() = test {
+    @Test fun sendMessageShouldTryOvercomeNetworkFailures() = test { agent.register(agentName, agentType)
         val tryCounter = Semaphore(0)
-        receiver.addBehaviour(cyclicBehaviour {
-            receiver.blockingReceive()
+        agent.addBehaviour(cyclicBehaviour {
+            agent.blockingReceive()
             tryCounter.release()
         })
-        agent(Communicator::class.java).sendMessage(message())
+        communicator.sendMessage(message())
         val succeeded = tryCounter.tryAcquire(2, retryWaitingTime + receiveWaitingTime, TimeUnit.MILLISECONDS)
         Assert.assertTrue(succeeded)
     }
 
-    @Test fun sendMessageShouldNotRetryAfterSuccessfulDelivery() = test {
+    @Test fun sendMessageShouldNotRetryAfterSuccessfulDelivery() = test { agent.register(agentName, agentType)
         val tryCounter = Semaphore(0)
-        receiver.addBehaviour(cyclicBehaviour {
-            receiver.send(receiver.blockingReceive().createReply())
+        agent.addBehaviour(cyclicBehaviour {
+            agent.send(agent.blockingReceive().createReply())
             tryCounter.release()
         })
-        agent(Communicator::class.java).sendMessage(message())
+        communicator.sendMessage(message())
         val succeeded = tryCounter.tryAcquire(2, retryWaitingTime, TimeUnit.MILLISECONDS)
         Assert.assertFalse(succeeded)
     }
 
-    @Test fun sendMessageShouldNotRetryIfSpecified() = test {
+    @Test fun sendMessageShouldNotRetryIfSpecified() = test { agent.register(agentName, agentType)
         val tryCounter = Semaphore(0)
-        receiver.addBehaviour(cyclicBehaviour {
-            receiver.send(receiver.blockingReceive().createReply())
+        agent.addBehaviour(cyclicBehaviour {
+            agent.send(agent.blockingReceive().createReply())
             tryCounter.release()
         })
-        agent(Communicator::class.java).sendMessage(message(), false) { }
+        communicator.sendMessage(message(), false) { }
         val succeeded = tryCounter.tryAcquire(2, retryWaitingTime, TimeUnit.MILLISECONDS)
         Assert.assertFalse(succeeded)
     }
 
-    private fun message() = ACLMessage().apply { addReceiver(receiver.aid) }
+    private fun message() = ACLMessage().apply { addReceiver(agent.aid) }
 }

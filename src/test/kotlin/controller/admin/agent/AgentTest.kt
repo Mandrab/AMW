@@ -1,6 +1,5 @@
-package controlled.admin.agent
+package controller.admin.agent
 
-import controller.admin.agent.Agent as AdminAgent
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Position.position

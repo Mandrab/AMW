@@ -1,6 +1,6 @@
 package tester.asl.warehouse_mapper
 
-import framework.Framework.ASL
+import framework.AMWSpecificFramework.ASL
 import framework.Framework.Utility.agent
 import framework.Framework.test
 import common.ontology.dsl.abstraction.ID.id
@@ -12,7 +12,8 @@ import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Shelf.shelf
 import common.ontology.dsl.operation.Item.add
 import controller.agent.communication.translation.out.OperationTerms.term
-import framework.Framework.Utility.mid
+import framework.AMWSpecificFramework.mid
+import framework.AMWSpecificFramework.waitingTime
 import framework.Messaging.compareTo
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
@@ -44,7 +45,7 @@ class AddWarehouseTest {
         ))
     }
 
-    @Test fun addItemShouldSucceedIfSameItemIsAlreadyInThisPosition() = test { agent()() {
+    @Test fun addItemShouldSucceedIfSameItemIsAlreadyInThisPosition() = test {
         val item = item(id("Item 5"), position(rack(3), shelf(1), quantity(3)))
 
         agent .. REQUEST + addItem(item, 1) > ASL.warehouseMapper
@@ -55,7 +56,7 @@ class AddWarehouseTest {
         Assert.assertTrue(result.content.contains(
             """item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))"""
         ))
-    } }
+    }
 
     @Test fun addItemShouldFailIfADifferentItemIsAlreadyInThisPosition() = test {
         val item = item(id("Item 999"), position(rack(3), shelf(1), quantity(3)))
@@ -81,7 +82,7 @@ class AddWarehouseTest {
 
         agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
         val result = agent.blockingReceive(waitingTime)
-        Assert.assertTrue(result.apply { println(this) }.content.contains(
+        Assert.assertTrue(result.content.contains(
             """item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))"""
         ))
     }

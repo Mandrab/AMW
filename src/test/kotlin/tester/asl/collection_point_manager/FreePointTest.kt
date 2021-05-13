@@ -1,6 +1,6 @@
 package tester.asl.collection_point_manager
 
-import framework.Framework.ASL
+import framework.AMWSpecificFramework.ASL
 import framework.Framework.Utility.agent
 import framework.Framework.test
 import framework.Messaging.compareTo

@@ -1,4 +1,4 @@
-package controlled.agent.communication
+package controller.agent.communication
 
 import framework.JADEProxy
 import controller.agent.Communicator

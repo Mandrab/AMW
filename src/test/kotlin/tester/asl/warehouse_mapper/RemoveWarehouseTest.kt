@@ -1,8 +1,7 @@
 package tester.asl.warehouse_mapper
 
-import framework.Framework.ASL
+import framework.AMWSpecificFramework.ASL
 import framework.Framework.Utility.agent
-import framework.Framework.waitingTime
 import framework.Framework.test
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item
@@ -11,7 +10,8 @@ import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Item.remove
 import controller.agent.communication.translation.out.AbstractionTerms.term
 import controller.agent.communication.translation.out.OperationTerms.term
-import framework.Framework.Utility.mid
+import framework.AMWSpecificFramework.mid
+import framework.AMWSpecificFramework.waitingTime
 import framework.Messaging.compareTo
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
