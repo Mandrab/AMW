@@ -8,7 +8,7 @@
         !cached_response(
             Sender,
             in(achieve, add(Item)[mid(MID)]),
-            out(confirm, add(Item))                                 // confirm storing
+            out(confirm, add(Item)[mid(MID)])                       // confirm storing
         ).                                                          // cache the response and send it
 
 /***********************************************************************************************************************
