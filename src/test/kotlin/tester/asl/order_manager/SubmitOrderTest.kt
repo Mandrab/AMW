@@ -241,6 +241,5 @@ class SubmitOrderTest {
             ?.let { Assert.assertTrue(result.content.contains(it)) }
             ?: Assert.assertTrue(result.content.contains(message.contentObject.toString().trim()))
         message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
-        message.mid ?.let { it.value = result.inReplyTo }
     }
 }

@@ -20,16 +20,9 @@ object Messaging {
 
     class Message(performative: Int): ACLMessage(performative) {
         lateinit var senderAgent: Agent
-        var mid: MID? = null
     }
 
-    class MID { lateinit var value: String }
-
-    operator fun Agent.rangeTo(message: Message) = message.apply {
-        senderAgent = this@rangeTo
-        sender = aid
-        message.mid ?.let { replyWith = it.value }
-    }
+    operator fun Agent.rangeTo(message: Message) = message.apply { senderAgent = this@rangeTo; sender = aid }
 
     operator fun Agent.compareTo(message: Message) = 0.apply {
         val result = blockingReceive(waitingTime)
@@ -39,14 +32,11 @@ object Messaging {
             ?.let { Assert.assertEquals(it, result.content) }
             ?: Assert.assertEquals(message.contentObject.toString().trim(), result.content)
         message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
-        message.mid ?.let { it.value = result.inReplyTo }
     }
 
     operator fun Int.plus(message: Any) = Message(this).apply { content = message.toString() }
 
     operator fun Message.minus(code: String) = this.apply { replyWith = code }
-
-    operator fun Message.minus(code: MID) = this.apply { mid = code }
 
     operator fun Message.compareTo(receiver: Agent): Int {
         addReceiver(receiver.aid)
