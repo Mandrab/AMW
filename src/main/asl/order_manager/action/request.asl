@@ -10,7 +10,7 @@
         );
         !cached_response(
             Sender,
-            in(achieve, order(C, E, A)[H|T], MID),
+            in(achieve, order(C, E, A)[mid(MID)|[H|T]]),
             out(confirm, order(C, E, A)[H|T])
         ).                                                          // cache the response and send it
 

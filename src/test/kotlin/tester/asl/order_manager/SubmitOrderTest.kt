@@ -13,7 +13,6 @@ import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
-import controller.agent.Agents.oneShotBehaviour
 import controller.agent.communication.translation.out.OperationTerms.term
 import framework.Messaging
 import framework.Messaging.compareTo
@@ -24,8 +23,6 @@ import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
 import org.junit.Assert
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
 
 /**
  * Test class for OrderManager's accept order request
@@ -40,13 +37,15 @@ import java.util.concurrent.TimeUnit
  * @author Paolo Baldini
  */
 class SubmitOrderTest {
-    private val itemA = """item(id("a"),quantity(1))"""
-    private val itemB = """item(id("b"),quantity(2))"""
-    private val mid = mid(1)
     private fun mid(i: Int) = "mid(mid$i)"
-    private val oid = "odr1"
-    private val retrieveItemMessage1 = """retrieve(item(id("a"),quantity(1)),point(pid))[${mid(3)}]"""
-    private val retrieveItemMessage2 = """retrieve(item(id("b"),quantity(2)),point(pid))[${mid(4)}]"""
+    private fun retrieveItemMessage(i: Int, mid: Int) = "retrieve(${position(i)},point(pid))[${mid(mid)}]"
+    private fun removeItemsRequest(mid: Int) = "remove(items,odr1)[" + """item(id("a"),quantity(1))""" +
+            """,item(id("b"),quantity(2)),${mid(mid)}]"""
+    private fun removeItemsResponse(mid: Int) = "remove(items,odr1)[${position(mid)},${position(mid+1)},${mid(mid)}]"
+    private fun pointRequest(mid: Int) = "point(odr1)[${mid(mid)}]"
+    private fun pointResponse(mid : Int) = "point(pid, x, y)[${mid(mid)}]"
+    private fun orderStatus(status: String) = "[order(id(odr1),status($status))]"
+    private fun position(i: Int) = "position(x$i,y$i,z$i)"
     private val defaultOrder = order(client("x"), email("y"), address("z"))[
             item(id("a"), quantity(1)),
             item(id("b"), quantity(2))
@@ -58,7 +57,6 @@ class SubmitOrderTest {
         val order = order(client("x"), email("y"), address("z")).term()
 
         agent .. REQUEST + order > ASL.orderManager
-
         agent < FAILURE + "unknown(${order.toString().removeSuffix("[]").trim()})"
     }
 
@@ -69,7 +67,7 @@ class SubmitOrderTest {
     @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = test { JADE.warehouseMapper
         placeOrder().blockingReceive(waitingTime)
 
-        JADE.warehouseMapper < REQUEST + "remove(items,$oid)[$itemA,$itemB,$mid]"
+        JADE.warehouseMapper < REQUEST + removeItemsRequest(1)
     }
 
     @Test fun submittedOrderReceptionShouldBeConfirmedIfWarehouseManagerExists() = test { JADE.warehouseMapper
@@ -79,150 +77,148 @@ class SubmitOrderTest {
     @Test fun agentShouldKeepAskIfNoAnswerFromWarehouseManager() = test { JADE.warehouseMapper
         placeOrder()
 
-        JADE.warehouseMapper < REQUEST + "remove(items,$oid)[$itemA,$itemB,$mid]"
+        JADE.warehouseMapper < REQUEST + removeItemsRequest(1)
 
         Thread.sleep(retryTime)
 
-        JADE.warehouseMapper < REQUEST + "remove(items,$oid)[$itemA,$itemB,$mid]"
+        JADE.warehouseMapper < REQUEST + removeItemsRequest(1)
     }
 
-    @Test fun orderCanBeRefusedIfTheWarehouseHasNotTheItems() = test {
-        val received = warehouseResponse(false)
+    @Test fun orderCanBeRefusedIfTheWarehouseHasNotTheItems() = test { JADE.warehouseMapper
         placeOrder().blockingReceive(waitingTime)
-        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+
+        val result = JADE.warehouseMapper.blockingReceive(waitingTime)
+        JADE.warehouseMapper .. FAILURE + result.content > ASL.orderManager
 
         Thread.sleep(waitingTime)
 
-        ordersInfo() < INFORM + "[order(id(odr1),status(refused))]"
+        ordersInfo() < INFORM + orderStatus("refused")
     }
 
-    @Test fun orderGetStatusRetrievingIfTheWarehouseHasTheItems() = test {
-        val received = warehouseResponse(true)
+    @Test fun orderGetStatusRetrievingIfTheWarehouseHasTheItems() = test { JADE.warehouseMapper
         placeOrder().blockingReceive(waitingTime)
 
-        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
         Thread.sleep(waitingTime)
 
-        ordersInfo() < INFORM + "[order(id(odr1),status(retrieve))]"
+        ordersInfo() < INFORM + orderStatus("retrieve")
     }
 
-    @Test fun orderInRetrievingCauseRequestToCollectionPointManager() = test { JADE.collectionPointManager
-        val received = warehouseResponse(true)
+    @Test fun orderInRetrievingCauseRequestToCollectionPointManager() = test {
+        JADE.warehouseMapper; JADE.collectionPointManager
+
         placeOrder().blockingReceive(waitingTime)
-        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
 
         JADE.collectionPointManager < REQUEST + "point"
     }
 
-    @Test fun agentShouldKeepAskIfNoAnswerFromCollectionPointManager() = test { JADE.collectionPointManager
-        val received = warehouseResponse(true)
+    @Test fun agentShouldKeepAskIfNoAnswerFromCollectionPointManager() = test {
+        JADE.warehouseMapper; JADE.collectionPointManager
+
         placeOrder().blockingReceive(waitingTime)
-        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
+
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
 
         Thread.sleep(retryTime)
 
-        JADE.collectionPointManager <= REQUEST + "point($oid)[${mid(2)}]"
-        JADE.collectionPointManager <= REQUEST + "point($oid)[${mid(2)}]"
+        JADE.collectionPointManager <= REQUEST + pointRequest(2)
+        JADE.collectionPointManager <= REQUEST + pointRequest(2)
     }
 
-    @Test fun refuseFromCollectionPointManagerCauseAnotherRequest() = test { JADE.collectionPointManager
-        val received = warehouseResponse(true)
+    @Test fun refuseFromCollectionPointManagerCauseAnotherRequest() = test {
+        JADE.warehouseMapper; JADE.collectionPointManager
+
         placeOrder().blockingReceive(waitingTime)
-        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
 
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
         waitAndReply(JADE.collectionPointManager, FAILURE)
-        Thread.sleep(3000)                                      // wait time in orderManager
 
-        JADE.collectionPointManager < REQUEST + "point($oid)[${mid(2)}]"
+        Thread.sleep(retryTime)
+
+        JADE.collectionPointManager < REQUEST + pointRequest(2)
     }
 
     @Test fun confirmFromCollectionPointManagerCauseStartOfItemsPick() = test {
-        JADE.collectionPointManager; JADE.robotPicker
+        JADE.warehouseMapper; JADE.collectionPointManager; JADE.robotPicker
 
-        val received = warehouseResponse(true)
         placeOrder().blockingReceive(waitingTime)
-        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
 
-        waitAndReply(JADE.collectionPointManager, CONFIRM, "point(pid)[${mid(2)}]")
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
 
-        JADE.robotPicker < REQUEST + """retrieve($itemA,point(pid))"""
-        JADE.robotPicker < REQUEST + """retrieve($itemB,point(pid))"""
+        JADE.robotPicker < REQUEST + retrieveItemMessage(1, 3)
+        JADE.robotPicker < REQUEST + retrieveItemMessage(2, 4)
     }
 
-    @Test fun orderStatusShouldChangeWhenAllItemsAreRetrieved() = test { JADE.collectionPointManager; JADE.robotPicker
-        val received = warehouseResponse(true)
+    @Test fun orderStatusShouldChangeWhenAllItemsAreRetrieved() = test {
+        JADE.warehouseMapper; JADE.collectionPointManager; JADE.robotPicker
+
         placeOrder().blockingReceive(waitingTime)
-        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
 
-        waitAndReply(JADE.collectionPointManager, CONFIRM, "point(pid)[${mid(2)}]")
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
 
-        waitAndReply(JADE.robotPicker)
-        JADE.robotPicker.blockingReceive(waitingTime)
-        Thread.sleep(waitingTime)
+        JADE.robotPicker < REQUEST + retrieveItemMessage(1, 3)
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(1, 3) > ASL.orderManager
 
-        ordersInfo() < INFORM + "[order(id($oid),status(retrieve))]"
+        ordersInfo() < INFORM + orderStatus("retrieve")
     }
 
     @Test fun orderStatusShouldChangeAfterLastElementIsRetrieved() = test {
-        JADE.collectionPointManager; JADE.robotPicker
+        JADE.warehouseMapper; JADE.collectionPointManager; JADE.robotPicker
 
-        val received = warehouseResponse(true)
         placeOrder().blockingReceive(waitingTime)
-        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
-        waitAndReply(JADE.collectionPointManager, CONFIRM, "point(pid)[${mid(2)}]")
 
-        JADE.robotPicker <= REQUEST + retrieveItemMessage1
-        JADE.robotPicker <= REQUEST + retrieveItemMessage2
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
 
-        JADE.robotPicker .. CONFIRM + retrieveItemMessage1 > ASL.orderManager
-        JADE.robotPicker .. CONFIRM + retrieveItemMessage2 > ASL.orderManager
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
 
-        ordersInfo() < INFORM + "[order(id($oid),status(completed))]"
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(1, 3) > ASL.orderManager
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(2, 4) > ASL.orderManager
+
+        ordersInfo() < INFORM + orderStatus("completed")
     }
 
-    @Test fun agentShouldKeepAskIfNoAnswerFromRobotPicker() = test { JADE.collectionPointManager; JADE.robotPicker
-        val received = warehouseResponse(true)
+    @Test fun agentShouldKeepAskIfNoAnswerFromRobotPicker() = test {
+        JADE.warehouseMapper; JADE.collectionPointManager; JADE.robotPicker
+
         placeOrder().blockingReceive(waitingTime)
-        received.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
 
-        waitAndReply(JADE.collectionPointManager, CONFIRM, "point(pid)[${mid(2)}]")
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
 
-        JADE.robotPicker <= REQUEST + retrieveItemMessage1
-        JADE.robotPicker <= REQUEST + retrieveItemMessage2
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
 
         Thread.sleep(retryTime)
 
-        JADE.robotPicker <= REQUEST + retrieveItemMessage1
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
     }
 
-    @Test fun agentShouldConfirmRobotMessageReception() = test { JADE.collectionPointManager; JADE.robotPicker
-        val receivedRequest = warehouseResponse(true)
+    @Test fun agentShouldConfirmRobotMessageReception() = test {
+        JADE.warehouseMapper; JADE.collectionPointManager; JADE.robotPicker
         placeOrder().blockingReceive(waitingTime)
-        receivedRequest.tryAcquire(waitingTime, TimeUnit.MILLISECONDS)
 
-        waitAndReply(JADE.collectionPointManager, CONFIRM, "point(pid)[${mid(2)}]")
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
 
-        JADE.robotPicker <= REQUEST + retrieveItemMessage1
-        JADE.robotPicker <= REQUEST + retrieveItemMessage2
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
 
-        JADE.robotPicker .. CONFIRM + retrieveItemMessage1 > ASL.orderManager
-        JADE.robotPicker .. CONFIRM + retrieveItemMessage2 > ASL.orderManager
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(1, 3) > ASL.orderManager
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(2, 4) > ASL.orderManager
 
-        JADE.robotPicker <= CONFIRM + retrieveItemMessage1
-        JADE.robotPicker <= CONFIRM + retrieveItemMessage2
+        JADE.robotPicker <= CONFIRM + retrieveItemMessage(1, 3)
+        JADE.robotPicker <= CONFIRM + retrieveItemMessage(2, 4)
 
         val result = JADE.robotPicker.blockingReceive(retryTime + waitingTime).apply { println(this) }
         Assert.assertNull(result)
     }
 
     private fun placeOrder() = agent.apply { this .. REQUEST + defaultOrder > ASL.orderManager }
-
-    private fun warehouseResponse(confirmOrder: Boolean) = Semaphore(0).apply {
-        JADE.warehouseMapper.addBehaviour(oneShotBehaviour {
-            waitAndReply(JADE.warehouseMapper, if (confirmOrder) CONFIRM else FAILURE)
-            release(Int.MAX_VALUE)
-        })
-    }
 
     private fun ordersInfo() = agent.apply {
         this .. REQUEST + info(client("x"), email("y")).term() > ASL.orderManager
