@@ -7,7 +7,8 @@ import common.ontology.dsl.abstraction.Position.position
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Shelf.shelf
-import framework.Framework.JADE
+import framework.AMWSpecificFramework.JADE
+import framework.AMWSpecificFramework.Test.admin
 import framework.Framework.test
 import framework.Messaging.compareTo
 import framework.Messaging.plus
@@ -24,51 +25,44 @@ import org.junit.Test
 class AgentTest {
     private val receiveWaitingTime = 1000L
 
-    @Test fun addCommandShouldSendRequestToCommandManager() = test {
-        JADE.commandManager
-        agent(AdminAgent::class.java).addCommand()
+    @Test fun addCommandShouldSendRequestToCommandManager() = test { JADE.commandManager
+        admin.addCommand()
 
         JADE.commandManager < REQUEST + "TODO"
     }
 
-    @Test fun addItemShouldSendRequestToWarehouseMapper() = test {
-        JADE.warehouseMapper
-        agent(AdminAgent::class.java).addItem(item(id("a"), position(rack(2), shelf(3), quantity(2))))
+    @Test fun addItemShouldSendRequestToWarehouseMapper() = test { JADE.warehouseMapper
+        admin.addItem(item(id("a"), position(rack(2), shelf(3), quantity(2))))
 
         JADE.warehouseMapper < REQUEST + """add(item(id("a"),position(rack(2),shelf(3),quantity(2))))"""
     }
 
-    @Test fun removeItemShouldSendRequestToWarehouseMapper() = test {
-        JADE.warehouseMapper
-        agent(AdminAgent::class.java).removeItem(item(id("a"),quantity(3)))
+    @Test fun removeItemShouldSendRequestToWarehouseMapper() = test { JADE.warehouseMapper
+        admin.removeItem(item(id("a"),quantity(3)))
 
         JADE.warehouseMapper < REQUEST + """remove(item(id("a"),quantity(3)))"""
     }
 
-    @Test fun addVersionShouldSendRequestToCommandManager() = test {
-        JADE.commandManager
-        agent(AdminAgent::class.java).addVersion()
+    @Test fun addVersionShouldSendRequestToCommandManager() = test { JADE.commandManager
+        admin.addVersion()
 
         JADE.commandManager < REQUEST + "TODO"
     }
 
-    @Test fun executeCommandShouldSendRequestToSomeViableAgent() = test {
-        JADE.commandManager
-        agent(AdminAgent::class.java).executeCommand()
+    @Test fun executeCommandShouldSendRequestToSomeViableAgent() = test { JADE.commandManager
+        admin.executeCommand()
 
         JADE.commandManager < REQUEST + "TODO"
     }
 
-    @Test fun executeScriptShouldSendRequestToSomeViableAgent() = test {
-        JADE.commandManager
-        agent(AdminAgent::class.java).executeScript()
+    @Test fun executeScriptShouldSendRequestToSomeViableAgent() = test { JADE.commandManager
+        admin.executeScript()
 
         JADE.commandManager < REQUEST + "TODO"
     }
 
-    @Test fun warehouseStateShouldSendRequestToWarehouseManager() = test {
-        JADE.warehouseMapper
-        agent(AdminAgent::class.java).warehouseState()
+    @Test fun warehouseStateShouldSendRequestToWarehouseManager() = test { JADE.warehouseMapper
+        admin.warehouseState()
 
         JADE.warehouseMapper < REQUEST + """info(warehouse)"""
     }

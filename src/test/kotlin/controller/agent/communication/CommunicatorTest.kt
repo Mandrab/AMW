@@ -3,6 +3,7 @@ package controlled.agent.communication
 import framework.Framework
 import controller.agent.Agents.cyclicBehaviour
 import framework.Framework.test
+import framework.JADEAgent
 import jade.lang.acl.ACLMessage
 import org.junit.Assert
 import org.junit.Test
@@ -21,7 +22,7 @@ class CommunicatorTest {
     private val receiverName = "receiver-name"
     private val receiverType = "receiver-type"
 
-    private val receiver = Framework.agent().register(receiverName, receiverType)
+    private val receiver = Framework.agent(JADEAgent::class.java).register(receiverName, receiverType)
 
     @Test fun sendMessageShouldEffectivelyDeliverIt() = test {
         agent(Communicator::class.java).sendMessage(message())

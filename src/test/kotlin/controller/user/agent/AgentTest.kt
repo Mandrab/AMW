@@ -8,7 +8,7 @@ import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.User.user
-import framework.Framework.JADE
+import framework.AMWSpecificFramework.JADE
 import framework.Framework.test
 import framework.Messaging.compareTo
 import framework.Messaging.plus
