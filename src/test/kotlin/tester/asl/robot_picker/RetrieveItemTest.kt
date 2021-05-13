@@ -6,7 +6,6 @@ import framework.Framework.Utility.agent
 import framework.Framework.Utility.mid
 import framework.Framework.test
 import framework.Messaging.compareTo
-import framework.Messaging.minus
 import framework.Messaging.rangeTo
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
