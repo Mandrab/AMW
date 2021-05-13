@@ -14,6 +14,7 @@ import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import controller.agent.communication.translation.out.OperationTerms.term
+import framework.Framework.Utility.mid
 import framework.Messaging
 import framework.Messaging.compareTo
 import framework.Messaging.plus
@@ -37,7 +38,6 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 class SubmitOrderTest {
-    private fun mid(i: Int) = "mid(mid$i)"
     private fun retrieveItemMessage(i: Int, mid: Int) = "retrieve(${position(i)},point(pid))[${mid(mid)}]"
     private fun removeItemsRequest(mid: Int) = "remove(items,odr1)[" + """item(id("a"),quantity(1))""" +
             """,item(id("b"),quantity(2)),${mid(mid)}]"""
