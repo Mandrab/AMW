@@ -1,24 +1,32 @@
 package framework
 
-import common.ontology.Services.ServiceType.*
-import common.ontology.Services.ServiceSupplier.*
+import framework.Framework.Utility.filterLogs
 import framework.JADEAgents.proxy
 import jade.core.Agent
-import jade.lang.acl.ACLMessage
 import org.junit.Assert
+import java.io.FilterOutputStream
+import java.io.PrintStream
 import kotlin.random.Random.Default.nextDouble
 
 object Framework {
-    const val waitingTime = 500L
-    const val retryTime = 2000L
+    private val caughtLogs = mutableListOf<String>()
+    private val expectedLogs = mutableListOf<String>()
 
-    private val agents = HashMap<String, Agent>()
+    val agents = HashMap<String, Agent>()
+    var recordLogs: Boolean = false
 
-    fun test(action: Framework.() -> Unit) = run(action).apply { agents.values.onEach(Agent::doDelete); agents.clear() }
+    fun test(action: Framework.() -> Unit) = apply { filterLogs() }.apply(action).run {
+        agents.values.onEach(Agent::doDelete)
+        agents.clear()
 
-    fun agent() = agent(nextDouble().toString(), JADEAgent::class.java)
+        caughtLogs.removeAll { ! expectedLogs.contains(it) }
+        Assert.assertArrayEquals("$caughtLogs\n$expectedLogs", caughtLogs.toTypedArray(), expectedLogs.toTypedArray())
 
-    fun <T: Agent>agent(cls: Class<T>) = agent(nextDouble().toString(), cls)
+        caughtLogs.clear()
+        expectedLogs.clear()
+    }
+
+    operator fun String.unaryMinus() = expectedLogs.add(this)
 
     fun <T: Agent>agent(name: String, cls: Class<T>): T = when(cls.name) {
         ASLAgent::class.java.name ->
@@ -38,46 +46,27 @@ object Framework {
         else -> proxy(name, cls).getAgent()
     }.apply(action).doDelete()
 
-    fun assert(message: ACLMessage, performative: Int, content: Any) {
-        Assert.assertNotNull(message)
-        Assert.assertEquals(performative, message.performative)
-        if (content is String) Assert.assertEquals(content, message.content)
-        else Assert.assertEquals(content.toString().trim(), message.content)
-    }
-
     object Utility {
         val agent get() = agents["agent"]?.let { it as JADEAgent } ?: agent("agent", JADEAgent::class.java)
-        fun mid(i: Int) = "mid(mid$i)"
-    }
 
-    object JADE {
-        val orderManager get() = getOrBuild("jade_order_manager") {
-                register(MANAGEMENT_ORDERS.id, ACCEPT_ORDER.id, INFO_ORDERS.id)
+        fun filterLogs() {
+            val filterStream = object: FilterOutputStream(System.err) {
+                override fun write(b: ByteArray, off: Int, len: Int) {
+                    b.decodeToString().split("\n")
+                        .filter {
+                            it.contains("INFO: [") || it.contains("SEVERE: [")
+                        }.map {
+                            when {
+                                it.startsWith("INFO: ") -> it.removePrefix("INFO: ")
+                                else -> it
+                            }
+                        }.forEach {
+                            if (recordLogs) caughtLogs.add(it)
+                            super.write((it + "\n").toByteArray(), 0, it.length + 1)
+                        }
+                }
             }
-        val warehouseMapper get() = getOrBuild("jade_warehouse_mapper") {
-                register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id, STORE_ITEM.id, INFO_WAREHOUSE.id)
-            }
-        val robotPicker get() = getOrBuild("jade_robot_picker") {
-                register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
-            }
-        val collectionPointManager get() = getOrBuild("jade_collection_point_manager") {
-                register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
-            }
-        val commandManager get() = getOrBuild("jade_command_manager") {
-            register(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id)
+            System.setErr(PrintStream(filterStream, true))
         }
-
-        private fun getOrBuild(name: String, init: JADEAgent.() -> JADEAgent): JADEAgent =
-            agents[name]?.let { it as JADEAgent } ?: agent(name, JADEAgent::class.java).init()
-    }
-
-    object ASL {
-        val orderManager get() = getOrBuild("order_manager")
-        val warehouseMapper get() = getOrBuild("warehouse_mapper")
-        val robotPicker get() = getOrBuild("robot_picker")
-        val collectionPointManager get() = getOrBuild("collection_point_manager")
-        val commandManager get() = getOrBuild("command_manager")
-
-        private fun getOrBuild(name: String) = agents[name]?.let { it as ASLAgent } ?: agent(name, ASLAgent::class.java)
     }
 }
