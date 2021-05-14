@@ -1,13 +1,11 @@
 package framework
 
 import framework.AMWSpecificFramework.waitingTime
-import jade.core.Agent
 import jade.domain.DFService
 import jason.infra.jade.JadeAgArch
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
-import java.util.logging.Level
 
 class ASLAgent: JadeAgArch() {
 
