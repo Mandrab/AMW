@@ -31,4 +31,9 @@ class InfoCommandTest {
         agent <= INFORM + ("""script("[{@l1 +!main <- .println('Executing script ...');.wait(500);!b}, """ +
                 """{@l2 +!b <- .println('Script executed')}]")""" + "[mid(MID)]")
     }
+
+    @Test fun commandInfoOfNonExistingCommandShouldFail() = test {
+        agent .. REQUEST + """command(id("Command 999"))""" > ASL.commandManager
+        agent <= FAILURE + """unknown(command(id("Command 999")))"""
+    }
 }
