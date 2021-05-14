@@ -6,6 +6,7 @@ import jade.core.Agent
 import org.junit.Assert
 import java.io.FilterOutputStream
 import java.io.PrintStream
+import java.lang.Exception
 import kotlin.random.Random.Default.nextDouble
 
 object Framework {
@@ -15,17 +16,26 @@ object Framework {
     val agents = HashMap<String, Agent>()
     var recordLogs: Boolean = false
 
-    fun test(filterLogs: Boolean = false, action: Framework.() -> Unit) = apply { if (filterLogs) filterLogs() }
-        .apply(action).run {
-            agents.values.onEach(Agent::doDelete)
-            agents.clear()
-
-            caughtLogs.removeAll { ! expectedLogs.contains(it) }
-            Assert.assertArrayEquals("$caughtLogs\n$expectedLogs", caughtLogs.toTypedArray(), expectedLogs.toTypedArray())
-
-            caughtLogs.clear()
-            expectedLogs.clear()
+    fun test(filterLogs: Boolean = false, action: Framework.() -> Unit) = apply {
+        if (filterLogs) filterLogs()
+        try {
+            action()
+        } catch (e: Exception) {
+            closeTest()
+            throw e
         }
+    }.run { closeTest() }
+
+    private fun closeTest() {
+        agents.values.onEach(Agent::doDelete)
+        agents.clear()
+
+        val tmp1 = caughtLogs.apply { clear() }
+        val tmp2 = expectedLogs.apply { clear() }
+
+        tmp1.removeAll { ! tmp2.contains(it) }
+        Assert.assertArrayEquals("$tmp1\n$tmp2", tmp1.toTypedArray(), tmp2.toTypedArray())
+    }
 
     operator fun String.unaryMinus() = expectedLogs.add(this)
 
