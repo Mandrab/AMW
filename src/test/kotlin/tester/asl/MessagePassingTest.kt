@@ -37,10 +37,10 @@ class MessagePassingTest {
         recordLogs = true
         Thread.sleep(250)
 
-        agent .. REQUEST + defaultOrder - "abc" > orderManager      ; -"[ORDER MANAGER] request for a new order"
-        agent <= CONFIRM + defaultOrder
+        agent .. REQUEST + defaultOrder - "abc" > orderManager
 
         // expected logs
+        -"[ORDER MANAGER] request for a new order"
         -"[WAREHOUSE MAPPER] required items removal"
         -"[ORDER MANAGER] order confirmed by warehouse"
         -"[COLLECTION POINT MANAGER] collection point request"
@@ -56,6 +56,7 @@ class MessagePassingTest {
         Thread.sleep(5000)
         recordLogs = false
 
+        agent <= CONFIRM + defaultOrder
         agent .. REQUEST + "info(warehouse)" > warehouseMapper
         agent <= INFORM + "position(rack(1),shelf(1),quantity(2))"
     }
