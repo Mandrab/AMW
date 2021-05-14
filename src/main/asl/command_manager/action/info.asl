@@ -10,4 +10,4 @@
 +!kqml_received(Sender, achieve, info(commands), _)
 	<-  .println("[COMMAND MANAGER] request commands info");
 	    .findall(command(ID, N, D)[ script(S) ], command(ID, N, D)[ script(S) ], L);
-        .send(Sender, confirm, L[mid(MID)]).
+        .send(Sender, tell, L[mid(MID)]).

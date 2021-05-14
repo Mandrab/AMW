@@ -3,7 +3,9 @@
  **********************************************************************************************************************/
 
 { include("utility/literal.asl") }                                  // include utilities for works on literals
-{ include("state/commands.asl") }
+{ include("command_manager/action/add.asl") }
+{ include("command_manager/action/info.asl") }
+{ include("command_manager/state/commands.asl") }
 
 /***********************************************************************************************************************
  Initial goals
@@ -21,7 +23,7 @@
 		.df_register("management(commands)", "info(commands)");     // register for commands store
 		+set.                                                       // set process ended
 
-+!kqml_received(Sender, _, M, _)
++!kqml_received(Sender, P, M, _)
     <-  .println("[COMMAND MANAGER] unknown request");
         .send(Sender, failure, unknown(M)).                         // send failure but not cache response
 
