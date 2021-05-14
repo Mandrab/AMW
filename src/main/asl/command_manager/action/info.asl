@@ -2,9 +2,9 @@
 
 @commandRequest[atomic]
 +!kqml_received(Sender, achieve, command(ID), _)
-	:   command(ID, _, _)[ script(_) ]
+	:   command(ID, _, _)[ script(S) ]
     <-  .println("[COMMAND MANAGER] request command script");
-        .send(Sender, confirm, command(ID)[mid(MID)]).
+        .send(Sender, tell, script(S)[mid(MID)]).
 
 @commandsRequest[atomic]
 +!kqml_received(Sender, achieve, info(commands), _)
