@@ -24,6 +24,8 @@ import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
+import jade.lang.acl.UnreadableException
+import org.hamcrest.CoreMatchers
 import org.junit.Assert
 
 /**
@@ -111,7 +113,7 @@ class SubmitOrderTest {
         placeOrder().blockingReceive(waitingTime)
         waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
 
-        JADE.collectionPointManager < REQUEST + "point"
+        JADE.collectionPointManager < REQUEST + "point(pid(p1), x, y)[mid(m1)]"
     }
 
     @Test fun agentShouldKeepAskIfNoAnswerFromCollectionPointManager() = test {
@@ -237,9 +239,12 @@ class SubmitOrderTest {
         val result = blockingReceive(waitingTime)
         Assert.assertNotNull(result)
         Assert.assertEquals(message.performative, result.performative)
-        message.content
-            ?.let { Assert.assertTrue(result.content.contains(it)) }
-            ?: Assert.assertTrue(result.content.contains(message.contentObject.toString().trim()))
+
+        val content = message.content ?: message.contentObject.toString()
+        Assert.assertThat("Content differs from expectations", content.trim(), CoreMatchers.anyOf(
+            CoreMatchers.containsString(result.content.trim()),
+            CoreMatchers.containsString(try { result.contentObject.toString().trim() } catch (_: UnreadableException) { "" })
+        ))
         message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
     }
 }

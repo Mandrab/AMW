@@ -13,7 +13,8 @@ object AMWSpecificFramework {
     object Test {
         val admin get() = getOrBuild("admin_agent", controller.admin.agent.Agent::class.java)
         val user get() = getOrBuild("user_agent", controller.user.agent.Agent::class.java)
-        val communicator get() = getOrBuild("communicator_agent", controller.agent.Communicator::class.java)
+        val communicator get() = getOrBuild("communicator_agent",
+            controller.agent.communication.Communicator::class.java)
 
         @Suppress("UNCHECKED_CAST")
         private fun <T: Agent> getOrBuild(name: String, cls: Class<T>): T = Framework.agents[name]

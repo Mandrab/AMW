@@ -11,6 +11,7 @@ import framework.AMWSpecificFramework.Test.admin
 import framework.Framework.test
 import framework.Messaging.compareTo
 import framework.Messaging.plus
+import jade.domain.FIPAException
 import jade.lang.acl.ACLMessage.REQUEST
 import org.junit.Test
 
@@ -25,44 +26,53 @@ class AgentTest {
     private val receiveWaitingTime = 1000L
 
     @Test fun addCommandShouldSendRequestToCommandManager() = test { JADE.commandManager
-        admin.addCommand()
+        ensure { admin.addCommand() }
 
         JADE.commandManager < REQUEST + "TODO"
     }
 
     @Test fun addItemShouldSendRequestToWarehouseMapper() = test { JADE.warehouseMapper
-        admin.addItem(item(id("a"), position(rack(2), shelf(3), quantity(2))))
+        ensure { admin.addItem(item(id("a"), position(rack(2), shelf(3), quantity(2)))) }
 
         JADE.warehouseMapper < REQUEST + """add(item(id("a"),position(rack(2),shelf(3),quantity(2))))"""
     }
 
     @Test fun removeItemShouldSendRequestToWarehouseMapper() = test { JADE.warehouseMapper
-        admin.removeItem(item(id("a"),quantity(3)))
+        ensure { admin.removeItem(item(id("a"),quantity(3))) }
 
         JADE.warehouseMapper < REQUEST + """remove(item(id("a"),quantity(3)))"""
     }
 
     @Test fun addVersionShouldSendRequestToCommandManager() = test { JADE.commandManager
-        admin.addVersion()
+        ensure { admin.addVersion() }
 
         JADE.commandManager < REQUEST + "TODO"
     }
 
     @Test fun executeCommandShouldSendRequestToSomeViableAgent() = test { JADE.commandManager
-        admin.executeCommand()
+        ensure { admin.executeCommand() }
 
         JADE.commandManager < REQUEST + "TODO"
     }
 
     @Test fun executeScriptShouldSendRequestToSomeViableAgent() = test { JADE.commandManager
-        admin.executeScript()
+        ensure { admin.executeScript() }
 
         JADE.commandManager < REQUEST + "TODO"
     }
 
     @Test fun warehouseStateShouldSendRequestToWarehouseManager() = test { JADE.warehouseMapper
-        admin.warehouseState()
+        ensure { admin.warehouseState() }
 
         JADE.warehouseMapper < REQUEST + """info(warehouse)"""
+    }
+
+    private tailrec fun ensure(function: () -> Unit) {
+        try {
+            return function()
+        } catch (e: FIPAException) {
+            if (! e.message!!.contains("Timeout searching for data into df")) throw e
+        }
+        ensure(function)
     }
 }
