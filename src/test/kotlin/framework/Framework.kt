@@ -1,6 +1,5 @@
 package framework
 
-import framework.Framework.Utility.filterLogs
 import framework.JADEAgents.proxy
 import jade.core.Agent
 import org.junit.Assert
@@ -17,24 +16,16 @@ object Framework {
     var recordLogs: Boolean = false
 
     fun test(filterLogs: Boolean = false, action: Framework.() -> Unit) = apply {
-        if (filterLogs) filterLogs()
+        if (filterLogs) filterLogs(true)
         try {
             action()
         } catch (e: Exception) {
             closeTest()
             throw e
         }
-    }.run { closeTest() }
-
-    private fun closeTest() {
-        agents.values.onEach(Agent::doDelete)
-        agents.clear()
-
-        val tmp1 = caughtLogs.apply { clear() }
-        val tmp2 = expectedLogs.apply { clear() }
-
-        tmp1.removeAll { ! tmp2.contains(it) }
-        Assert.assertArrayEquals("$tmp1\n$tmp2", tmp1.toTypedArray(), tmp2.toTypedArray())
+    }.run {
+        if (filterLogs) filterLogs(false)
+        closeTest()
     }
 
     operator fun String.unaryMinus() = expectedLogs.add(this)
@@ -59,25 +50,39 @@ object Framework {
 
     object Utility {
         val agent get() = agents["agent"]?.let { it as JADEAgent } ?: agent("agent", JADEAgent::class.java)
+    }
 
-        fun filterLogs() {
-            val filterStream = object: FilterOutputStream(System.err) {
-                override fun write(b: ByteArray, off: Int, len: Int) {
-                    b.decodeToString().split("\n")
-                        .filter {
-                            it.contains("INFO: [") || it.contains("SEVERE: [")
-                        }.map {
-                            when {
-                                it.startsWith("INFO: ") -> it.removePrefix("INFO: ")
-                                else -> it
-                            }
-                        }.forEach {
-                            if (recordLogs) caughtLogs.add(it)
-                            super.write((it + "\n").toByteArray(), 0, it.length + 1)
+    private fun closeTest() {
+        agents.values.onEach(Agent::doDelete)
+        agents.clear()
+
+        val tmp1 = caughtLogs.apply { clear() }
+        val tmp2 = expectedLogs.apply { clear() }
+
+        tmp1.removeAll { ! tmp2.contains(it) }
+        Assert.assertArrayEquals("$tmp1\n$tmp2", tmp1.toTypedArray(), tmp2.toTypedArray())
+    }
+
+    private fun filterLogs(set: Boolean) {
+        class FilterStream: PrintStream(object: FilterOutputStream(System.err) {
+            override fun write(b: ByteArray, off: Int, len: Int) {
+                b.decodeToString().split("\n")
+                    .filter {
+                        it.contains("INFO: [") || it.contains("SEVERE: [")
+                    }.map {
+                        when {
+                            it.startsWith("INFO: ") -> it.removePrefix("INFO: ")
+                            else -> it
                         }
-                }
+                    }.forEach {
+                        if (recordLogs) caughtLogs.add(it)
+                        super.write((it + "\n").toByteArray(), 0, it.length + 1)
+                    }
             }
-            System.setErr(PrintStream(filterStream, true))
+        }, false) {
+            val originalStream = System.err
         }
+        if (set) System.setErr(FilterStream())
+        else if (System.err is FilterStream) (System.err as FilterStream).originalStream
     }
 }
