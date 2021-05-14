@@ -1,9 +1,13 @@
 package framework
 
+import framework.AMWSpecificFramework.waitingTime
+import jade.core.Agent
 import jade.domain.DFService
 import jason.infra.jade.JadeAgArch
-import java.lang.Exception
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
+import java.util.logging.Level
 
 class ASLAgent: JadeAgArch() {
 
@@ -14,7 +18,13 @@ class ASLAgent: JadeAgArch() {
     }
 
     override fun doDelete() {
-        try { DFService.deregister(this, defaultDF) } catch (_: Exception) { }
+        // the request is async with timeout in that seldom the asl agent consumes the confirmation instead of this
+        // function (it is not thought to have other behaviours)
+        try {
+            CompletableFuture.runAsync {
+                DFService.deregister(this, defaultDF)                       // try to deregister the agent
+            }.get(waitingTime, TimeUnit.MILLISECONDS)
+        } catch (_: Exception) { }
         super.doDelete()
     }
 

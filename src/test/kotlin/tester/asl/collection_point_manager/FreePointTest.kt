@@ -21,7 +21,7 @@ class FreePointTest {
 
     @Test fun freeOfANonOccupiedPointShouldFail() = test {
         agent .. INFORM + "free(oid1)[mid(mid1)]" > ASL.collectionPointManager
-        agent < FAILURE + "free(oid1)[mid(mid1)]"
+        agent < FAILURE + "error(free(oid1)[mid(mid1)])"
     }
 
     @Test fun freeOfAnOccupiedPointShouldSucceed() = test {

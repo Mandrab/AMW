@@ -33,12 +33,12 @@ class RequestPointTest {
     }
 
     @Test fun requestShouldFailIfEveryPointIsAlreadyReserved() = test { var i = 0
-        val requests = generateSequence { agent .. REQUEST + "point($i)[mid(${i++})]" > ASL.collectionPointManager }
+        generateSequence { agent .. REQUEST + "point($i)[mid(${i++})]" > ASL.collectionPointManager }
             .take(6).toList()
             .map { agent.blockingReceive(waitingTime) }
             .forEach { Assert.assertEquals(CONFIRM, it.performative) }
         agent .. REQUEST + "point($i)[mid(${i++})]" > ASL.collectionPointManager
-        agent <= FAILURE + "point(6)[mid(6)]"
+        agent <= FAILURE + "error(point(6)[mid(6)])"
     }
 
     @Test fun pointForAnAlreadySubmitterOrderShouldBeTheSame() = test {
