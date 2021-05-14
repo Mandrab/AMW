@@ -2,7 +2,12 @@ package framework
 
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
+import jade.lang.acl.UnreadableException
+import jade.tools.sniffer.Agent.i
+import org.hamcrest.CoreMatchers
+import org.hamcrest.Matcher
 import org.junit.Assert
+
 
 /**
  * Define a DSL for communication and testing
@@ -26,11 +31,14 @@ object Messaging {
 
     operator fun Agent.compareTo(message: Message) = 0.apply {
         val result = blockingReceive(waitingTime)
-        Assert.assertNotNull(result)
-        Assert.assertEquals(message.performative, result.performative)
-        message.content
-            ?.let { Assert.assertEquals(it, result.content) }
-            ?: Assert.assertEquals(message.contentObject.toString().trim(), result.content)
+        Assert.assertNotNull("An expected message has not arrived", result)
+        Assert.assertEquals("Performative differs from expectations", message.performative, result.performative)
+
+        val content = message.content ?: message.contentObject.toString()
+        Assert.assertThat("Content differs from expectations", content.trim(), CoreMatchers.anyOf(
+            CoreMatchers.`is`(result.content.trim()),
+            CoreMatchers.`is`(try { result.contentObject.toString().trim() } catch (_: UnreadableException) { "" })
+        ))
         message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
     }
 

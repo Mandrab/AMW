@@ -33,7 +33,7 @@ class Agent: Communicator() {
 
     fun shopItems(): Future<Collection<QuantityItem>> = sendMessage(InfoWarehouseOut.build().message(this)) {
         InfoWarehouseIn.parse(it).map { item ->
-            item(item.id, quantity(item.positions.map { pos -> pos.quantity.value }.sum()))
+            item(item.id, quantity(item.positions.sumOf { pos -> pos.quantity.value }))
         }.filter { it.quantity.value > 0 }
     }
 

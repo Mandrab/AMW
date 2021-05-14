@@ -1,6 +1,8 @@
 package framework
 
+import jade.domain.DFService
 import jason.infra.jade.JadeAgArch
+import java.lang.Exception
 import java.util.concurrent.Semaphore
 
 class ASLAgent: JadeAgArch() {
@@ -9,6 +11,11 @@ class ASLAgent: JadeAgArch() {
         val monitor = arguments.first { it is AIDMonitor } as AIDMonitor
         monitor.agent = this
         super.setup()
+    }
+
+    override fun doDelete() {
+        try { DFService.deregister(this, defaultDF) } catch (_: Exception) { }
+        super.doDelete()
     }
 
     operator fun invoke(action: ASLAgent.() -> Unit) = run(action)
