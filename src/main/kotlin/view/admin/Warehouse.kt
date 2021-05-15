@@ -62,10 +62,11 @@ class Warehouse(
 
     fun refresh(elements: Collection<Product>) { items = elements }
 
-    private fun itemInfoString(rack: Int) = items.filter { it.positions.any { it.rack.id == rack } }
-        .fold(StringBuilder()) { acc1, item -> acc1.append(
-                item.positions.filter { it.rack.id == rack }.fold(StringBuilder()) { acc2, position -> acc2.append(
-                    " Shelf: ${position.shelf.id}   Item: ${item.id.name}   Quantity: ${position.quantity.value} \n")
-                }
-        ) }.let { if (it.isBlank()) "No known element in this slot" else it.toString() }
+    private fun itemInfoString(rack: Int) =
+        items.flatMap { item -> item.positions.map { item to it } }
+            .filter { it.second.rack.id == rack }
+            .fold(StringBuilder()) { acc, (item, position) -> acc.append(
+                " Shelf: ${position.shelf.id}   Item: ${item.id.name}   Quantity: ${position.quantity.value} \n"
+            ) }
+            .let { if (it.isBlank()) "No known element in this slot" else it.toString() }
 }
