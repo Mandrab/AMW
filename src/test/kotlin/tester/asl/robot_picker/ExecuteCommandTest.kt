@@ -5,6 +5,7 @@ import framework.AMWSpecificFramework.ASL
 import framework.AMWSpecificFramework.JADE
 import framework.AMWSpecificFramework.mid
 import framework.AMWSpecificFramework.retryTime
+import framework.Framework
 import framework.Framework.Utility.agent
 import framework.Framework.test
 import framework.Messaging.compareTo
@@ -50,14 +51,37 @@ class ExecuteCommandTest {
         Assert.assertNull(JADE.commandManager.receive())
     }
 
-    @Test fun executionRequestShouldConfirmRequirerAfterExecution() = test { JADE.commandManager
+    @Test fun executionRequestShouldConfirmApplicantAfterExecution() = test { JADE.commandManager
+        agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
+
+        JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
+        JADE.commandManager .. INFORM + """script("{+!main <- .println(executing)}")[${mid(1)}]""" > ASL.robotPicker
+        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
+    }
+
+    @Test fun executionConfirmationShouldWaitForReceptionConfirmation() = test { JADE.commandManager
+        agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
+
+        JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
+        JADE.commandManager .. INFORM + """script("{+!main <- .println(executing)}")[${mid(1)}]""" > ASL.robotPicker
+        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
+
+        Thread.sleep(retryTime)
+
+        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
+    }
+
+    @Test fun executionConfirmationShouldStopWaitingAfterReceptionConfirmation() = test { JADE.commandManager
         agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
 
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
         JADE.commandManager .. INFORM + """script("{+!main <- .println(executing)}")[${mid(1)}]""" > ASL.robotPicker
 
+        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
+        agent .. CONFIRM + """command(id("Command1"))[mid(123)]""" > ASL.robotPicker
+
         Thread.sleep(retryTime)
 
-        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
+        Assert.assertNull(agent.receive())
     }
 }

@@ -2,7 +2,8 @@
 
 // TODO implement comfirmation (with caching) in order manager
 +!kqml_received(Sender, confirm, command(ID)[mid(MID)], _)          // confirmation of message reception
-    <-  !response_received(MID).
+    <-  .println("[ROBOT PICKER] execution confirmation received by applicant");
+        !response_received(MID).
 
 +!kqml_received(Sender, achieve, command(ID), MID)                  // request of job execution
     <-  .println("[ROBOT PICKER] request command execution");
