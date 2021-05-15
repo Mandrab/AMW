@@ -11,10 +11,10 @@
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
 
-@setTask[atomic]
+@setPickTask[atomic]
 +!set_pick(P, PID, Sender, MID)
     :   not pick(_, _)                                              // not already picking and ...
-    &   not execute(_, _)                                           // not already executing something
+    &   not execute(_)                                              // not already executing something
     <-  +pick(P, PID)[client(Sender), mid(MID)].                    // set pick target data
 
 +!pick
