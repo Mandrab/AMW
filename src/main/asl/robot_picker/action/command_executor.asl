@@ -14,6 +14,7 @@
 
 +!kqml_received(Sender, tell, script(S)[mid(MID)], _)
     <-  .println("[ROBOT PICKER] command script obtained");
+        !response_received(MID);
         !execute(S).
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////

@@ -43,5 +43,18 @@ class ExecuteCommandTest {
 
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
     }
+
+    @Test fun executionRequestShouldStopAskingForScriptIfMessageArrives() = test { JADE.commandManager
+        agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
+
+        Thread.sleep(retrieveTime)
+
+        JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
+        JADE.commandManager .. INFORM + """script("{+!main <- .println(executing)}")[${mid(1)}]""" > ASL.robotPicker
+
+        Thread.sleep(retryTime)
+
+        Assert.assertNull(JADE.commandManager.receive())
+    }
     //agent < CONFIRM + """command(id("Command1"))[mid(123)]"""
 }
