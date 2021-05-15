@@ -6,4 +6,8 @@
 	&   not command(ID, _, _)
 	<-  .println("[COMMAND MANAGER] request command addition");
 	    +Command;
-	    .send(Sender, confirm, add(Command)[mid(MID)]).
+	    !cached_response(
+	        Sender,
+	        in(achieve, add(Command)[mid(MID)]),
+	        out(confirm, add(Command)[mid(MID)])
+        ).

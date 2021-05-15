@@ -34,4 +34,12 @@ class AddCommandTest {
         agent .. REQUEST + "add(command(id, name, description)[script(something)])" - "abc" > ASL.commandManager
         agent <= CONFIRM + "add(command(id,name,description)[script(something)])[mid(abc)]"
     }
+
+    @Test fun commandsAddRequestResponseShouldBeCached() = test {
+        agent .. REQUEST + "add(command(id, name, description)[script(something)])" - "abc" > ASL.commandManager
+        agent <= CONFIRM + "add(command(id,name,description)[script(something)])[mid(abc)]"
+
+        agent .. REQUEST + "add(command(id, name, description)[script(something)])" - "abc" > ASL.commandManager
+        agent <= CONFIRM + "add(command(id,name,description)[script(something)])[mid(abc)]"
+    }
 }
