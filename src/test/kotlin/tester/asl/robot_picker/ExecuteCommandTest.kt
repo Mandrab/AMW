@@ -4,6 +4,7 @@ import framework.Messaging.plus
 import framework.AMWSpecificFramework.ASL
 import framework.AMWSpecificFramework.JADE
 import framework.AMWSpecificFramework.mid
+import framework.AMWSpecificFramework.retryTime
 import framework.Framework.Utility.agent
 import framework.Framework.test
 import framework.Messaging.compareTo
@@ -30,4 +31,17 @@ class ExecuteCommandTest {
 
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
     }
+
+    @Test fun executionRequestShouldKeepAskingForScriptIfMessageDoesNotArrive() = test { JADE.commandManager
+        agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
+
+        Thread.sleep(retrieveTime)
+
+        JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
+
+        Thread.sleep(retryTime)
+
+        JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
+    }
+    //agent < CONFIRM + """command(id("Command1"))[mid(123)]"""
 }
