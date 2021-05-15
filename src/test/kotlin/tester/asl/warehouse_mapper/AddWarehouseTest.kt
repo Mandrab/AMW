@@ -28,17 +28,17 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 class AddWarehouseTest {
-    private fun addItem(item: Item.WarehouseItem, mid : Int) = "${add(item).term()}[${mid(mid)}]"
+    private fun addItem(item: Item.WarehouseItem) = "${add(item).term()}"
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
     @Test fun addItemShouldSucceedIfThePositionIsFree() = test {
         val item = item(id("Item 999"), position(rack(999), shelf(999), quantity(999)))
 
-        agent .. REQUEST + addItem(item, 1) > ASL.warehouseMapper
+        agent .. REQUEST + addItem(item) > ASL.warehouseMapper
         agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
 
-        agent < CONFIRM + addItem(item, 1)
+        agent < CONFIRM + addItem(item)
         val result = agent.blockingReceive(waitingTime)
         Assert.assertTrue(result.content.contains(
             """item(id("Item 999"))[position(rack(999),shelf(999),quantity(999))]"""
@@ -48,10 +48,10 @@ class AddWarehouseTest {
     @Test fun addItemShouldSucceedIfSameItemIsAlreadyInThisPosition() = test {
         val item = item(id("Item 5"), position(rack(3), shelf(1), quantity(3)))
 
-        agent .. REQUEST + addItem(item, 1) > ASL.warehouseMapper
+        agent .. REQUEST + addItem(item) > ASL.warehouseMapper
         agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
 
-        agent < CONFIRM + addItem(item, 1)
+        agent < CONFIRM + addItem(item)
         val result = agent.blockingReceive(waitingTime)
         Assert.assertTrue(result.content.contains(
             """item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))"""
@@ -61,10 +61,10 @@ class AddWarehouseTest {
     @Test fun addItemShouldFailIfADifferentItemIsAlreadyInThisPosition() = test {
         val item = item(id("Item 999"), position(rack(3), shelf(1), quantity(3)))
 
-        agent .. REQUEST + addItem(item, 1) > ASL.warehouseMapper
+        agent .. REQUEST + addItem(item) > ASL.warehouseMapper
         agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
 
-        agent < FAILURE + "error(${addItem(item, 1)})"
+        agent < FAILURE + "error(${addItem(item)})"
         val result = agent.blockingReceive(waitingTime)
         Assert.assertTrue(result.content.contains(
             """item(id("Item 5"))[position(rack(3),shelf(1),quantity(7))"""
@@ -74,11 +74,11 @@ class AddWarehouseTest {
     @Test fun itemShouldBeAddedOnlyOnceIfTheMessageIsReceivedAgain() = test {
         val item = item(id("Item 5"), position(rack(3), shelf(1), quantity(3)))
 
-        agent .. REQUEST + addItem(item, 1) > ASL.warehouseMapper
-        agent .. REQUEST + addItem(item, 1) > ASL.warehouseMapper
+        agent .. REQUEST + addItem(item) > ASL.warehouseMapper
+        agent .. REQUEST + addItem(item) > ASL.warehouseMapper
 
-        agent <= CONFIRM + addItem(item, 1)
-        agent <= CONFIRM + addItem(item, 1)
+        agent <= CONFIRM + addItem(item)
+        agent <= CONFIRM + addItem(item)
 
         agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
         val result = agent.blockingReceive(waitingTime)
