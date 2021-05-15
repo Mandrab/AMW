@@ -15,8 +15,6 @@ import common.ontology.dsl.operation.Item.AddItem
 import common.ontology.dsl.operation.Item.RemoveItem
 import common.ontology.dsl.operation.Item.remove
 import common.ontology.dsl.operation.Item.add
-import common.ontology.dsl.operation.Version.AddVersion
-import common.ontology.dsl.operation.Version.add
 import common.ontology.dsl.operation.Order.PlaceOrder
 import common.ontology.dsl.operation.Order.InfoOrder
 import common.ontology.dsl.operation.Order.InfoOrders
@@ -35,14 +33,8 @@ object OperationTerms {
     fun AddItem.Companion.parse(string: String): AddItem = string.parse("""add\((.*)\)""")
             .run { add(WarehouseItem.parse(next())) }
 
-    fun AddVersion.Companion.parse(string: String): AddVersion = string.parse("""add\((.*), ?variant\((.*)\)\)""")
-            .run { add(next(), Variant.parse("variant(${next()})")) }
-
     fun ExecuteCommand.Companion.parse(string: String): ExecuteCommand = string.parse("""execute\((.*)\)""")
             .run { execute(ID.parse(next(), "command_id")) }
-
-    fun ExecuteScript.Companion.parse(string: String): ExecuteScript = string.parse("""execute\((.*)\)""")
-            .run { execute(Script.parse(next())) }
 
     fun PlaceOrder.Companion.parse(string: String): PlaceOrder =
             string.parse("""order\(client\((.*)\), ?email\((.*)\), ?address\((.*)\)\)\[(.*)]""")

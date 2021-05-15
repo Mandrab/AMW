@@ -3,7 +3,6 @@ package common.ontology.dsl.abstraction
 import common.ontology.dsl.abstraction.Description.Description
 import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Name.Name
-import common.ontology.dsl.abstraction.Variant.Variant
 
 object Command {
 
@@ -13,11 +12,11 @@ object Command {
             val id: ID,
             val name: Name,
             val description: Description,
-            val variants: List<Variant>
+            val script: Script
     )
 
     fun command(id: ID, name: Name, description: Description) = CommandInfo(id, name, description)
 
-    fun command(id: ID, name: Name, description: Description, variants: List<Variant>) =
-            CommandImplementations(id, name, description, variants)
+    fun command(id: ID, name: Name, description: Description, script: Script) =
+            CommandImplementations(id, name, description, script)
 }

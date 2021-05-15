@@ -7,13 +7,9 @@ import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.User.User
-import common.ontology.dsl.abstraction.Script.Script
-import common.ontology.dsl.abstraction.Variant.Variant
 import common.ontology.dsl.operation.Command.add
 import common.ontology.dsl.operation.Command.execute
-import common.ontology.dsl.operation.Version.add
 import common.ontology.dsl.operation.Item.add
-import common.ontology.dsl.operation.Script.execute
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import common.ontology.dsl.operation.Item.remove
@@ -63,12 +59,6 @@ object Services {
         }
     }
 
-    object AddVersion {
-        fun build(commandId: String, version: Variant) = object: Service(MANAGEMENT_COMMANDS.id, ADD_VERSION.id) {
-            override fun parse(): Literal = add(commandId, version).term()
-        }
-    }
-
     object InfoCommands//: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id)
 
     object InfoOrders {
@@ -86,12 +76,6 @@ object Services {
     object ExecuteCommand {
         fun build(commandId: ID) = object: Service(EXECUTOR_COMMAND.id, EXEC_COMMAND.id) {
             override fun parse(): Literal = execute(commandId).term()
-        }
-    }
-
-    object ExecuteScript {
-        fun build(script: Script) = object: Service(EXECUTOR_SCRIPT.id, EXEC_SCRIPT.id) {
-            override fun parse(): Literal = execute(script).term()
         }
     }
 

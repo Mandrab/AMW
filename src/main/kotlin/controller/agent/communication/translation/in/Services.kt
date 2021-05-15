@@ -6,7 +6,6 @@ import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.User.User
 import common.ontology.dsl.abstraction.Script.Script
-import common.ontology.dsl.abstraction.Variant.Variant
 import common.ontology.dsl.operation.Order.InfoOrder
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
 import controller.agent.communication.translation.`in`.LiteralParser.asList
@@ -27,10 +26,6 @@ object Services {
         fun build(command: CommandInfo): Nothing  = TODO()
     }
 
-    object AddVersion {
-        fun build(commandId: String, version: Variant): Nothing  = TODO()
-    }
-
     object InfoCommands//: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id)
 
     object InfoOrders: Service<Collection<InfoOrder>> {
@@ -43,10 +38,6 @@ object Services {
 
     object ExecuteCommand {
         fun build(commandId: ID): Nothing  = TODO()
-    }
-
-    object ExecuteScript {
-        fun build(script: Script): Nothing  = TODO()
     }
 
     object RemoveItem: Service<Unit> { override val parse = { _: ACLMessage -> Unit } }

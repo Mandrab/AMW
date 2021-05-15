@@ -2,7 +2,6 @@ package view.admin
 
 import common.ontology.dsl.abstraction.Command.CommandImplementations
 import common.ontology.dsl.abstraction.Requirement.Requirement
-import common.ontology.dsl.abstraction.Variant.Variant
 import view.utilities.swing.Grid.constraint
 import view.utilities.swing.Label.infoLabel
 import view.utilities.swing.Label.label
@@ -44,13 +43,6 @@ class Command(
         add(script, constraint { gridx = 2; gridy = 2 })
 
         add(label { text = "Variants" }, constraint { gridx = 1; gridy = 2 })
-        val variants = list<Variant> {
-            cellRenderer = render { " ID: ${it.id.name} " }
-            onClick = {
-                requirements.elements = it.requirements
-            }
-        }
-        add(variants, constraint { gridx = 1; gridy = 3 })
 
         commands = list {
             elements = commandsSupplier()
@@ -59,7 +51,6 @@ class Command(
                 id.info = it.id.name
                 name.info = it.name.name
                 description.info = it.description.name
-                variants.elements = it.variants
             }
         }
     }

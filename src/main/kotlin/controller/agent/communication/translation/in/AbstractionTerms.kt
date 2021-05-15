@@ -14,7 +14,6 @@ import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Name.name
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.Rack.rack
-import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf.shelf
 import controller.agent.communication.translation.`in`.LiteralParser.asList
 
@@ -75,14 +74,6 @@ object AbstractionTerms {
     fun User.parse(string: String): User.User =
             string.parse("""user\(client\(\"(.*)\"\), ?email\(\"(.*)\"\), ?address\(\"(.*)\"\)\)""")
                     .run { user(client(next()), email(next()), address(next())) }
-
-    fun Variant.parse(string: String): Variant.Variant =
-            string.parse("""variant\(id\(\"(.*)\"\), ?requirements\[(.*)], ?script\(\"(.*)\"\)\)""").run {
-                val id = next()
-                val requirements = next()
-                val script = next()
-                variant(id(id), script(script), requirements.split(",").map { Requirement.parse(it) })
-            }
 
     private fun String.parse(pattern: String) = pattern.toRegex().find(trim())!!.groupValues.drop(1).iterator()
 }

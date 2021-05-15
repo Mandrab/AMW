@@ -26,7 +26,6 @@ import common.ontology.dsl.abstraction.Status.States.CHECKING
 import common.ontology.dsl.abstraction.Status.States.RETRIEVING
 import common.ontology.dsl.abstraction.Status.status
 import common.ontology.dsl.abstraction.User.user
-import common.ontology.dsl.abstraction.Variant.variant
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
 import org.junit.Test
 
@@ -92,11 +91,4 @@ class AbstractionTermsTest {
     @Test fun testUserParse() =
             assert(user(client("antonio"), email("antonio@mail"), address("address"))
                     == User.parse("user(client(\"antonio\"), email(\"antonio@mail\"), address(\"address\"))"))
-
-    @Test fun testVariantParse() = assert(
-            variant(
-                    id("a0"),
-                    script("x y z !"),
-                    listOf(requirement("r0"), requirement("r1"))
-            ) == Variant.parse("variant(id(\"a0\"), requirements[r0, r1],script(\"x y z !\"))"))
 }

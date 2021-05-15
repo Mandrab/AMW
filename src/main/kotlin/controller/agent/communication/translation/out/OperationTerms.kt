@@ -2,8 +2,6 @@ package controller.agent.communication.translation.out
 
 import common.ontology.dsl.operation.Command.AddCommand
 import common.ontology.dsl.operation.Item.AddItem
-import common.ontology.dsl.operation.Version.AddVersion
-import common.ontology.dsl.operation.Script.ExecuteScript
 import common.ontology.dsl.operation.Command.ExecuteCommand
 import common.ontology.dsl.operation.Order.PlaceOrder
 import common.ontology.dsl.operation.Item.RemoveItem
@@ -21,11 +19,7 @@ object OperationTerms {
 
     fun AddItem.term(): Literal = "add"(item.term())
 
-    fun AddVersion.term(): Literal = "add"(commandId.toTerm(), variant.term())
-
     fun ExecuteCommand.term(): Literal = "execute"(commandId.term("command_id"))
-
-    fun ExecuteScript.term(): Literal = "execute"(script.term())
 
     fun PlaceOrder.term(): Literal = "order"(client.term(), email.term(), address.term())[items.map { it.term() }]
 

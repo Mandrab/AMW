@@ -17,7 +17,6 @@ import common.ontology.dsl.abstraction.Script.Script
 import common.ontology.dsl.abstraction.Shelf.Shelf
 import common.ontology.dsl.abstraction.Status.Status
 import common.ontology.dsl.abstraction.User.User
-import common.ontology.dsl.abstraction.Variant.Variant
 import controller.agent.communication.translation.out.Literals.get
 import controller.agent.communication.translation.out.Literals.invoke
 import controller.agent.communication.translation.out.Literals.toStringTerm
@@ -60,7 +59,4 @@ object AbstractionTerms {
     fun Status.term(): Literal = "status"(state.value.toTerm())
 
     fun User.term(): Literal = "user"(client.term(), email.term(), address.term())
-
-    fun Variant.term(): Literal = "variant"(id.term("v_id"),
-            "requirements".get(*requirements.map { it.term() }.toTypedArray()), script.term())
 }
