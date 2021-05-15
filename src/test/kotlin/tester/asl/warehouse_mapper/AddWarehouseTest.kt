@@ -82,8 +82,9 @@ class AddWarehouseTest {
 
         agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
         val result = agent.blockingReceive(waitingTime)
-        Assert.assertTrue(result.content.contains(
-            """item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))"""
+        Assert.assertTrue("""Expected contains: item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))""" +
+                "\nBut was: ${result.content}",
+            result.content.contains("""item(id("Item 5"))[position(rack(3),shelf(1),quantity(10))"""
         ))
     }
 }
