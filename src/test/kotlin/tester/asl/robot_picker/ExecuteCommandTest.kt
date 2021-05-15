@@ -20,22 +20,17 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 class ExecuteCommandTest {
-    private val retrieveTime = 750L                                         // fake time: it is simulated
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
     @Test fun executionRequestShouldCauseRequestToCommanManager() = test { JADE.commandManager
         agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
 
-        Thread.sleep(retrieveTime)
-
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
     }
 
     @Test fun executionRequestShouldKeepAskingForScriptIfMessageDoesNotArrive() = test { JADE.commandManager
         agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
-
-        Thread.sleep(retrieveTime)
 
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
 
@@ -47,8 +42,6 @@ class ExecuteCommandTest {
     @Test fun executionRequestShouldStopAskingForScriptIfMessageArrives() = test { JADE.commandManager
         agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
 
-        Thread.sleep(retrieveTime)
-
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
         JADE.commandManager .. INFORM + """script("{+!main <- .println(executing)}")[${mid(1)}]""" > ASL.robotPicker
 
@@ -56,5 +49,15 @@ class ExecuteCommandTest {
 
         Assert.assertNull(JADE.commandManager.receive())
     }
-    //agent < CONFIRM + """command(id("Command1"))[mid(123)]"""
+
+    @Test fun executionRequestShouldConfirmRequirerAfterExecution() = test { JADE.commandManager
+        agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
+
+        JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
+        JADE.commandManager .. INFORM + """script("{+!main <- .println(executing)}")[${mid(1)}]""" > ASL.robotPicker
+
+        Thread.sleep(retryTime)
+
+        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
+    }
 }

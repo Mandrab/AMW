@@ -29,7 +29,6 @@
     :   execute(Command)[client(Client), mid(MID)]
 	<-  .term2string(TScript, Script);
         .add_plan(TScript, script, begin);
-	    .wait(500);                                                 // fake execution time
 	    !main[source(script)];                                      // run the main intention of the script
         !remove_plans(0);                                           // remove all plans with label in the form of "lN"
 	    -execute(Command);                                          // task completed
