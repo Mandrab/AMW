@@ -1,9 +1,5 @@
 ////////////////////////////////////////////////// COMMANDS EXECUTION //////////////////////////////////////////////////
 
-{ include("plans_remover.asl") }
-
-///////////////////////////// COMMAND EXECUTION
-
 // TODO implement comfirmation (with caching) in order manager
 +!kqml_received(Sender, confirm, command(ID)[mid(MID)], _)          // confirmation of message reception
     <-  !response_received(MID).
@@ -12,7 +8,7 @@
     <-  .println("[ROBOT PICKER] request command execution");
         !set_execute(command(ID), Sender, MID);
         !ensure_send(
-            description("management(commands)", "request(command)"),
+            description("management(commands)", "info(commands)"),
             achieve, command(ID)
         ).
 
@@ -38,6 +34,15 @@
 	    -execute(Command);                                          // task completed
 		!ensure_send(
 		    Client,
-		    confirm, command(execute(Command)),                     // confirm task completion
+		    confirm, Command,                                       // confirm task completion
 		    MID
         ).                                                          // msgid is unique from order_manager
+
+@remove_plans[atomic]
++!remove_plans(IDX)
+	:   .concat(l, IDX, Label) & .term2string(TLabel, Label)
+	&   .plan_label(P, TLabel)
+	<-  .remove_plan(TLabel, script);
+		!remove_plans(IDX + 1).
+
+-!remove_plans(IDX).

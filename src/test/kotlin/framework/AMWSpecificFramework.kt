@@ -36,7 +36,7 @@ object AMWSpecificFramework {
             register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)
         }
         val commandManager get() = getOrBuild("jade_command_manager") {
-            register(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id)
+            register(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id, INFO_COMMANDS.id)
         }
 
         private fun getOrBuild(name: String, init: JADEAgent.() -> JADEAgent): JADEAgent = Framework.agents[name]

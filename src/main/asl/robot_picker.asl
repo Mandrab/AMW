@@ -5,7 +5,7 @@
 { include("utility/cache.asl") }
 { include("utility/communication.asl") }
 { include("robot_picker/action/pick_request.asl") }
-{ include("robot_picker/action/script_request.asl") }
+{ include("robot_picker/action/command_executor.asl") }
 
 /***********************************************************************************************************************
  Initial goals
