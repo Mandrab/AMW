@@ -4,6 +4,7 @@ import framework.Framework.test
 import framework.Framework.Utility.agent
 import framework.AMWSpecificFramework.ASL
 import framework.Messaging.compareTo
+import framework.Messaging.minus
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
 import jade.lang.acl.ACLMessage.*
@@ -22,5 +23,10 @@ class AddCommandTest {
     @Test fun commandsAddRequestShouldFailIfInWrongFormat() = test {
         agent .. REQUEST + "add(command(id, name, description)[notScript(wrong)])" > ASL.commandManager
         agent <= FAILURE + "unknown(add(command(id,name,description)[notScript(wrong)]))"
+    }
+
+    @Test fun commandsAddRequestShouldGiveConfirmIfCorrectAddition() = test {
+        agent .. REQUEST + "add(command(id, name, description)[script(something)])" - "abc" > ASL.commandManager
+        agent <= CONFIRM + "add(command(id,name,description)[script(something)])[mid(abc)]"
     }
 }
