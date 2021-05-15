@@ -23,11 +23,7 @@ object Controller {
 
         fun removeItem(item: QuantityItem)
 
-        fun addVersion()
-
         fun executeCommand()
-
-        fun executeScript()
 
         fun warehouseState(): Future<Collection<Product>>
     }

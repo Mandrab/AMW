@@ -17,11 +17,7 @@ object Proxy {
 
         fun removeItem(item: QuantityItem)
 
-        fun addVersion()
-
         fun executeCommand()
-
-        fun executeScript()
 
         fun warehouseState(): Future<Collection<Product>>
     }
@@ -43,11 +39,7 @@ object Proxy {
 
         override fun removeItem(item: QuantityItem) = agent?.removeItem(item) ?: Unit
 
-        override fun addVersion() = agent?.addVersion() ?: Unit
-
         override fun executeCommand() = agent?.executeCommand() ?: Unit
-
-        override fun executeScript() = agent?.executeScript() ?: Unit
 
         override fun warehouseState() = agent?.warehouseState() ?: future(emptyList())
 

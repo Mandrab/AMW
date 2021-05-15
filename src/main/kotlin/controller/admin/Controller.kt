@@ -29,11 +29,7 @@ class Controller(retryConnection: Boolean = true): Admin {
 
     override fun removeItem(item: QuantityItem) = proxy.removeItem(item)
 
-    override fun addVersion() = proxy.addVersion()
-
     override fun executeCommand() = proxy.executeCommand()
-
-    override fun executeScript() = proxy.executeScript()
 
     override fun warehouseState() = proxy.warehouseState()
 

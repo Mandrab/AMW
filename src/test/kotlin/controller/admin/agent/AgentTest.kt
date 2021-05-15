@@ -43,20 +43,8 @@ class AgentTest {
         JADE.warehouseMapper < REQUEST + """remove(item(id("a"),quantity(3)))"""
     }
 
-    @Test fun addVersionShouldSendRequestToCommandManager() = test { JADE.commandManager
-        ensure { admin.addVersion() }
-
-        JADE.commandManager < REQUEST + "TODO"
-    }
-
     @Test fun executeCommandShouldSendRequestToSomeViableAgent() = test { JADE.commandManager
         ensure { admin.executeCommand() }
-
-        JADE.commandManager < REQUEST + "TODO"
-    }
-
-    @Test fun executeScriptShouldSendRequestToSomeViableAgent() = test { JADE.commandManager
-        ensure { admin.executeScript() }
 
         JADE.commandManager < REQUEST + "TODO"
     }

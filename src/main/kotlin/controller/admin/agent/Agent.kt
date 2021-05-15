@@ -34,11 +34,7 @@ class Agent: Communicator() {
 
     fun removeItem(item: QuantityItem) { sendMessage(RemoveItemOut.build(item).message(this), true) { } }
 
-    fun addVersion() { TODO() }
-
     fun executeCommand() { TODO() }
-
-    fun executeScript() { TODO() }
 
     fun warehouseState(): Future<Collection<Product>> =
             sendMessage(InfoWarehouseOut.build().message(this), true, InfoWarehouseIn.parse)
