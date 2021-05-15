@@ -1,15 +1,15 @@
 ////////////////////////////////////////////////////// REMOVE ITEM /////////////////////////////////////////////////////
 
 @removeItem[atomic]
-+!kqml_received(Sender, tell, remove(Item)[mid(MID)], _)
++!kqml_received(Sender, achieve, remove(Item), MID)
     :   Item = item(ID, quantity(Q))
     <-  .println("[WAREHOUSE MAPPER] required item removal");
         !is_sufficient(ID, Q);
         !remove(ID, Q, [OH|OT]);
         !cached_response(
             Sender,
-            in(tell, remove(Item)[mid(MID)]),
-            out(confirm, remove(Item)[mid(MID)|[OH|OT]])
+            in(tell, remove(Item), MID),
+            out(confirm, remove(Item)[OH|OT], MID)
         ).                                                          // cache the response and send it
 
 @removeItems[atomic]
