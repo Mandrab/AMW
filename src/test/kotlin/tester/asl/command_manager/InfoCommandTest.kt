@@ -27,9 +27,9 @@ class InfoCommandTest {
     }
 
     @Test fun commandInfoRequestShouldReturnAScript() = test {
-        agent .. REQUEST + """command(id("Command1"))""" > ASL.commandManager
+        agent .. REQUEST + """command(id("Command1"))[mid(abc)]""" > ASL.commandManager
         agent <= INFORM + ("""script("[{@l1 +!main <- .println('Executing script ...');.wait(500);!b}, """ +
-                """{@l2 +!b <- .println('Script executed')}]")""" + "[mid(MID)]")
+                """{@l2 +!b <- .println('Script executed')}]")""" + "[mid(abc)]")
     }
 
     @Test fun commandInfoOfNonExistingCommandShouldFail() = test {

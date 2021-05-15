@@ -5,7 +5,6 @@ import framework.AMWSpecificFramework.ASL
 import framework.AMWSpecificFramework.JADE
 import framework.AMWSpecificFramework.mid
 import framework.AMWSpecificFramework.retryTime
-import framework.Framework
 import framework.Framework.Utility.agent
 import framework.Framework.test
 import framework.Messaging.compareTo
