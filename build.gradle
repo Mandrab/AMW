@@ -79,8 +79,12 @@ AGENTS.collect { TaskTarget target ->                       // create tasks for 
         doFirst {
             delete FOLDER.DOCKER.CONTEXT                    // delete files from previous builds
             copy {
-                from target.sourceFiles                     // copy of agent source files
+                from target.mainFile                        // copy of agent main source file
                 into FOLDER.DOCKER.CONTEXT                  // docker build context directory
+            }
+            copy {
+                from target.sourceFiles                     // copy of agent source files
+                into "$FOLDER.DOCKER.CONTEXT/${target.name}"// docker build context directory
             }
             copy {
                 from FOLDER.ASL.COMMONS                     // copy of agent common source files
@@ -239,9 +243,7 @@ task start_system(type: DefaultTask) {
     AGENTS.findAll { it != AGENTS.last() }
             .forEach { dependsOn it.background.log.agent }
 
-    if (project.hasProperty("foreground"))
-        dependsOn AGENTS.last().foreground.log.agent
-    else dependsOn AGENTS.last().background.log.agent
+    dependsOn AGENTS.last().foreground.log.agent
 }
 
 /** Tests run depends on complete start of the system */
@@ -290,6 +292,7 @@ class TaskTarget {
     @Lazy def dockerfile = "$level-$name${seed}_dockerfile"
 
     @Lazy def containerId = "amw:$name"
-    @Lazy def sourceFiles = ["src/main/asl/${name}.asl", "src/main/asl/$name"]
+    @Lazy def mainFile = "src/main/asl/${name}.asl"
+    @Lazy def sourceFiles = "src/main/asl/$name"
     @Lazy def unique = "$name-${entitiesCounter.getAndIncrement()}"
 }
