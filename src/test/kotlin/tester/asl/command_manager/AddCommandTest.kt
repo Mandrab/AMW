@@ -25,6 +25,11 @@ class AddCommandTest {
         agent <= FAILURE + "unknown(add(command(id,name,description)[notScript(wrong)]))"
     }
 
+    @Test fun commandsAddRequestShouldFailIfAlreadyExistingID() = test {
+        agent .. REQUEST + """add(command(id("Command1"), name, description)[script(something)])""" > ASL.commandManager
+        agent <= FAILURE + """unknown(add(command(id("Command1"),name,description)[script(something)]))"""
+    }
+
     @Test fun commandsAddRequestShouldGiveConfirmIfCorrectAddition() = test {
         agent .. REQUEST + "add(command(id, name, description)[script(something)])" - "abc" > ASL.commandManager
         agent <= CONFIRM + "add(command(id,name,description)[script(something)])[mid(abc)]"
