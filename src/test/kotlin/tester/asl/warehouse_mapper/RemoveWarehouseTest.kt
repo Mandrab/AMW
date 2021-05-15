@@ -10,9 +10,9 @@ import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.operation.Item.remove
 import controller.agent.communication.translation.out.AbstractionTerms.term
 import controller.agent.communication.translation.out.OperationTerms.term
-import framework.AMWSpecificFramework.mid
 import framework.AMWSpecificFramework.waitingTime
 import framework.Messaging.compareTo
+import framework.Messaging.minus
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
 import jade.lang.acl.ACLMessage.*
@@ -26,16 +26,16 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 class RemoveWarehouseTest {
-    private fun removeItem(item: Item.QuantityItem, mid : Int, annots: String = "") = "${remove(item).term()}" +
-            "[${mid(mid)}" + (if (annots.isNotBlank()) "," else "") + "$annots]"
+    private fun removeItem(item: Item.QuantityItem, annots: String = "") = "${remove(item).term()}" +
+            if (annots.isNotBlank()) "[$annots]" else ""
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
     @Test fun removeItemShouldFailIfItIsNotInTheWarehouse() = test {
         val item = item(id("Item 999"), quantity(1))
 
-        agent .. INFORM + removeItem(item, 1) > ASL.warehouseMapper
-        agent < FAILURE + "error(${removeItem(item, 1)})"
+        agent .. REQUEST + removeItem(item) > ASL.warehouseMapper
+        agent < FAILURE + "error(${removeItem(item)})"
 
         checkWarehouseState("""item(id("Item 999"))""", false)
     }
@@ -43,8 +43,8 @@ class RemoveWarehouseTest {
     @Test fun removeItemShouldFailIfGreaterRequestThanAvailable() = test {
         val item = item(id("Item 5"), quantity(999))
 
-        agent .. INFORM + removeItem(item, 1) > ASL.warehouseMapper
-        agent < FAILURE + "error(${removeItem(item, 1)})"
+        agent .. REQUEST + removeItem(item) > ASL.warehouseMapper
+        agent < FAILURE + "error(${removeItem(item)})"
 
         checkWarehouseState("""item(id("Item 999"))""", false)
     }
@@ -52,8 +52,8 @@ class RemoveWarehouseTest {
     @Test fun removeItemShouldDecreaseNumberOfItemInTheWarehouse() = test {
         val item = item(id("Item 5"), quantity(1))
 
-        agent .. INFORM + removeItem(item, 1) > ASL.warehouseMapper
-        agent < CONFIRM + removeItem(item, 1, "position(rack(3),shelf(1),quantity(1))")
+        agent .. REQUEST + removeItem(item) > ASL.warehouseMapper
+        agent < CONFIRM + removeItem(item, "position(rack(3),shelf(1),quantity(1))")
 
         checkWarehouseState("""item(id("Item 5"))[""" +
                 """position(rack(3),shelf(1),quantity(6)),""" +
@@ -63,8 +63,8 @@ class RemoveWarehouseTest {
     @Test fun removedItemPositionShouldMatchWithTheDecrementPosition() = test {
         val item = item(id("Item 5"), quantity(1))
 
-        agent .. INFORM + removeItem(item, 1) > ASL.warehouseMapper
-        agent < CONFIRM + removeItem(item, 1, "position(rack(3),shelf(1),quantity(1))")
+        agent .. REQUEST + removeItem(item) > ASL.warehouseMapper
+        agent < CONFIRM + removeItem(item, "position(rack(3),shelf(1),quantity(1))")
 
         checkWarehouseState("""position(rack(3),shelf(1),quantity(6))""")
     }
@@ -72,8 +72,8 @@ class RemoveWarehouseTest {
     @Test fun forLargeRequestShouldBeAbleToDecrementQuantityInMultiplePositions() = test {
         val item = item(id("Item 5"), quantity(12))
 
-        agent .. INFORM + removeItem(item, 1) > ASL.warehouseMapper
-        agent < CONFIRM + removeItem(item, 1,
+        agent .. REQUEST + removeItem(item) > ASL.warehouseMapper
+        agent < CONFIRM + removeItem(item,
             "position(rack(3),shelf(1),quantity(7)),position(rack(3),shelf(2),quantity(5))")
 
         agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
@@ -84,21 +84,20 @@ class RemoveWarehouseTest {
 
     @Test fun itemShouldBeRemovedOnlyOnceIfTheMessageIsReceivedAgain() = test {
         val item = item(id("Item 5"), quantity(12))
-
-        agent .. INFORM + removeItem(item, 1) > ASL.warehouseMapper
-        agent .. INFORM + removeItem(item, 1) > ASL.warehouseMapper
-        agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
-
-        val expectedResponse = CONFIRM + removeItem(item, 1, "position(rack(3),shelf(1),quantity(7)),"
+        val expectedResponse = CONFIRM + removeItem(item, "position(rack(3),shelf(1),quantity(7)),"
                 + "position(rack(3),shelf(2),quantity(5))")
 
+        agent .. REQUEST + removeItem(item) - "abc" > ASL.warehouseMapper
         agent < expectedResponse
+
+        agent .. REQUEST + removeItem(item) - "abc" > ASL.warehouseMapper
+        agent < expectedResponse
+
+        agent .. REQUEST + "info(warehouse)" > ASL.warehouseMapper
 
         val result = agent.blockingReceive(waitingTime)
         Assert.assertFalse(result.content.contains("""position(rack(3),shelf(1)"""))
-        Assert.assertTrue(result.content.contains("""position(rack(3),shelf(2),quantity(4))]"""))
-
-        agent < expectedResponse
+        Assert.assertTrue(result.content.apply { println(this) }.contains("""position(rack(3),shelf(2),quantity(4))]"""))
     }
 
     @Test fun removeItemsShouldFailIfOneIsNotInTheWarehouse() = test {

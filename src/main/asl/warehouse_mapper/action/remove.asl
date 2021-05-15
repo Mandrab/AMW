@@ -8,7 +8,7 @@
         !remove(ID, Q, [OH|OT]);
         !cached_response(
             Sender,
-            in(tell, remove(Item), MID),
+            in(achieve, remove(Item), MID),
             out(confirm, remove(Item)[OH|OT], MID)
         ).                                                          // cache the response and send it
 
