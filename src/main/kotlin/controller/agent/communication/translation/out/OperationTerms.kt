@@ -6,7 +6,7 @@ import common.ontology.dsl.operation.Command.ExecuteCommand
 import common.ontology.dsl.operation.Order.PlaceOrder
 import common.ontology.dsl.operation.Item.RemoveItem
 import common.ontology.dsl.operation.Order.InfoOrders
-import common.ontology.dsl.operation.Warehouse
+import common.ontology.dsl.operation.Info
 import controller.agent.communication.translation.out.AbstractionTerms.term
 import controller.agent.communication.translation.out.Literals.get
 import controller.agent.communication.translation.out.Literals.invoke
@@ -27,5 +27,5 @@ object OperationTerms {
 
     fun RemoveItem.term(): Literal = "remove"(item.term())
 
-    fun Warehouse.Info.term(): Literal = "info"(target.name.toLowerCase().toTerm())
+    fun Info.Info.term(): Literal = "info"(target.name.toLowerCase().toTerm())
 }

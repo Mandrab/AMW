@@ -7,9 +7,11 @@ import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
 import controller.agent.AgentProxy
 import controller.agent.Communicator
+import controller.agent.communication.translation.`in`.Services.InfoCommands as InfoCommandsIn
 import controller.agent.communication.translation.`in`.Services.InfoWarehouse as InfoWarehouseIn
 import controller.agent.communication.translation.out.Services.AddCommand
 import controller.agent.communication.translation.out.Services.ExecuteCommand
+import controller.agent.communication.translation.out.Services.InfoCommands as InfoCommandsOut
 import controller.agent.communication.translation.out.Services.InfoWarehouse as InfoWarehouseOut
 import controller.agent.communication.translation.out.Services.StoreItem as StoreItemOut
 import controller.agent.communication.translation.out.Services.RemoveItem as RemoveItemOut
@@ -32,13 +34,16 @@ class Agent: Communicator() {
 
     fun shutdown() = super.takeDown()
 
-    fun addCommand(command: Command) { sendMessage(AddCommand.build(command).message(this), true) { } }
+    fun addCommand(command: Command) { sendMessage(AddCommand.build(command).message(this)) }
 
-    fun addItem(item: WarehouseItem) { sendMessage(StoreItemOut.build(item).message(this), true) { } }
+    fun addItem(item: WarehouseItem) { sendMessage(StoreItemOut.build(item).message(this)) }
 
-    fun removeItem(item: QuantityItem) { sendMessage(RemoveItemOut.build(item).message(this), true) { } }
+    fun commandsList(): Future<Collection<Command>> =
+        sendMessage(InfoCommandsOut.build().message(this), true, InfoCommandsIn.parse)
 
-    fun executeCommand(id: ID) { sendMessage(ExecuteCommand.build(id).message(this), true) { } }
+    fun removeItem(item: QuantityItem) { sendMessage(RemoveItemOut.build(item).message(this)) }
+
+    fun executeCommand(id: ID) { sendMessage(ExecuteCommand.build(id).message(this)) }
 
     fun warehouseState(): Future<Collection<Product>> =
             sendMessage(InfoWarehouseOut.build().message(this), true, InfoWarehouseIn.parse)

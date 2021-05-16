@@ -4,7 +4,7 @@ import framework.AMWSpecificFramework.ASL
 import framework.Framework.Utility.agent
 import framework.Framework.test
 import common.ontology.dsl.abstraction.ID.id
-import common.ontology.dsl.abstraction.Item
+import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Position.position
 import common.ontology.dsl.abstraction.Quantity.quantity
@@ -27,7 +27,7 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 class AddWarehouseTest {
-    private fun addItem(item: Item.WarehouseItem) = "${add(item).term()}"
+    private fun addItem(item: WarehouseItem) = "${add(item).term()}"
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 

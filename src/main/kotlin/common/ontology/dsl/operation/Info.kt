@@ -1,9 +1,10 @@
 package common.ontology.dsl.operation
 
-object Warehouse {
+object Info {
 
     enum class Target {
-        WAREHOUSE
+        WAREHOUSE,
+        COMMANDS
     }
 
     data class Info(val target: Target)

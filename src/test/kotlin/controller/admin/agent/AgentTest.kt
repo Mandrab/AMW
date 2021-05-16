@@ -41,13 +41,13 @@ class AgentTest {
     @Test fun addItemShouldSendRequestToWarehouseMapper() = test { JADE.warehouseMapper
         ensure { admin.addItem(item(id("a"), position(rack(2), shelf(3), quantity(2)))) }
 
-        JADE.warehouseMapper < REQUEST + """add(item(id("a"),position(rack(2),shelf(3),quantity(2))))"""
+        JADE.warehouseMapper <= REQUEST + """add(item(id("a"),position(rack(2),shelf(3),quantity(2))))"""
     }
 
-    @Test fun removeItemShouldSendRequestToWarehouseMapper() = test { JADE.warehouseMapper
-        ensure { admin.removeItem(item(id("a"),quantity(3))) }
+    @Test fun commandListShouldSendRequestToCommandManager() = test { JADE.commandManager
+        ensure { admin.commandsList() }
 
-        JADE.warehouseMapper < REQUEST + """remove(item(id("a"),quantity(3)))"""
+        JADE.commandManager <= REQUEST + """info(commands)"""
     }
 
     @Test fun executeCommandShouldSendRequestToSomeViableAgent() = test { JADE.robotPicker
@@ -56,10 +56,16 @@ class AgentTest {
         JADE.robotPicker <= REQUEST + """command(${id("id").term()})"""
     }
 
+    @Test fun removeItemShouldSendRequestToWarehouseMapper() = test { JADE.warehouseMapper
+        ensure { admin.removeItem(item(id("a"),quantity(3))) }
+
+        JADE.warehouseMapper <= REQUEST + """remove(item(id("a"),quantity(3)))"""
+    }
+
     @Test fun warehouseStateShouldSendRequestToWarehouseManager() = test { JADE.warehouseMapper
         ensure { admin.warehouseState() }
 
-        JADE.warehouseMapper < REQUEST + """info(warehouse)"""
+        JADE.warehouseMapper <= REQUEST + """info(warehouse)"""
     }
 
     private tailrec fun ensure(function: () -> Unit) {

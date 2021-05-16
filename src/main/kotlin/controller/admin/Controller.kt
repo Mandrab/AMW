@@ -31,7 +31,7 @@ class Controller(retryConnection: Boolean = true): Admin {
 
     override fun addItem(item: WarehouseItem) = proxy.addItem(item)
 
-    override fun commandsList(): Future<Collection<Command>> = CompletableFuture.completedFuture(emptyList())
+    override fun commandsList(): Future<Collection<Command>> = proxy.commandsList()
 
     override fun executeCommand(id: ID) = proxy.executeCommand(id)
 

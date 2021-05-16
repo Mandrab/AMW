@@ -34,7 +34,7 @@ object Messaging {
         val content = message.content ?: message.contentObject.toString()
         Assert.assertThat("Content differs from expectations", content.trim(), CoreMatchers.anyOf(
             CoreMatchers.`is`(result.content.trim()),
-            CoreMatchers.`is`(try { result.contentObject.toString().trim() } catch (_: UnreadableException) { "" })
+            CoreMatchers.`is`(try { result.contentObject.toString().apply { println(this) }.trim() } catch (_: UnreadableException) { "" })
         ))
         message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
     }

@@ -1,6 +1,6 @@
 package controller.agent.communication.translation.`in`
 
-import common.ontology.dsl.abstraction.Command.Command
+import common.ontology.dsl.abstraction.Command
 import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.Product
@@ -25,7 +25,9 @@ object Services {
         fun build(command: Command): Nothing  = TODO()
     }
 
-    object InfoCommands//: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id)
+    object InfoCommands: Service<Collection<Command.Command>> {
+        override val parse = { message: ACLMessage -> message.content.asList().map { Command.parse(it) } }
+    }
 
     object InfoOrders: Service<Collection<InfoOrder>> {
         override val parse = { message: ACLMessage -> message.content.asList().map { InfoOrder.parse(it) } }

@@ -9,15 +9,15 @@ import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.User.User
 import common.ontology.dsl.operation.Command.add
 import common.ontology.dsl.operation.Command.execute
+import common.ontology.dsl.operation.Info.Target.COMMANDS
 import common.ontology.dsl.operation.Item.add
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import common.ontology.dsl.operation.Item.remove
-import common.ontology.dsl.operation.Warehouse.Target.WAREHOUSE
-import common.ontology.dsl.operation.Warehouse.info
+import common.ontology.dsl.operation.Info.Target.WAREHOUSE
+import common.ontology.dsl.operation.Info.info
 import controller.agent.communication.Messages.message
 import controller.agent.communication.Messages.receiver
-import controller.agent.communication.translation.out.AbstractionTerms.term
 import controller.agent.communication.translation.out.OperationTerms.term
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
@@ -60,7 +60,11 @@ object Services {
         }
     }
 
-    object InfoCommands//: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id)
+    object InfoCommands{
+        fun build() = object: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id, REQUEST) {
+            override fun parse(): Literal = info(COMMANDS).term()
+        }
+    }
 
     object InfoOrders {
         fun build(user: User) = object: Service(MANAGEMENT_ORDERS.id, INFO_ORDERS.id, REQUEST) {

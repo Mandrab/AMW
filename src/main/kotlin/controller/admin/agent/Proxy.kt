@@ -17,16 +17,16 @@ object Proxy {
 
         fun addItem(item: WarehouseItem)
 
-        fun removeItem(item: QuantityItem)
+        fun commandsList(): Future<Collection<Command>>
 
         fun executeCommand(id: ID)
+
+        fun removeItem(item: QuantityItem)
 
         fun warehouseState(): Future<Collection<Product>>
     }
 
-    operator fun invoke(): Proxy = AdminProxy()
-
-    private class AdminProxy: Proxy {
+    operator fun invoke(): Proxy = object: Proxy {
         private var agent: Agent? = null
 
         override fun setAgent(agent: Agent) { this.agent = agent }
@@ -39,9 +39,11 @@ object Proxy {
 
         override fun addItem(item: WarehouseItem) = agent?.addItem(item) ?: Unit
 
-        override fun removeItem(item: QuantityItem) = agent?.removeItem(item) ?: Unit
+        override fun commandsList() = agent?.commandsList() ?: future(emptyList())
 
         override fun executeCommand(id: ID) = agent?.executeCommand(id) ?: Unit
+
+        override fun removeItem(item: QuantityItem) = agent?.removeItem(item) ?: Unit
 
         override fun warehouseState() = agent?.warehouseState() ?: future(emptyList())
 
