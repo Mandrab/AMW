@@ -1,11 +1,13 @@
 package controller.admin.agent
 
+import common.ontology.dsl.abstraction.Command.Command
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
 import controller.agent.AgentProxy
 import controller.agent.Communicator
 import controller.agent.communication.translation.`in`.Services.InfoWarehouse as InfoWarehouseIn
+import controller.agent.communication.translation.out.Services.AddCommand
 import controller.agent.communication.translation.out.Services.InfoWarehouse as InfoWarehouseOut
 import controller.agent.communication.translation.out.Services.StoreItem as StoreItemOut
 import controller.agent.communication.translation.out.Services.RemoveItem as RemoveItemOut
@@ -28,7 +30,7 @@ class Agent: Communicator() {
 
     fun shutdown() = super.takeDown()
 
-    fun addCommand() { TODO() }
+    fun addCommand(command: Command) { sendMessage(AddCommand.build(command).message(this), true) { } }
 
     fun addItem(item: WarehouseItem) { sendMessage(StoreItemOut.build(item).message(this), true) { } }
 

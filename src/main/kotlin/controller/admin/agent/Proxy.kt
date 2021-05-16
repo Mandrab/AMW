@@ -1,5 +1,6 @@
 package controller.admin.agent
 
+import common.ontology.dsl.abstraction.Command.Command
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
@@ -11,7 +12,7 @@ object Proxy {
 
     interface Proxy: AgentProxy<Agent> {
 
-        fun addCommand()
+        fun addCommand(command: Command)
 
         fun addItem(item: WarehouseItem)
 
@@ -33,7 +34,7 @@ object Proxy {
 
         override fun shutdown() = agent?.shutdown() ?: Unit
 
-        override fun addCommand() = agent?.addCommand() ?: Unit
+        override fun addCommand(command: Command) = agent?.addCommand(command) ?: Unit
 
         override fun addItem(item: WarehouseItem) = agent?.addItem(item) ?: Unit
 

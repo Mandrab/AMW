@@ -54,7 +54,7 @@ object Services {
     }
 
     object AddCommand {
-        fun build(command: Command) = object: Service(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id) {
+        fun build(command: Command) = object: Service(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id, REQUEST) {
             override fun parse(): Literal = add(command).term()
         }
     }

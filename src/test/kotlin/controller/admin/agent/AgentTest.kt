@@ -1,11 +1,17 @@
 package controller.admin.agent
 
+import common.ontology.dsl.abstraction.Command.command
+import common.ontology.dsl.abstraction.Description.description
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.item
+import common.ontology.dsl.abstraction.Name.name
 import common.ontology.dsl.abstraction.Position.position
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.Rack.rack
+import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf.shelf
+import common.ontology.dsl.operation.Command.add
+import controller.agent.communication.translation.out.OperationTerms.term
 import framework.AMWSpecificFramework.JADE
 import framework.AMWSpecificFramework.Test.admin
 import framework.Framework.test
@@ -25,9 +31,10 @@ import org.junit.Test
 class AgentTest {
 
     @Test fun addCommandShouldSendRequestToCommandManager() = test { JADE.commandManager
-        ensure { admin.addCommand() }
+        val command = command(id("id"), name("name"), description("description"))[script("script")]
+        ensure { admin.addCommand(command) }
 
-        JADE.commandManager < REQUEST + "TODO"
+        JADE.commandManager <= REQUEST + add(command).term().toString()
     }
 
     @Test fun addItemShouldSendRequestToWarehouseMapper() = test { JADE.warehouseMapper

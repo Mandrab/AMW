@@ -1,5 +1,6 @@
 package controller
 
+import common.ontology.dsl.abstraction.Command.Command
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.Item.QuantityItem
@@ -17,7 +18,7 @@ object Controller {
 
     interface Admin: Controller {
 
-        fun addCommand()
+        fun addCommand(command: Command)
 
         fun addItem(item: WarehouseItem)
 
