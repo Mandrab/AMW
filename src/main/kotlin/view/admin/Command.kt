@@ -1,6 +1,6 @@
 package view.admin
 
-import common.ontology.dsl.abstraction.Command.CommandImplementations
+import common.ontology.dsl.abstraction.Command.Command
 import common.ontology.dsl.abstraction.Requirement.Requirement
 import view.utilities.swing.Grid.constraint
 import view.utilities.swing.Label.infoLabel
@@ -13,10 +13,10 @@ import javax.swing.BoxLayout
 import javax.swing.JPanel
 
 class Command(
-    private val commandsSupplier: () -> Collection<CommandImplementations>,
-    private val runCommand: (command: CommandImplementations) -> Unit
+    private val commandsSupplier: () -> Collection<Command>,
+    private val runCommand: (command: Command) -> Unit
 ): JPanel() {
-    private val commands: List<CommandImplementations>
+    private val commands: List<Command>
 
     init {
         layout = GridBagLayout()

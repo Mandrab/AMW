@@ -2,7 +2,7 @@ package controller.agent.communication.translation.out
 
 import common.ontology.Services.ServiceSupplier.*
 import common.ontology.Services.ServiceType.*
-import common.ontology.dsl.abstraction.Command.CommandInfo
+import common.ontology.dsl.abstraction.Command.Command
 import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.QuantityItem
@@ -54,7 +54,7 @@ object Services {
     }
 
     object AddCommand {
-        fun build(command: CommandInfo) = object: Service(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id) {
+        fun build(command: Command) = object: Service(MANAGEMENT_COMMANDS.id, ADD_COMMAND.id) {
             override fun parse(): Literal = add(command).term()
         }
     }

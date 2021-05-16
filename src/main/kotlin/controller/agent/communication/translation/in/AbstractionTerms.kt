@@ -14,6 +14,7 @@ import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Name.name
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.Rack.rack
+import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf.shelf
 import controller.agent.communication.translation.`in`.LiteralParser.asList
 
@@ -23,9 +24,9 @@ object AbstractionTerms {
 
     fun Client.parse(string: String): Client.Client = string.parse("""client\(\"(.*)\"\)""").run { client(next()) }
 
-    fun Command.parse(string: String): Command.CommandInfo =
-            string.parse("""command\(id\(\"(.*)\"\), ?name\(\"(.*)\"\), ?description\(\"(.*)\"\)\)""")
-                    .run { command(id(next()),name(next()),description(next())) }
+    fun Command.parse(string: String): Command.Command =
+            string.parse("""command\(id\(\"(.*)\"\), ?name\(\"(.*)\"\), ?description\(\"(.*)\"\)\)\[script\(\"(.*)\"\)\]""")
+                    .run { command(id(next()),name(next()),description(next()))[script(next())] }
 
     fun Description.parse(string: String): Description.Description = string.parse("""description\(\"(.*)\"\)""")
             .run { description(next()) }

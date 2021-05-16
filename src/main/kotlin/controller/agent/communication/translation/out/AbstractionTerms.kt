@@ -2,7 +2,7 @@ package controller.agent.communication.translation.out
 
 import common.ontology.dsl.abstraction.Address.Address
 import common.ontology.dsl.abstraction.Client.Client
-import common.ontology.dsl.abstraction.Command.CommandInfo
+import common.ontology.dsl.abstraction.Command.Command
 import common.ontology.dsl.abstraction.Description.Description
 import common.ontology.dsl.abstraction.Email.Email
 import common.ontology.dsl.abstraction.ID.ID
@@ -29,7 +29,7 @@ object AbstractionTerms {
 
     fun Client.term(): Literal = "client"(name.toStringTerm())
 
-    fun CommandInfo.term(): Literal = "command"(id.term(), name.term(), description.term())
+    fun Command.term(): Literal = "command"(id.term(), name.term(), description.term())[script.term()]
 
     fun Description.term(): Literal = "description"(name.toStringTerm())
 

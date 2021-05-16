@@ -3,20 +3,19 @@ package common.ontology.dsl.abstraction
 import common.ontology.dsl.abstraction.Description.Description
 import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Name.Name
+import common.ontology.dsl.abstraction.Script.Script
 
 object Command {
 
-    data class CommandInfo(val id: ID, val name: Name, val description: Description)
-
-    data class CommandImplementations(
+    data class Command(
             val id: ID,
             val name: Name,
-            val description: Description,
-            val script: Script
-    )
+            val description: Description
+    ) {
+        lateinit var script: Script
 
-    fun command(id: ID, name: Name, description: Description) = CommandInfo(id, name, description)
+        operator fun get(script_: Script) = this.apply { script = script_ }
+    }
 
-    fun command(id: ID, name: Name, description: Description, script: Script) =
-            CommandImplementations(id, name, description, script)
+    fun command(id: ID, name: Name, description: Description) = Command(id, name, description)
 }

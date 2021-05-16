@@ -1,6 +1,6 @@
 package controller.agent.communication.translation.`in`
 
-import common.ontology.dsl.abstraction.Command.CommandInfo
+import common.ontology.dsl.abstraction.Command.Command
 import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.Product
@@ -23,7 +23,7 @@ object Services {
     }
 
     object AddCommand {
-        fun build(command: CommandInfo): Nothing  = TODO()
+        fun build(command: Command): Nothing  = TODO()
     }
 
     object InfoCommands//: Service(MANAGEMENT_COMMANDS.id, INFO_COMMANDS.id)
