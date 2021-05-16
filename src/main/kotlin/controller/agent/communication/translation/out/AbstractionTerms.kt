@@ -12,7 +12,6 @@ import common.ontology.dsl.abstraction.Name.Name
 import common.ontology.dsl.abstraction.Position.Position
 import common.ontology.dsl.abstraction.Quantity.Quantity
 import common.ontology.dsl.abstraction.Rack.Rack
-import common.ontology.dsl.abstraction.Requirement.Requirement
 import common.ontology.dsl.abstraction.Script.Script
 import common.ontology.dsl.abstraction.Shelf.Shelf
 import common.ontology.dsl.abstraction.Status.Status
@@ -49,10 +48,7 @@ object AbstractionTerms {
 
     fun Rack.term(): Literal = "rack"(id)
 
-    fun Requirement.term() = name.toTerm()
-
     fun Script.term(): Literal = "script"(script.toStringTerm())
-            .run { requirements?.let { this[it.map { r -> r.term() }] } ?: this }
 
     fun Shelf.term(): Literal = "shelf"(id)
 

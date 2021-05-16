@@ -11,7 +11,6 @@ import common.ontology.dsl.abstraction.Name.name
 import common.ontology.dsl.abstraction.Position.position
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.Rack.rack
-import common.ontology.dsl.abstraction.Requirement.requirement
 import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf.shelf
 import common.ontology.dsl.operation.Command.AddCommand
@@ -34,8 +33,10 @@ import org.junit.Test
 class OperationTermsTest {
 
     @Test fun testAddCommandParse() =
-            assert(add(command(id("a0"), name("name"), description("description")))
-                    == AddCommand.parse("add(command(id(\"a0\"), name(\"name\"), description(\"description\")))"))
+        assert(add(command(id("a0"), name("name"), description("description"))[script("script")])
+                == AddCommand.parse(
+            """add(command(id("a0"), name("name"), description("description"))[script("script")])"""
+        ))
 
     @Test fun testAddItemParse() =
         assert(add(item(id("a0"), position(rack(0), shelf(1), quantity(2))))

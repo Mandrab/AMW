@@ -15,7 +15,6 @@ import common.ontology.dsl.abstraction.Name.name
 import common.ontology.dsl.abstraction.Position.position
 import common.ontology.dsl.abstraction.Quantity.quantity
 import common.ontology.dsl.abstraction.Rack.rack
-import common.ontology.dsl.abstraction.Requirement.requirement
 import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf.shelf
 import common.ontology.dsl.abstraction.Status
@@ -29,55 +28,43 @@ import org.junit.Test
 class AbstractionTermsTest {
 
     @Test fun testAddressParse() =
-            assert(address("via xyz n° 468") == Address.parse("address(\"via xyz n° 468\")"))
+            assert(address("via xyz n° 468") == Address.parse("""address("via xyz n° 468")"""))
 
-    @Test fun testClientParse() = assert(client("antonio") == Client.parse("client(\"antonio\")"))
+    @Test fun testClientParse() = assert(client("antonio") == Client.parse( """client("antonio")"""))
 
-    @Test fun testCommandParse() =
-            assert(command(id("a0"),name("command"),description("description"))
-                    == Command.parse("command(id(\"a0\"),name(\"command\"), description(\"description\"))"))
+    @Test fun testCommandParse() = assert(
+            command(id("a0"),name("command"),description("description"))[script("script")]
+        == Command.parse("""command(id("a0"),name("command"), description("description"))[script("script")]"""))
 
     @Test fun testDescriptionParse() =
-            assert(description("description") == Description.parse("description(\"description\")"))
+        assert(description("description") == Description.parse("""description("description")"""))
 
-    @Test fun testEmailParse() = assert(email("antonio@email") == Email.parse("email(\"antonio@email\")"))
+    @Test fun testEmailParse() = assert(email("antonio@email") == Email.parse("""email("antonio@email")"""))
 
     @Test fun testIDParse() = assert(id("a0") == ID.parse("id(a0)"))
 
-    @Test fun testOrderIDParse() = assert(id("a0") == ID.parse("order_id(a0)"))
+    @Test fun testWarehouseItemParse() = assert(item(id("a0"),position(rack(0),shelf(1),quantity(2)))
+            == WarehouseItem.parse("""item(id("a0"), position(rack(0),shelf(1), quantity(2)))"""))
 
-    @Test fun testCommandIDParse() = assert(id("a0") == ID.parse("command_id(a0)"))
-
-    @Test fun testVersionIDParse() = assert(id("a0") == ID.parse("v_id(a0)"))
-
-    @Test fun testWarehouseItemParse() =
-            assert(item(id("a0"),position(rack(0),shelf(1),quantity(2)))
-                    == WarehouseItem.parse("item(id(\"a0\"), position(rack(0),shelf(1), quantity(2)))"))
-
-    @Test fun testQuantityItemParse() =
-            assert(item(id("a0"))[position(rack(5), shelf(6), quantity(7))]
-                    == Product.parse("item(id(\"a0\"))[position(rack(5), shelf(6), quantity(7))]"))
+    @Test fun testQuantityItemParse() = assert(item(id("a0"))[position(rack(5), shelf(6), quantity(7))]
+            == Product.parse("""item(id("a0"))[position(rack(5), shelf(6), quantity(7))]"""))
 
     @Test fun testProductParse() =
-            assert(item(id("a0"), quantity(5)) == QuantityItem.parse("item(id(\"a0\"), quantity(5))"))
+        assert(item(id("a0"), quantity(5)) == QuantityItem.parse("""item(id("a0"), quantity(5))"""))
 
-    @Test fun testNameParse() = assert(name("name") == Name.parse("name(\"name\")"))
+    @Test fun testNameParse() = assert(name("name") == Name.parse("""name("name")"""))
 
-    @Test fun testPositionParse() =
-            assert(position(rack(0),shelf(1), quantity(2))
-                    == Position.parse("position(rack(0),shelf(1), quantity(2))"))
+    @Test fun testPositionParse() = assert(position(rack(0),shelf(1), quantity(2))
+            == Position.parse("position(rack(0),shelf(1), quantity(2))"))
 
     @Test fun testQuantityParse() = assert(quantity(5) == Quantity.parse("quantity(5)"))
 
     @Test fun testRackParse() = assert(rack(5) == Rack.parse("rack(5)"))
 
-    @Test fun testRequirementParse() = assert(requirement("a0") == Requirement.parse("a0"))
-
     @Test fun testScriptParse() = assert(script("x y z !") == Script.parse("script(x y z !)[]"))
 
     @Test fun testScriptWithRequirementsParse() =
-            assert(script("x y z !")[requirement("r0"), requirement("r1")]
-                    == Script.parse("script(x y z !)[r0, r1]"))
+            assert(script("x y z !") == Script.parse("script(x y z !)"))
 
     @Test fun testShelfParse() = assert(shelf(5) == Shelf.parse("shelf(5)"))
 
@@ -86,6 +73,6 @@ class AbstractionTermsTest {
     @Test fun testStatusRetrieveParse() = assert(status(RETRIEVING) == Status.parse("status(retrieve)"))
 
     @Test fun testUserParse() =
-            assert(user(client("antonio"), email("antonio@mail"), address("address"))
-                    == User.parse("user(client(\"antonio\"), email(\"antonio@mail\"), address(\"address\"))"))
+        assert(user(client("antonio"), email("antonio@mail"), address("address"))
+                == User.parse("""user(client("antonio"), email("antonio@mail"), address("address"))"""))
 }

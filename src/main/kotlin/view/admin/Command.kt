@@ -1,7 +1,6 @@
 package view.admin
 
 import common.ontology.dsl.abstraction.Command.Command
-import common.ontology.dsl.abstraction.Requirement.Requirement
 import view.utilities.swing.Grid.constraint
 import view.utilities.swing.Label.infoLabel
 import view.utilities.swing.Label.label
@@ -29,12 +28,6 @@ class Command(
 
         val description = infoLabel { topic = "Description" }
         add(description, constraint { gridx = 1; gridy = 1; gridwidth = 2 })
-
-        add(label { text = "Requirements" }, constraint { gridx = 1; gridy = 3 })
-        val requirements = list<Requirement> {
-            cellRenderer = render { " ID: ${it.name} " }
-        }
-        add(requirements, constraint { gridx = 1; gridy = 4 })
 
         val script = infoLabel {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
