@@ -15,12 +15,11 @@ class History: JPanel() {
     init {
         layout = GridBagLayout()
 
-        val orderInfo = label { text = "Select an order" }
+        val orderInfo = label { text = "Nothing here. You can try to refresh the view" }
         add(orderInfo, constraint { gridx = 1 })
 
         orders = list {
             elements = emptyList()
-            onClick = { orderInfo.text = it.toString() }
             cellRenderer = render { " ID: ${it.id.name}    Status: ${it.status.state} " }
         }
         add(orders, constraint { })

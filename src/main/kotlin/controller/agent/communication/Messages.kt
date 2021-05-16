@@ -12,8 +12,7 @@ import java.util.*
 object Messages {
 
     class Message {
-        private val message: ACLMessage = ACLMessage().apply {
-            performative = ACLMessage.INFORM
+        private val message: ACLMessage = ACLMessage(ACLMessage.INFORM).apply {
             replyWith = Date().time.toString()
         }
         private var receivers = emptySet<DFAgentDescription>()

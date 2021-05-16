@@ -17,14 +17,6 @@ object Services {
         val parse: (message: ACLMessage) -> T
     }
 
-    object AcceptOrder {
-        fun build(user: User, items: Collection<QuantityItem>): Nothing  = TODO()
-    }
-
-    object AddCommand {
-        fun build(command: Command): Nothing  = TODO()
-    }
-
     object InfoCommands: Service<Collection<Command.Command>> {
         override val parse = { message: ACLMessage -> message.content.asList().map { Command.parse(it) } }
     }
@@ -36,12 +28,4 @@ object Services {
     object InfoWarehouse: Service<Collection<Product>> {
         override val parse = { message: ACLMessage -> message.content.asList().map { Product.parse(it) } }
     }
-
-    object ExecuteCommand {
-        fun build(commandId: ID): Nothing  = TODO()
-    }
-
-    object RemoveItem: Service<Unit> { override val parse = { _: ACLMessage -> } }
-
-    object StoreItem: Service<Unit> { override val parse = { _: ACLMessage -> } }
 }
