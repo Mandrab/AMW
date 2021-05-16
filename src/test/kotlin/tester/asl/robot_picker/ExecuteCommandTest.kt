@@ -23,7 +23,7 @@ class ExecuteCommandTest {
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
-    @Test fun executionRequestShouldCauseRequestToCommanManager() = test { JADE.commandManager
+    @Test fun executionRequestShouldCauseRequestToCommansManager() = test { JADE.commandManager
         agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
 
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""

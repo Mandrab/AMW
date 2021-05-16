@@ -5,7 +5,6 @@ import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.User.User
-import common.ontology.dsl.abstraction.Script.Script
 import common.ontology.dsl.operation.Order.InfoOrder
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
 import controller.agent.communication.translation.`in`.LiteralParser.asList
@@ -40,7 +39,7 @@ object Services {
         fun build(commandId: ID): Nothing  = TODO()
     }
 
-    object RemoveItem: Service<Unit> { override val parse = { _: ACLMessage -> Unit } }
+    object RemoveItem: Service<Unit> { override val parse = { _: ACLMessage -> } }
 
-    object StoreItem: Service<Unit> { override val parse = { _: ACLMessage -> Unit } }
+    object StoreItem: Service<Unit> { override val parse = { _: ACLMessage -> } }
 }

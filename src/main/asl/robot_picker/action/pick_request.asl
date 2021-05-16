@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////// ITEM PICKING /////////////////////////////////////////////////////
 
-// TODO implement comfirmation (with caching) in order manager
+// TODO implement confirmation (with caching) in order manager
 +!kqml_received(Sender, confirm, retrieve(P, PID)[mid(MID)], _)     // confirmation of message reception
     <-  !response_received(MID).
 
@@ -25,4 +25,4 @@
 		    Client,
 		    confirm, retrieve(Item, PID),                           // confirm task completion
 		    MID
-        ).                                                          // msgid is unique from order_manager
+        ).                                                          // msg-id is unique from order_manager

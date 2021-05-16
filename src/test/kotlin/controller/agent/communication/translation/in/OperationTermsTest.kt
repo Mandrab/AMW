@@ -19,8 +19,6 @@ import common.ontology.dsl.operation.Command.add
 import common.ontology.dsl.operation.Command.execute
 import common.ontology.dsl.operation.Item.AddItem
 import common.ontology.dsl.operation.Item.add
-import common.ontology.dsl.operation.Script.ExecuteScript
-import common.ontology.dsl.operation.Script.execute
 import common.ontology.dsl.operation.Order.PlaceOrder
 import common.ontology.dsl.operation.Order.InfoOrders
 import common.ontology.dsl.operation.Order.info

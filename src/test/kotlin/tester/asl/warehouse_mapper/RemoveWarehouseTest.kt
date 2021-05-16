@@ -26,8 +26,8 @@ import org.junit.Assert
  * @author Paolo Baldini
  */
 class RemoveWarehouseTest {
-    private fun removeItem(item: Item.QuantityItem, annots: String = "") = "${remove(item).term()}" +
-            if (annots.isNotBlank()) "[$annots]" else ""
+    private fun removeItem(item: Item.QuantityItem, annotations: String = "") = "${remove(item).term()}" +
+            if (annotations.isNotBlank()) "[$annotations]" else ""
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 

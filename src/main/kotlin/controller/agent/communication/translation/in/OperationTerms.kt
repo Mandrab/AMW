@@ -20,8 +20,6 @@ import common.ontology.dsl.operation.Order.InfoOrder
 import common.ontology.dsl.operation.Order.InfoOrders
 import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
-import common.ontology.dsl.operation.Script.ExecuteScript
-import common.ontology.dsl.operation.Script.execute
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
 import controller.agent.communication.translation.`in`.LiteralParser.asList
 

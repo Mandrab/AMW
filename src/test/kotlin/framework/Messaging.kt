@@ -3,11 +3,8 @@ package framework
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.UnreadableException
-import jade.tools.sniffer.Agent.i
 import org.hamcrest.CoreMatchers
-import org.hamcrest.Matcher
 import org.junit.Assert
-
 
 /**
  * Define a DSL for communication and testing

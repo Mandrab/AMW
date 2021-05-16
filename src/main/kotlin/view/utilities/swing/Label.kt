@@ -24,7 +24,7 @@ object Label {
         }
     }
 
-    class descriptionLabel(title: String, component: Component): JPanel() {
+    fun descriptionLabel(title: String, component: Component) = object: JPanel() {
         init {
             add(label { text = title })
             add(component)

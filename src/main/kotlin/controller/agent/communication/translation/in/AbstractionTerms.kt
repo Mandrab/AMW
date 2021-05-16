@@ -5,7 +5,6 @@ import common.ontology.dsl.abstraction.Address.address
 import common.ontology.dsl.abstraction.Client.client
 import common.ontology.dsl.abstraction.Description.description
 import common.ontology.dsl.abstraction.Email.email
-import common.ontology.dsl.abstraction.ID.ID as IDClass
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.Item.WarehouseItem

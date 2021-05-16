@@ -23,7 +23,6 @@ import org.junit.Test
  * @author Paolo Baldini
  */
 class AgentTest {
-    private val receiveWaitingTime = 1000L
 
     @Test fun addCommandShouldSendRequestToCommandManager() = test { JADE.commandManager
         ensure { admin.addCommand() }

@@ -44,7 +44,7 @@ object AbstractionTerms {
 
     fun Position.term(): Literal = "position"(rack.term(), shelf.term(), quantity.term())
 
-    fun Quantity.term() = "quantity"(value)
+    fun Quantity.term(): Literal = "quantity"(value)
 
     fun Rack.term(): Literal = "rack"(id)
 

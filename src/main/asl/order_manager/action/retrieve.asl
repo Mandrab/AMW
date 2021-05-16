@@ -43,7 +43,7 @@
         ).// TODO TEST
 
 +!kqml_received(Sender, confirm, free(OID)[mid(MID)], _)// TODO TEST
-    <-  !response_received(EMID).
+    <-  !response_received(MID).
 
 // A failure should happen only if the robot is busy.
 // To avoid problems, let's retry until it is available.

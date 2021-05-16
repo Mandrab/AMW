@@ -1,7 +1,6 @@
 package controller.agent
 
 import controller.agent.Agents.cyclicBehaviour
-import controller.agent.Agents.receiveContent
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.ACLMessage.FAILURE
@@ -42,9 +41,6 @@ abstract class Communicator: Agent() {
         waitingConfirm = waitingConfirm.filterNot { it == message }         // drop the responded message
 
         message.finalize(response)                                          // complete future for the responded message
-
-        // drop "received" messages that are not expected TODO: maybe fare che droppo tutto ciò che non è in waitConfirm
-        generateSequence { receiveContent("received") }
 
         behaviour.block()                                                   // block behaviour until new messages
     }

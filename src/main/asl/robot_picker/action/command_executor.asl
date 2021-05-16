@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////// COMMANDS EXECUTION //////////////////////////////////////////////////
 
-// TODO implement comfirmation (with caching) in order manager
+// TODO implement confirmation (with caching) in order manager
 +!kqml_received(Sender, confirm, command(ID)[mid(MID)], _)          // confirmation of message reception
     <-  .println("[ROBOT PICKER] execution confirmation received by applicant");
         !response_received(MID).
@@ -37,7 +37,7 @@
 		    Client,
 		    confirm, Command,                                       // confirm task completion
 		    MID
-        ).                                                          // msgid is unique from order_manager
+        ).                                                          // msg-id is unique from order_manager
 
 @remove_plans[atomic]
 +!remove_plans(IDX)
