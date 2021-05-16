@@ -71,4 +71,22 @@ class ExecuteCommandTest {
         val result = agent.blockingReceive(waitingTime)
         Assert.assertNull(result)
     }
+
+    @Test fun twoExecutionsShouldNotCauseProblems() = test { JADE.commandManager
+        agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
+
+        JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
+        JADE.commandManager .. INFORM + """script("{@l0 +!main <- .println(exec1)}")[${mid(1)}]""" > ASL.robotPicker
+
+        agent <= CONFIRM + """command(id("Command1"))""" - "123"
+
+        Thread.sleep(retryTime)
+
+        agent .. REQUEST + """command(id("Command2"))""" - "abc" > ASL.robotPicker
+
+        JADE.commandManager <= REQUEST + """command(id("Command2"))[${mid(2)}]"""
+        JADE.commandManager .. INFORM + """script("{@l0 +!main <- .println(exec2)}")[${mid(2)}]""" > ASL.robotPicker
+
+        agent <= CONFIRM + """command(id("Command2"))""" - "abc"
+    }
 }

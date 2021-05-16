@@ -13,6 +13,11 @@
         !response_received(MID);
         !execute(S).
 
+-!kqml_received(_, tell, script(S), _)
+    :   execute(Command)[client(Client), mid(MID)]
+    <-  .println("[ROBOT PICKER] error executing script");
+        .send(Client, failure, Command, MID).
+
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
 
 @setExecutionTask[atomic]
