@@ -15,8 +15,8 @@ object Label {
             set(value) { _topic.text = value }
 
         var info: String
-            get() = _info.text
-            set(value) { _info.text = value }
+            get() = _info.text.replace("<br>", "\n").removeSurrounding("<html>", "</html>")
+            set(value) { _info.text = "<html>${value}</html>".replace("\n", "<br>") }
 
         init {
             add(_topic)

@@ -21,21 +21,19 @@ class Command(
         layout = GridBagLayout()
 
         val id = infoLabel { topic = "ID" }
-        add(id, constraint { gridx = 1 })
+        add(id, constraint { gridx = 1; gridy = 0 })
 
         val name = infoLabel { topic = "Name" }
-        add(name, constraint { gridx = 2 })
+        add(name, constraint { gridx = 1; gridy = 1 })
 
         val description = infoLabel { topic = "Description" }
-        add(description, constraint { gridx = 1; gridy = 1; gridwidth = 2 })
+        add(description, constraint { gridx = 1; gridy = 2; gridwidth = 2 })
 
         val script = infoLabel {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             topic = "script"
         }
-        add(script, constraint { gridx = 2; gridy = 2 })
-
-        add(label { text = "Variants" }, constraint { gridx = 1; gridy = 2 })
+        add(script, constraint { gridx = 1; gridy = 3; gridheight = 6 })
 
         commands = list {
             elements = commandsSupplier()
@@ -44,8 +42,10 @@ class Command(
                 id.info = it.id.name
                 name.info = it.name.name
                 description.info = it.description.name
+                script.info = it.script.script.replace(";", ";\n")
             }
         }
+        add(commands, constraint { gridx = 0; gridy = 0; gridheight = 10 })
     }
 
     fun refresh() { commands.elements = commandsSupplier() }
