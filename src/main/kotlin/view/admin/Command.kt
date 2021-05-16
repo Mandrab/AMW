@@ -3,10 +3,10 @@ package view.admin
 import common.ontology.dsl.abstraction.Command.Command
 import view.utilities.swing.Grid.constraint
 import view.utilities.swing.Label.infoLabel
-import view.utilities.swing.Label.label
 import view.utilities.swing.List.List
 import view.utilities.swing.List.list
 import view.utilities.swing.List.render
+import view.utilities.swing.Swing.button
 import java.awt.GridBagLayout
 import javax.swing.BoxLayout
 import javax.swing.JPanel
@@ -33,7 +33,7 @@ class Command(
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             topic = "script"
         }
-        add(script, constraint { gridx = 1; gridy = 3; gridheight = 6 })
+        add(script, constraint { gridx = 1; gridy = 3; gridheight = 5 })
 
         commands = list {
             elements = commandsSupplier()
@@ -46,6 +46,11 @@ class Command(
             }
         }
         add(commands, constraint { gridx = 0; gridy = 0; gridheight = 10 })
+
+        add(button {
+            text = "Execute"
+            addActionListener { runCommand(commands.selectedValue) }
+        }, constraint { gridx = 1; gridy = 9 })
     }
 
     fun refresh() { commands.elements = commandsSupplier() }
