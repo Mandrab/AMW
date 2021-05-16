@@ -5,6 +5,7 @@ import framework.AMWSpecificFramework.ASL
 import framework.AMWSpecificFramework.JADE
 import framework.AMWSpecificFramework.mid
 import framework.AMWSpecificFramework.retryTime
+import framework.AMWSpecificFramework.waitingTime
 import framework.Framework.Utility.agent
 import framework.Framework.test
 import framework.Messaging.compareTo
@@ -23,7 +24,7 @@ class ExecuteCommandTest {
 
     @Test fun testerIsRegistering() = test { oneshotAgent(Assert::assertNotNull) }
 
-    @Test fun executionRequestShouldCauseRequestToCommansManager() = test { JADE.commandManager
+    @Test fun executionRequestShouldCauseRequestToCommandManager() = test { JADE.commandManager
         agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
 
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
@@ -55,32 +56,19 @@ class ExecuteCommandTest {
 
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
         JADE.commandManager .. INFORM + """script("{+!main <- .println(executing)}")[${mid(1)}]""" > ASL.robotPicker
-        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
+        agent <= CONFIRM + """command(id("Command1"))""" - "123"
     }
 
-    @Test fun executionConfirmationShouldWaitForReceptionConfirmation() = test { JADE.commandManager
+    @Test fun executionConfirmationShouldNotWaitAReceptionConfirmation() = test { JADE.commandManager
         agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
 
         JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
         JADE.commandManager .. INFORM + """script("{+!main <- .println(executing)}")[${mid(1)}]""" > ASL.robotPicker
-        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
+        agent <= CONFIRM + """command(id("Command1"))""" - "123"
 
         Thread.sleep(retryTime)
 
-        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
-    }
-
-    @Test fun executionConfirmationShouldStopWaitingAfterReceptionConfirmation() = test { JADE.commandManager
-        agent .. REQUEST + """command(id("Command1"))""" - "123" > ASL.robotPicker
-
-        JADE.commandManager <= REQUEST + """command(id("Command1"))[${mid(1)}]"""
-        JADE.commandManager .. INFORM + """script("{+!main <- .println(executing)}")[${mid(1)}]""" > ASL.robotPicker
-
-        agent <= CONFIRM + """command(id("Command1"))[mid(123)]"""
-        agent .. CONFIRM + """command(id("Command1"))[mid(123)]""" > ASL.robotPicker
-
-        Thread.sleep(retryTime)
-
-        Assert.assertNull(agent.receive())
+        val result = agent.blockingReceive(waitingTime)
+        Assert.assertNull(result)
     }
 }

@@ -1,10 +1,5 @@
 ////////////////////////////////////////////////// COMMANDS EXECUTION //////////////////////////////////////////////////
 
-// TODO implement confirmation (with caching) in order manager
-+!kqml_received(Sender, confirm, command(ID)[mid(MID)], _)          // confirmation of message reception
-    <-  .println("[ROBOT PICKER] execution confirmation received by applicant");
-        !response_received(MID).
-
 +!kqml_received(Sender, achieve, command(ID), MID)                  // request of job execution
     <-  .println("[ROBOT PICKER] request command execution");
         !set_execute(command(ID), Sender, MID);
@@ -33,11 +28,11 @@
 	    !main[source(script)];                                      // run the main intention of the script
         !remove_plans(0);                                           // remove all plans with label in the form of "lN"
 	    -execute(Command);                                          // task completed
-		!ensure_send(
-		    Client,
-		    confirm, Command,                                       // confirm task completion
-		    MID
-        ).                                                          // msg-id is unique from order_manager
+	    !cached_response(
+	        Client,
+            in(achieve, Command, MID),
+            out(confirm, Command, MID)                              // confirm task completion
+	    ).
 
 @remove_plans[atomic]
 +!remove_plans(IDX)
