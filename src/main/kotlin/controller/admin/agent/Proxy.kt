@@ -1,6 +1,7 @@
 package controller.admin.agent
 
 import common.ontology.dsl.abstraction.Command.Command
+import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
@@ -18,7 +19,7 @@ object Proxy {
 
         fun removeItem(item: QuantityItem)
 
-        fun executeCommand()
+        fun executeCommand(id: ID)
 
         fun warehouseState(): Future<Collection<Product>>
     }
@@ -40,7 +41,7 @@ object Proxy {
 
         override fun removeItem(item: QuantityItem) = agent?.removeItem(item) ?: Unit
 
-        override fun executeCommand() = agent?.executeCommand() ?: Unit
+        override fun executeCommand(id: ID) = agent?.executeCommand(id) ?: Unit
 
         override fun warehouseState() = agent?.warehouseState() ?: future(emptyList())
 

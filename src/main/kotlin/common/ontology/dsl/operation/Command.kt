@@ -7,7 +7,7 @@ object Command {
 
     data class AddCommand(val command: Command) { companion object }
 
-    data class ExecuteCommand(val commandId: ID.ID) { companion object }
+    data class ExecuteCommand(val id: ID.ID) { companion object }
 
     fun add(command: Command) = AddCommand(command)
 

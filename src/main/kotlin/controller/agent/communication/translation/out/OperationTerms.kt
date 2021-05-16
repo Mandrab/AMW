@@ -19,7 +19,7 @@ object OperationTerms {
 
     fun AddItem.term(): Literal = "add"(item.term())
 
-    fun ExecuteCommand.term(): Literal = "execute"(commandId.term("command_id"))
+    fun ExecuteCommand.term(): Literal = "command"(id.term())
 
     fun PlaceOrder.term(): Literal = "order"(client.term(), email.term(), address.term())[items.map { it.term() }]
 

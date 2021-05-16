@@ -34,7 +34,7 @@ object AbstractionTerms {
 
     fun Email.term(): Literal = "email"(address.toStringTerm())
 
-    fun ID.term(syntax: String = "id"): Literal = syntax(name.toStringTerm())
+    fun ID.term(): Literal = "id"(name.toStringTerm())
 
     fun WarehouseItem.term(): Literal = "item"(id.term(), position.term())
 

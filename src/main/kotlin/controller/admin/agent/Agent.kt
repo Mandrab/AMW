@@ -1,6 +1,7 @@
 package controller.admin.agent
 
 import common.ontology.dsl.abstraction.Command.Command
+import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
@@ -8,6 +9,7 @@ import controller.agent.AgentProxy
 import controller.agent.Communicator
 import controller.agent.communication.translation.`in`.Services.InfoWarehouse as InfoWarehouseIn
 import controller.agent.communication.translation.out.Services.AddCommand
+import controller.agent.communication.translation.out.Services.ExecuteCommand
 import controller.agent.communication.translation.out.Services.InfoWarehouse as InfoWarehouseOut
 import controller.agent.communication.translation.out.Services.StoreItem as StoreItemOut
 import controller.agent.communication.translation.out.Services.RemoveItem as RemoveItemOut
@@ -36,7 +38,7 @@ class Agent: Communicator() {
 
     fun removeItem(item: QuantityItem) { sendMessage(RemoveItemOut.build(item).message(this), true) { } }
 
-    fun executeCommand() { TODO() }
+    fun executeCommand(id: ID) { sendMessage(ExecuteCommand.build(id).message(this), true) { } }
 
     fun warehouseState(): Future<Collection<Product>> =
             sendMessage(InfoWarehouseOut.build().message(this), true, InfoWarehouseIn.parse)

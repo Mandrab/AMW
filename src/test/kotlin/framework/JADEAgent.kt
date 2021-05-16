@@ -20,11 +20,13 @@ class JADEAgent: Agent() {
         super.doDelete()
     }
 
-    fun register(_name: String, vararg types: String) = this.apply {
+    fun register(_name: String, vararg types: String) = register(*types.map { _name to it }.toTypedArray())
+
+    fun register(vararg descriptions: Pair<String, String>) = this.apply {
         registered = true
         DFService.register(this, defaultDF, DFAgentDescription().apply {
-            types.map {
-                addServices(ServiceDescription().apply { name = _name; type = it })
+            descriptions.forEach {
+                addServices(ServiceDescription().apply { name = it.first; type = it.second })
             }
         })
     }

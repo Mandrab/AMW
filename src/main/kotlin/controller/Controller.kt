@@ -1,6 +1,7 @@
 package controller
 
 import common.ontology.dsl.abstraction.Command.Command
+import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.WarehouseItem
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.Item.QuantityItem
@@ -24,7 +25,7 @@ object Controller {
 
         fun removeItem(item: QuantityItem)
 
-        fun executeCommand()
+        fun executeCommand(id: ID)
 
         fun warehouseState(): Future<Collection<Product>>
     }

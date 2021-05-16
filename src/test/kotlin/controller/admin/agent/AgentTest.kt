@@ -11,6 +11,7 @@ import common.ontology.dsl.abstraction.Rack.rack
 import common.ontology.dsl.abstraction.Script.script
 import common.ontology.dsl.abstraction.Shelf.shelf
 import common.ontology.dsl.operation.Command.add
+import controller.agent.communication.translation.out.AbstractionTerms.term
 import controller.agent.communication.translation.out.OperationTerms.term
 import framework.AMWSpecificFramework.JADE
 import framework.AMWSpecificFramework.Test.admin
@@ -49,10 +50,10 @@ class AgentTest {
         JADE.warehouseMapper < REQUEST + """remove(item(id("a"),quantity(3)))"""
     }
 
-    @Test fun executeCommandShouldSendRequestToSomeViableAgent() = test { JADE.commandManager
-        ensure { admin.executeCommand() }
+    @Test fun executeCommandShouldSendRequestToSomeViableAgent() = test { JADE.robotPicker
+        ensure { admin.executeCommand(id("id")) }
 
-        JADE.commandManager < REQUEST + "TODO"
+        JADE.robotPicker <= REQUEST + """command(${id("id").term()})"""
     }
 
     @Test fun warehouseStateShouldSendRequestToWarehouseManager() = test { JADE.warehouseMapper

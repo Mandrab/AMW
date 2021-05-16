@@ -30,7 +30,7 @@ object AMWSpecificFramework {
             register(MANAGEMENT_ITEMS.id, REMOVE_ITEM.id, STORE_ITEM.id, INFO_WAREHOUSE.id)
         }
         val robotPicker get() = getOrBuild("jade_robot_picker") {
-            register(PICKER_ITEMS.id, RETRIEVE_ITEM.id)
+            register(PICKER_ITEMS.id to RETRIEVE_ITEM.id, EXECUTOR_COMMAND.id to EXEC_COMMAND.id)
         }
         val collectionPointManager get() = getOrBuild("jade_collection_point_manager") {
             register(MANAGEMENT_ITEMS.id, INFO_COLLECTION_POINTS.id)

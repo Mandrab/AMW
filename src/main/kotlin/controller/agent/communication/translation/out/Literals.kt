@@ -4,7 +4,7 @@ import jason.asSyntax.*
 
 /**
  * An utility class created to easily build literals.
- * A similar-DSL is offered for this task.
+ * A simil-DSL is offered for this task.
  *
  * @author Paolo Baldini
  */

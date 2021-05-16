@@ -17,6 +17,7 @@ import common.ontology.dsl.operation.Warehouse.Target.WAREHOUSE
 import common.ontology.dsl.operation.Warehouse.info
 import controller.agent.communication.Messages.message
 import controller.agent.communication.Messages.receiver
+import controller.agent.communication.translation.out.AbstractionTerms.term
 import controller.agent.communication.translation.out.OperationTerms.term
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
@@ -74,8 +75,8 @@ object Services {
     }
 
     object ExecuteCommand {
-        fun build(commandId: ID) = object: Service(EXECUTOR_COMMAND.id, EXEC_COMMAND.id) {
-            override fun parse(): Literal = execute(commandId).term()
+        fun build(id: ID) = object: Service(EXECUTOR_COMMAND.id, EXEC_COMMAND.id, REQUEST) {
+            override fun parse(): Literal = execute(id).term()
         }
     }
 
