@@ -11,12 +11,12 @@ import javax.swing.JPanel
 
 class History: JPanel() {
     private val orders: List<InfoOrder>
+    private val orderInfo = label { text = "Nothing here. You can try to refresh the view" }
 
     init {
         layout = GridBagLayout()
 
-        val orderInfo = label { text = "Nothing here. You can try to refresh the view" }
-        add(orderInfo, constraint { gridx = 1 })
+        add(orderInfo, )
 
         orders = list {
             elements = emptyList()
@@ -25,5 +25,9 @@ class History: JPanel() {
         add(orders, constraint { })
     }
 
-    fun refresh(elements: Collection<InfoOrder>) { orders.elements = elements }
+    fun refresh(elements: Collection<InfoOrder>) {
+        orders.elements = elements
+        if (elements.isNotEmpty()) remove(orderInfo)
+        repaint()
+    }
 }
