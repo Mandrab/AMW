@@ -9,6 +9,8 @@ import controller.admin.agent.Agent
 import controller.agent.Agents
 import controller.admin.agent.Proxy
 import view.View
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 /**
  * Main class of the application that creates agent and manage main data flow
@@ -29,9 +31,11 @@ class Controller(retryConnection: Boolean = true): Admin {
 
     override fun addItem(item: WarehouseItem) = proxy.addItem(item)
 
-    override fun removeItem(item: QuantityItem) = proxy.removeItem(item)
+    override fun commandsList(): Future<Collection<Command>> = CompletableFuture.completedFuture(emptyList())
 
     override fun executeCommand(id: ID) = proxy.executeCommand(id)
+
+    override fun removeItem(item: QuantityItem) = proxy.removeItem(item)
 
     override fun warehouseState() = proxy.warehouseState()
 

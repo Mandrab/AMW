@@ -23,9 +23,11 @@ object Controller {
 
         fun addItem(item: WarehouseItem)
 
-        fun removeItem(item: QuantityItem)
+        fun commandsList(): Future<Collection<Command>>
 
         fun executeCommand(id: ID)
+
+        fun removeItem(item: QuantityItem)
 
         fun warehouseState(): Future<Collection<Product>>
     }

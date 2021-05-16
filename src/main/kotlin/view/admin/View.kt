@@ -14,14 +14,13 @@ object View {
     operator fun invoke(controller: Admin) = frame {
         contentPane = LoadingPanel { startLoading, stopLoading -> GlassLayer.layer {
             val tabs = tabs {
-                //add("Command", Command())
                 add("Warehouse", Warehouse(5,5, {
                         controller.addItem(it)
                     }, {
                         controller.removeItem(it)
                     })
-                )    // TODO 1 magic numbers; 2 manage error from agent
-                //add("Script", Script())
+                )
+                add("Command", Command({ controller.commandsList().get() }, { controller.executeCommand(it.id) }))
             }
             add(tabs, BorderLayout.CENTER)
 
@@ -32,7 +31,6 @@ object View {
                             is Warehouse -> component
                                     .refresh(controller.warehouseState().get(2500, TimeUnit.MILLISECONDS))
                             is Command -> component.refresh()
-                            is Script -> component.refresh()
                         }
                     }
                 }
