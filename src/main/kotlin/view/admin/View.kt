@@ -20,7 +20,13 @@ object View {
                         controller.removeItem(it)
                     })
                 )
-                add("Command", Command({ controller.commandsList().get() }, { controller.executeCommand(it.id) }))
+                add("Command", Command({
+                        controller.commandsList().get()
+                    }, {
+                        controller.addCommand(it)
+                    }, {
+                        controller.executeCommand(it)
+                    }))
             }
             add(tabs, BorderLayout.CENTER)
 

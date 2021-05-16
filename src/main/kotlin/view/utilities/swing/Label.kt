@@ -3,20 +3,21 @@ package view.utilities.swing
 import java.awt.Component
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JTextArea
 
 object Label {
 
     class DescriptionLabel: JPanel() {
         private val _topic = label { text = "-" }
-        private val _info = label { text = "-" }
+        private val _info = area { text = "-" }
 
         var topic: String
             get() = _topic.text
             set(value) { _topic.text = value }
 
         var info: String
-            get() = _info.text.replace("<br>", "\n").removeSurrounding("<html>", "</html>")
-            set(value) { _info.text = "<html>${value}</html>".replace("\n", "<br>") }
+            get() = _info.text
+            set(value) { _info.text = value }
 
         init {
             add(_topic)
@@ -32,6 +33,8 @@ object Label {
     }
 
     fun label(init: JLabel.() -> Unit) = JLabel().apply(init)
+
+    fun area(init: JTextArea.() -> Unit) = JTextArea().apply(init)
 
     fun infoLabel(init: DescriptionLabel.() -> Unit) = DescriptionLabel().apply(init)
 }
