@@ -29,7 +29,7 @@ import org.junit.Test
  *
  * @author Paolo Baldini
  */
-class AgentTest {
+class AgentOutTest {
 
     @Test fun addCommandShouldSendRequestToCommandManager() = test { JADE.commandManager
         val command = command(id("id"), name("name"), description("description"))[script("script")]

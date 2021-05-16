@@ -7,7 +7,7 @@
         .send(Sender, tell, script(S)[mid(MID)]).
 
 @commandsRequest[atomic]
-+!kqml_received(Sender, achieve, info(commands), _)
++!kqml_received(Sender, achieve, info(commands), MID)
 	<-  .println("[COMMAND MANAGER] request commands info");
-	    .findall(command(ID, N, D)[ script(S) ], command(ID, N, D)[ script(S) ], L);
-        .send(Sender, tell, L[mid(MID)]).
+	    .findall(command(I, N, D)[ script(S) ], command(I, N, D)[ script(S) ], L);
+        .send(Sender, tell, L, MID).
