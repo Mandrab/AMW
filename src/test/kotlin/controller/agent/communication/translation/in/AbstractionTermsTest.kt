@@ -6,10 +6,7 @@ import common.ontology.dsl.abstraction.Client.client
 import common.ontology.dsl.abstraction.Command.command
 import common.ontology.dsl.abstraction.Description.description
 import common.ontology.dsl.abstraction.Email.email
-import common.ontology.dsl.abstraction.ID.command_id
 import common.ontology.dsl.abstraction.ID.id
-import common.ontology.dsl.abstraction.ID.order_id
-import common.ontology.dsl.abstraction.ID.v_id
 import common.ontology.dsl.abstraction.Item.Product
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Item.WarehouseItem
@@ -47,11 +44,11 @@ class AbstractionTermsTest {
 
     @Test fun testIDParse() = assert(id("a0") == ID.parse("id(a0)"))
 
-    @Test fun testOrderIDParse() = assert(order_id("a0") == ID.parse("order_id(a0)", "order_id"))
+    @Test fun testOrderIDParse() = assert(id("a0") == ID.parse("order_id(a0)"))
 
-    @Test fun testCommandIDParse() = assert(command_id("a0") == ID.parse("command_id(a0)","command_id"))
+    @Test fun testCommandIDParse() = assert(id("a0") == ID.parse("command_id(a0)"))
 
-    @Test fun testVersionIDParse() = assert(v_id("a0") == ID.parse("v_id(a0)", "v_id"))
+    @Test fun testVersionIDParse() = assert(id("a0") == ID.parse("v_id(a0)"))
 
     @Test fun testWarehouseItemParse() =
             assert(item(id("a0"),position(rack(0),shelf(1),quantity(2)))

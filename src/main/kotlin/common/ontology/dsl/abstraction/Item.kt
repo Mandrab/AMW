@@ -31,4 +31,3 @@ object Item {
 
     infix fun Item.sameId(item: Item): Boolean = id == item.id
 }
-

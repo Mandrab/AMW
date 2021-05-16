@@ -5,7 +5,6 @@ import common.ontology.dsl.abstraction.Client.client
 import common.ontology.dsl.abstraction.Command.command
 import common.ontology.dsl.abstraction.Description.description
 import common.ontology.dsl.abstraction.Email.email
-import common.ontology.dsl.abstraction.ID.command_id
 import common.ontology.dsl.abstraction.ID.id
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Name.name
@@ -43,7 +42,7 @@ class OperationTermsTest {
                 == AddItem.parse("add(item(id(\"a0\"), position(rack(0),shelf(1),quantity(2))))"))
 
     @Test fun testCommandParse() =
-            assert(execute(command_id("a0")) == ExecuteCommand.parse("execute(command_id(a0))"))
+            assert(execute(id("a0")) == ExecuteCommand.parse("execute(id(a0))"))
 
     @Test fun testOrderParse() =
             assert(

@@ -33,8 +33,7 @@ object AbstractionTerms {
 
     fun Email.parse(string: String): Email.Email = string.parse("""email\(\"(.*)\"\)""").run { email(next()) }
 
-    fun ID.parse(string: String, syntax: String = "id"): ID.ID = string.parse("""$syntax\((.*)\)""")
-            .run { IDClass(next(), syntax) }
+    fun ID.parse(string: String): ID.ID = string.parse("""id\((.*)\)""").run { IDClass(next()) }
 
     fun Product.Companion.parse(string: String): Product =
             string.parse("""item\(id\("(.*)"\)\)\[(.*)]""")

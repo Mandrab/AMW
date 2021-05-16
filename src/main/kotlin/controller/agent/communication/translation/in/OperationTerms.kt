@@ -34,7 +34,7 @@ object OperationTerms {
             .run { add(WarehouseItem.parse(next())) }
 
     fun ExecuteCommand.Companion.parse(string: String): ExecuteCommand = string.parse("""execute\((.*)\)""")
-            .run { execute(ID.parse(next(), "command_id")) }
+            .run { execute(ID.parse(next())) }
 
     fun PlaceOrder.Companion.parse(string: String): PlaceOrder =
             string.parse("""order\(client\((.*)\), ?email\((.*)\), ?address\((.*)\)\)\[(.*)]""")
