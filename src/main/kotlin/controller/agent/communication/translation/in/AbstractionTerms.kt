@@ -127,6 +127,4 @@ object AbstractionTerms {
     }
 
     private fun String.parse(pattern: String) = pattern.toRegex().find(trim())!!.groupValues.drop(1).iterator()
-
-    private val match = "\\(.\\*\\)"
 }
