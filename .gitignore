@@ -30,3 +30,4 @@ target
 **/*.png
 **/*.synctex.gz
 **/*.toc
+!res/report/section/usage_examples/figure/*
