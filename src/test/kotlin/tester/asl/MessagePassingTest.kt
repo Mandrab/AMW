@@ -6,9 +6,11 @@ import common.ontology.dsl.abstraction.Email.email
 import common.ontology.dsl.abstraction.ID
 import common.ontology.dsl.abstraction.Item.item
 import common.ontology.dsl.abstraction.Quantity.quantity
+import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import controller.agent.communication.translation.out.OperationTerms.term
 import framework.AMWSpecificFramework.ASL.collectionPointManager
+import framework.AMWSpecificFramework.ASL.commandManager
 import framework.AMWSpecificFramework.ASL.orderManager
 import framework.AMWSpecificFramework.ASL.robotPicker
 import framework.AMWSpecificFramework.ASL.warehouseMapper
@@ -59,6 +61,28 @@ class MessagePassingTest {
         agent <= CONFIRM + defaultOrder
         agent .. REQUEST + "info(warehouse)" > warehouseMapper
         agent <= INFORM + "position(rack(1),shelf(1),quantity(2))"
+
+        agent .. REQUEST + info(client("x"), email("y")).term() > orderManager
+        agent <= INFORM + "[order(id(odr1),status(completed))]"
+    }
+
+    @Test fun commandPropagation() = test(filterLogs = true) {
+        robotPicker; commandManager
+
+        recordLogs = true
+        Thread.sleep(250)
+
+        agent .. REQUEST + """command(id("Command1"))""" - "abc" > robotPicker
+
+        // expected logs
+        -"[ROBOT PICKER] request command execution"
+        -"[COMMAND MANAGER] request command script"
+        -"[ROBOT PICKER] command script obtained"
+
+        Thread.sleep(2000)
+        recordLogs = false
+
+        agent <= CONFIRM + """command(id("Command1"))"""
     }
 
     private operator fun Agent.compareTo(message: Messaging.Message) = 0.apply {
