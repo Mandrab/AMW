@@ -114,8 +114,9 @@ object AbstractionTerms {
         """status\((.*)\)"""
     ).run {
         status(when (next()) {
-                CHECKING.value -> CHECKING
-                else -> RETRIEVING
+            CHECKING.value -> CHECKING
+            COMPLETED.value -> COMPLETED
+            else -> RETRIEVING
         })
     }
 

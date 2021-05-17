@@ -4,6 +4,7 @@ object Status {
 
     enum class States(val value: String) {
         CHECKING("check"),
+        COMPLETED("completed"),
         RETRIEVING("retrieve")
     }
 

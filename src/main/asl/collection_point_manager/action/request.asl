@@ -6,7 +6,7 @@
 	    !cached_response(
             Sender,
             in(achieve, point(OID)[mid(MID)]),
-            out(confirm, point(pid(PID), x(X), y(Y))[mid(MID)])
+            out(confirm, point(OID, pid(PID), x(X), y(Y))[mid(MID)])
         ).                                                          // cache the response and send it
 
 ///////////////////////////// POINT SET FREE
