@@ -46,7 +46,7 @@ class SubmitOrderTest {
             """,item(id("b"),quantity(2)),${mid(mid)}]"""
     private fun removeItemsResponse(mid: Int) = "remove(items,odr1)[${position(mid)},${position(mid+1)},${mid(mid)}]"
     private fun pointRequest(mid: Int) = "point(odr1)[${mid(mid)}]"
-    private fun pointResponse(mid : Int) = "point(pid, x, y)[${mid(mid)}]"
+    private fun pointResponse(mid : Int) = "point(odr1, pid, x, y)[${mid(mid)}]"
     private fun orderStatus(status: String) = "[order(id(odr1),status($status))]"
     private fun position(i: Int) = "position(x$i,y$i,z$i)"
     private val defaultOrder = order(client("x"), email("y"), address("z"))[

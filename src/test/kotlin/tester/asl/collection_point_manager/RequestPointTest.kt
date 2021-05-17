@@ -22,14 +22,14 @@ class RequestPointTest {
 
     @Test fun requestForPointShouldReturnIt() = test {
         agent .. REQUEST + "point(oid1)[mid(mid1)]" > ASL.collectionPointManager
-        agent < CONFIRM + "point(pid(0),x(50),y(50))[mid(mid1)]"
+        agent < CONFIRM + "point(oid1,pid(0),x(50),y(50))[mid(mid1)]"
     }
 
     @Test fun twoRequestsShouldReturnDifferentPoints() = test {
         agent .. REQUEST + "point(oid1)[mid(mid1)]" > ASL.collectionPointManager
         agent .. REQUEST + "point(oid2)[mid(mid2)]" > ASL.collectionPointManager
-        agent < CONFIRM + "point(pid(0),x(50),y(50))[mid(mid1)]"
-        agent < CONFIRM + "point(pid(1),x(50),y(70))[mid(mid2)]"
+        agent < CONFIRM + "point(oid1,pid(0),x(50),y(50))[mid(mid1)]"
+        agent < CONFIRM + "point(oid2,pid(1),x(50),y(70))[mid(mid2)]"
     }
 
     @Test fun requestShouldFailIfEveryPointIsAlreadyReserved() = test { var i = 0
@@ -43,9 +43,9 @@ class RequestPointTest {
 
     @Test fun pointForAnAlreadySubmitterOrderShouldBeTheSame() = test {
         agent .. REQUEST + "point(oid1)[mid(mid1)]" > ASL.collectionPointManager
-        agent < CONFIRM + "point(pid(0),x(50),y(50))[mid(mid1)]"
+        agent < CONFIRM + "point(oid1,pid(0),x(50),y(50))[mid(mid1)]"
 
         agent .. REQUEST + "point(oid1)[mid(mid1)]" > ASL.collectionPointManager
-        agent < CONFIRM + "point(pid(0),x(50),y(50))[mid(mid1)]"
+        agent < CONFIRM + "point(oid1,pid(0),x(50),y(50))[mid(mid1)]"
     }
 }

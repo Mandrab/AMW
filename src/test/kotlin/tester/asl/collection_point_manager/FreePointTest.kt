@@ -26,7 +26,7 @@ class FreePointTest {
 
     @Test fun freeOfAnOccupiedPointShouldSucceed() = test {
         agent .. REQUEST + "point(oid1)[mid(mid1)]" > ASL.collectionPointManager
-        agent < CONFIRM + "point(pid(0),x(50),y(50))[mid(mid1)]"
+        agent < CONFIRM + "point(oid1,pid(0),x(50),y(50))[mid(mid1)]"
 
         agent .. INFORM + "free(oid1)[mid(mid1)]" > ASL.collectionPointManager
         agent < CONFIRM + "free(oid1)[mid(mid1)]"
@@ -34,12 +34,12 @@ class FreePointTest {
 
     @Test fun afterFreeAPointShouldBeAgainAvailable() = test {
         agent .. REQUEST + "point(oid1)[mid(mid1)]" > ASL.collectionPointManager
-        agent < CONFIRM + "point(pid(0),x(50),y(50))[mid(mid1)]"
+        agent < CONFIRM + "point(oid1,pid(0),x(50),y(50))[mid(mid1)]"
 
         agent .. INFORM + "free(oid1)[mid(mid1)]" > ASL.collectionPointManager
         agent < CONFIRM + "free(oid1)[mid(mid1)]"
 
         agent .. REQUEST + "point(oid2)[mid(mid2)]" > ASL.collectionPointManager
-        agent < CONFIRM + "point(pid(0),x(50),y(50))[mid(mid2)]"
+        agent < CONFIRM + "point(oid2,pid(0),x(50),y(50))[mid(mid2)]"
     }
 }
