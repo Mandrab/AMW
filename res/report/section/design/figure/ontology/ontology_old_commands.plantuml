@@ -1,0 +1,17 @@
+@startuml ontology-old-commands
+skinparam componentStyle rectangle
+
+[ID] as CID
+[ID] as IID
+
+[COMMAND] --> CID
+[COMMAND] --> [NAME]
+[COMMAND] --> [DESCRIPTION]
+[COMMAND] --> [INTERFACE]
+[COMMAND] --> [IMPLEMENTATION]  : possibly many
+[IMPLEMENTATION] --> IID
+[IMPLEMENTATION] --> [SCRIPT]
+[IMPLEMENTATION] -down-> [REQUIREMENT]  : possibly many
+[REQUIREMENT] .up. [INTERFACE]
+
+@enduml

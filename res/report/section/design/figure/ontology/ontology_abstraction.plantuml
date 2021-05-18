@@ -1,0 +1,32 @@
+@startuml ontology-abstractions
+skinparam componentStyle rectangle
+
+[ID] as IID
+[ITEM] --> IID
+[ITEM] --> [POSITION] : possibly\nmany
+
+[POSITION] --> [RACK]
+[POSITION] --> [SHELF]
+[POSITION] --> [QUANTITY]
+
+[ID] as CID
+[COMMAND] --> CID
+[COMMAND] --> [NAME]
+[COMMAND] --> [DESCRIPTION]
+[COMMAND] --> [SCRIPT]
+
+[USER] --> [CLIENT]
+[USER] --> [EMAIL]
+[USER] --> [ADDRESS]
+
+[ID] as OID
+[ORDER] --> OID
+[ORDER] --> [USER]
+[ORDER] --> [STATUS]            : check, retrieve,\ncompleted, failed
+[ORDER] --> [COLLECTION POINT]  : just in\nretrieve phase
+[ORDER] --> [POSITION]          : of items\nto retrieve
+
+/' just graphical settings '/
+[DESCRIPTION] --[hidden]> [ORDER]
+
+@enduml

@@ -8,7 +8,7 @@
 % Reporting wrong design choices which has been evalued during the design phase is welcome too.
 
 In questa sezione si analizza il sistema AMW da punto di vista di \textit{struttura}, \textit{comportamento} ed \textit{interazione}.
-Si discuterà inizialmente la struttura di massima del sistema e le entità rappresentate. Successivamente, si analizzerà il loro comportamento; ed infine verranno presentate le modalità di interazione fra esse.
+Si discuterà inizialmente la struttura di massima del sistema e le entità rappresentate. Successivamente, si analizzerà il loro comportamento. Infine verranno presentate le modalità di interazione.
 
 \subsection{Struttura}
 
@@ -38,16 +38,18 @@ L'unico punto contrario alla dichiarazione precedente potrebbe riguardare il Col
 Di seguito verrà fornita una descrizione della struttura degli agenti. A tal scopo risulta però necessario fornire una rappresentazione propedeutica dell'ambiente, definita tramite l'utilizzo di un'ontologia.
 
 \subsubsection{Ontologia del sistema}
-Un ontologia rappresenta un sistema in quanto tale, e le categorie fondamentali che lo compongono, incluse le relazioni fra esse. Questa è una componente importante per la rappresentazione della conoscenza ed è stata utilizzata nel sistema per descrivere e definire l'ambiente del magazzino.\\
-Nello specifico, è stata definita una ontologia relativa agli oggetti fisici o informativi ed alle loro relazioni (vedasi Figura \ref{fig:ontology_abstractions}); ed una ontologia relativa alle operazioni su di essi effettuabili (vedasi Figura \ref{fig:ontology_operations}).
+Un ontologia rappresenta un sistema in quanto tale, le categorie fondamentali che lo compongono e le relazioni fra esse. Questa è una componente importante per la rappresentazione della conoscenza ed è stata utilizzata nel sistema per descrivere e definire l'ambiente del magazzino e le operazioni ad esso relative.\\
+Nello specifico, è stata definita un'ontologia relativa agli oggetti fisici o informativi ed alle loro relazioni (vedasi Figura \ref{fig:ontology_abstractions}); ed una ontologia relativa alle operazioni su di essi effettuabili (vedasi Figura \ref{fig:ontology_operations}).
+%
 \parag
-Le entità fisiche rappresentate nel sistema magazzino sono gli \textit{item}, che rappresentano gli oggetti acquistabili ed in esso conservate. Questi sono ovviamente indicizzati tramice un \textit{id} e mantenuti in scaffalature identificabili.\\
-Per quanto riguarda le entità puramente informative, si possono riscontrare i comandi e le informazioni relative agli acquirenti del sistema. Le prime sono relative al repository di conoscenza procedurale (TODO) a cui gli agenti possono attingere; le seconde sono relative alle informazioni quali l'indirizzo di spedizione etc. 
+Le entità fisiche rappresentate nel sistema magazzino sono gli \textit{item}, ovvero gli oggetti ordinabili in esso conservati. Questi sono rappresentati da un \textit{id} univoco e mantenuti, in differenti \textit{quantity}, in scaffalature identificabili da una coppia \textit{rack-value}.\\
+Per quanto riguarda le entità puramente informative, si possono riscontrare i \textit{command} e le informazioni relative agli \textit{user} del sistema. Le prime sono relative al \textit{repository} di conoscenza procedurale a cui gli agenti possono attingere; le seconde sono relative alle informazioni, quali l'indirizzo di spedizione, utilizzate durante la sottomissione di un \textit{order}. Quest'ultimo contiene le informazioni relative all'ordine dell'utente, insieme al \textit{collection point} (i.e., il punto di raggruppamento dei prodotti) e allo \textit{status}. Si sottolinea infine come l'astrazione dell'order sia utilizzata dal solo agente \textit{order-manager}, in quanto gli altri agenti accedono solo alle informazioni ad esso correlate.
 \begin{figure}[ht]
-    \includegraphics[width=\textwidth]{section/design/figure/ontology_abstractions.png}
-    \caption{Rappresentazione schematica delle entità (fisiche e non) del sistema e delle loro relazioni.}
+    \includegraphics[width=\textwidth]{section/design/figure/ontology/ontology-abstractions.png}
+    \caption{Schema relazionale delle entità fisiche e concettuali rappresentate nel sistema.}
     \label{fig:ontology_abstractions}
 \end{figure}
+%
 \parag
 L'ontologia rappresentante le operazioni definisce invece le azioni che possono coinvolgere determinate astrazioni del sistema e le informazioni per la loro esecuzione. Un banale esempio di ciò è l'operazione di piazzamento di un ordine, la quale necessita di mettere in relazione informazioni associate all'acquirente e gli oggetti richiesti da questo.
 \begin{figure}[ht]
@@ -139,3 +141,19 @@ Come gi\'a detto il compito dell'user agent \'e relativo alla gestione degli ord
 \subsubsection{Order Manager}
 \subsubsection{Robot Picker}
 \subsubsection{Warehouse Mapper}
+
+\subsection{Considerazioni sul design scelto}
+In questa sezione si ritiene interessante analizzare alcune scelte di design e le loro conseguenze. Nello specifico, si descriveranno alcuni approcci inizialmente intrapresi ma poi scartati o modificati nel corso del progetto. Inoltre, si descriveranno alcuni ragionamenti successivi allo sviluppo.
+
+\subsubsection{Ontologia}
+Il design dell'ontologia differiva inizialmente da quello descritto precedentemente nel capitolo, principalmente riguardo la struttura dei comandi. Questi erano definiti da un design molto pi\'u complicato comprendente `dipendenze' per l'esecuzione, `interfacce' e versioni (vedasi Figura \ref{fig:ontology-old-commands}).\\
+I molti problemi legati a questa struttura (si pensi ad esempio alla risoluzione delle dipendenze cicliche) hanno poi portato alla scelta di una semplificazione della stessa, in quanto troppo complessa per il livello richiesto per l'esame.
+\begin{figure}[!ht]\centering
+    \includegraphics[width=\textwidth]{section/design/figure/ontology/ontology-old-commands.png}
+    \caption{Design iniziale dei comandi. Ognuno consisteva di pi\'u implementazioni, le quali potevano dipendendere da alcune funzionalit\'a che l'agente doveva conoscere o reperire tramite una ricerca nel repository di piani.}
+    \label{fig:ontology-old-commands}
+\end{figure}
+%
+\subsubsection{Il modello di comunicazione}
+Come gi\'a detto, uno scopo di questo progetto era l'apprendimento dell'utilizzo del modello di comunicazione a scambio di messaggi, in alternativa a quello basato su spazi di tuple visto a lezione. Questo modello si \'e invero rivelato molto flessibile nel suo utilizzo, tuttavia si \'e anche notato come per alcuni task sarebbe probabilmente stato pi\'u adatto un modello basato sullo spazio di tuple. In particolare, si \'e visto come tasks quali l'assegnamento di un oggetto da recuperare siano invero meglio rappresentati da un modello a spazio di tuple, dove gli agenti, una volta disponibili al compito, possano autonomamente accettare il task di recupero precedentemente pubblicato. Si nota infine come per altri task quali la sottomissione di un ordine, risulti invece pi\'u coerente il recapito diretto dei messaggi al singolo agente interessato.\\
+In conclusione, non si considera la scelta fatta un errore, ma si ritiene comunque la considerazione sopra effettuata interessante ai fini della corretta comprensione del sistema e dei suoi punti deboli e di forza.
