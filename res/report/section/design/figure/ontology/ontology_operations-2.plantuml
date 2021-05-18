@@ -1,0 +1,23 @@
+@startuml ontology-operations-2
+skinparam componentStyle rectangle
+left to right direction
+
+[RESERVE] --> [OID]                 : for
+[RESERVE] -- [COLLECTION POINT]     : require
+note left of [RESERVE]: request for a collection\npoint for order:\nachieve, point(order_id)
+
+[FREE] --> [OID]                    : assigned to
+[FREE] -- [COLLECTION POINT]        : what to free
+note left of [FREE]: request for free a collection\npoint assigned to order:\ntell, free(order_id)
+
+[INFO] as CINFO
+[ADD] -up-> [COMMAND]
+note top of [ADD]: request for add a\ncommand to repository:\nachieve, add(command)
+[REQUEST] -up- [COMMAND]
+note bottom of [REQUEST]: request for command script:\nachieve, command(id)
+CINFO -down- [COMMAND]                  : required;\npossibly many
+note top of CINFO: request info for all the commands:\n achieve, info(commands)
+[EXECUTE] --> [COMMAND]
+note bottom of [EXECUTE]: request for command execution:\nachieve, command(id)
+
+@enduml

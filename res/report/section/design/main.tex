@@ -39,7 +39,7 @@ Di seguito verrà fornita una descrizione della struttura degli agenti. A tal sc
 
 \subsubsection{Ontologia del sistema}
 Un ontologia rappresenta un sistema in quanto tale, le categorie fondamentali che lo compongono e le relazioni fra esse. Questa è una componente importante per la rappresentazione della conoscenza ed è stata utilizzata nel sistema per descrivere e definire l'ambiente del magazzino e le operazioni ad esso relative.\\
-Nello specifico, è stata definita un'ontologia relativa agli oggetti fisici o informativi ed alle loro relazioni (vedasi Figura \ref{fig:ontology_abstractions}); ed una ontologia relativa alle operazioni su di essi effettuabili (vedasi Figura \ref{fig:ontology_operations}).
+Nello specifico, è stata definita un'ontologia relativa agli oggetti fisici o informativi ed alle loro relazioni (vedasi Figura \ref{fig:ontology_abstractions}); ed una ontologia relativa alle operazioni su di essi effettuabili (vedasi Figure \ref{fig:ontology_operations-1} e \ref{fig:ontology_operations-2}).
 %
 \parag
 Le entità fisiche rappresentate nel sistema magazzino sono gli \textit{item}, ovvero gli oggetti ordinabili in esso conservati. Questi sono rappresentati da un \textit{id} univoco e mantenuti, in differenti \textit{quantity}, in scaffalature identificabili da una coppia \textit{rack-value}.\\
@@ -52,11 +52,16 @@ Per quanto riguarda le entità puramente informative, si possono riscontrare i \
 %
 \parag
 L'ontologia rappresentante le operazioni definisce invece le azioni che possono coinvolgere determinate astrazioni del sistema e le informazioni per la loro esecuzione. Un banale esempio di ciò è l'operazione di piazzamento di un ordine, la quale necessita di mettere in relazione informazioni associate all'acquirente e gli oggetti richiesti da questo.
-\begin{figure}[ht]
-    \includegraphics[width=\textwidth]{section/design/figure/ontology_operations.png}% TODO
-    \caption{Rappresentazione schematica delle operazioni disponibili nel sistema e delle loro relazioni con le astrazioni precedentemente definite.}
-    \label{fig:ontology_operations}
+\begin{figure}[!ht]\centering
+    \includegraphics[width=.7\textwidth]{section/design/figure/ontology/ontology-operations-1.png}% TODO
+    \caption{Parziale rappresentazione schematica delle operazioni disponibili nel sistema e delle loro relazioni con le astrazioni precedentemente definite. Questa parte mostra le operazioni relative ad ordini e prodotti.}
+    \label{fig:ontology_operations-1}
 \end{figure}
+\begin{figure}[!ht]\centering
+    \includegraphics[width=\textwidth]{section/design/figure/ontology/ontology-operations-2.png}% TODO
+    \caption{Parziale rappresentazione schematica delle operazioni disponibili nel sistema e delle loro relazioni con le astrazioni precedentemente definite. Questa parte mostra le operazioni relative a comandi e punti di raccolta.}
+    \label{fig:ontology_operations-2}
+\end{figure}%TODO commenti frecce
 
 \subsubsection{Admin}
 L'agente admin \`e colui che si occupa di permettere l'interazione dell'amministratore col sistema. Condividendo alcuni tratti con l'agente user, si \'e deciso di raccogliere le caratteristiche comuni di queste due entit\'a tramite la definizione di un agente astratto dedito alla comunicazione col sistema (in esso, \'e denominato \textit{Communicator}; vedasi Figura \ref{fig:class_diagram_admin_agent}).\\

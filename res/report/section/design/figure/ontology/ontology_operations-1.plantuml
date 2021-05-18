@@ -1,0 +1,27 @@
+@startuml ontology-operations-1
+skinparam componentStyle rectangle
+left to right direction
+
+[INFO] as OINFO
+OINFO --> [USER]                    : of who
+OINFO -- [ORDER]                    : what is required
+note left of OINFO: request info for user orders:\n achieve, info(client, email)
+
+[PLACE] --> [USER]
+[PLACE] --> [ITEM]
+[PLACE] -- [ORDER]
+note left of [PLACE]: request order placement:\nachieve, order(user)[items]
+
+[PICK] --> [ITEM]
+note left of [PICK]: request item pick:\nachieve, retrieve(item, point)
+
+[ADD] --> [ITEM]
+note left of [ADD]: request item addition:\nachieve, add(item)
+
+[INFO] --> [ITEM]
+note left of [INFO]: request information about\nitems in warehouse:\nachieve, info(warehouse)
+
+[REMOVE] --> [ITEM]
+note left of [REMOVE]: request item(s) remotion:\nachieve, remove(item)
+
+@enduml
