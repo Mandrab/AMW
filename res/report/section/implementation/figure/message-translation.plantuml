@@ -1,0 +1,25 @@
+@startuml message-translation
+
+component Client {
+    [Translation Out]
+    [Translation In]
+}
+() "Mailbox" as MB1
+() "SendMessage" as SM
+
+MB1 -up-> [Translation In]
+SM --> [Translation Out]
+
+
+
+component WarehouseAgent
+() "Mailbox" as MB2
+
+MB2 -right-> WarehouseAgent
+
+
+
+Client ..> MB2
+WarehouseAgent .right.> MB1
+
+@enduml
