@@ -82,13 +82,21 @@ Le funzionalit\'a principali dell'agente user consistono nella possibilit\'a di 
 \end{figure}
 
 \subsubsection{Collection Point Manager}
+La struttura dell'agente gestore dei punti di raccolta \'e, come per molti altri agenti BDI del sistema, suddivisa pi\'u in maniera logica che fisica. Escludendo il file principale dell'agente in cui si gestiscono import e la registrazione al servizio di \textit{Directory Facilitator}, i file che compongono la struttura dell'agente sono quelli che definiscono lo stato di conoscenza iniziale dell'agente riguardo i punti di raccolta e quello che definsce le intenzioni per la gestione degli stessi.% TODO schema
+
 \subsubsection{Command Manager}
+La struttura del command manager segue la stessa logica di quella del \textit{collection point manager}. Esso \'e infatti suddiviso in un file che ne definisce le `credenze' iniziali (soprattutto utile in fase di testing) e in altri che raggruppano le funzionalit\'a da esso fornite: aggiunta di comandi; ottenimento di informazioni su di essi.% TODO schema
+
 \subsubsection{Order Manager}
+La struttura dell'order manager \'e simile alle precedenti, senza per\'o essere inizializzato con uno stato. I file comprendenti le funzionalit\'a del seguente agente, sono quelli utilizzati per la generazione degli ID degli ordini (todo: mantenuto?), per la gestione delle richieste di informazioni sui loro stati, per quelle di piazzamento dell'ordine stesso e, infine, per la gestione della procedura di retrieval, che risulta invero pi\'u complicata delle altre ed \'e stata valutata essere pi\'u comprensibile in un file separato.% TODO schema
+
 \subsubsection{Robot Picker}
+Il robot picker \'e organizzato cercando di separare le funzionalit\'a di raccolta oggetti e quelle di esecuzione comandi. Le due funzionalit\'a sono invero collegate (non \'e ad esempio possibile un esecuzione di un comando mentre \'e in corso il trasporto di un prodotto), ma una esigenza di chiarezza e pulizia del codice ha portato alla decisione di una loro separazione a livello di file.% TODO schema
+
 \subsubsection{Warehouse Mapper}
+Il gestore del magazzino prevede una struttura molto simile a quella del \textit{collection point}: \'e infatti presente, in aggiunta a quelli di funzionalit\'a, un file che definisce lo stato iniziale dello stesso. Oltre a questo, la logica dell'agente \'e suddivisa in files che determinano rispettivamente le funzionalit\'a di aggiunta e rimozione di prodotti dal magazzino, con in aggiunta un file definente la funzionalit\'a per la fornitura di informazioni ai richiedenti.
 
 \subsection{Comportamento}
-
 % How should each entity behave?
 % %
 % (UML State diagram or Activity Diagram)
