@@ -44,7 +44,7 @@ Nello specifico, è stata definita un'ontologia relativa agli oggetti fisici o i
 \parag
 Le entità fisiche rappresentate nel sistema magazzino sono gli \textit{item}, ovvero gli oggetti ordinabili in esso conservati. Questi sono rappresentati da un \textit{id} univoco e mantenuti, in differenti \textit{quantity}, in scaffalature identificabili da una coppia \textit{rack-value}.\\
 Per quanto riguarda le entità puramente informative, si possono riscontrare i \textit{command} e le informazioni relative agli \textit{user} del sistema. Le prime sono relative al \textit{repository} di conoscenza procedurale a cui gli agenti possono attingere; le seconde sono relative alle informazioni, quali l'indirizzo di spedizione, utilizzate durante la sottomissione di un \textit{order}. Quest'ultimo contiene le informazioni relative all'ordine dell'utente, insieme al \textit{collection point} (i.e., il punto di raggruppamento dei prodotti) e allo \textit{status}. Si sottolinea infine come l'astrazione dell'order sia utilizzata dal solo agente \textit{order-manager}, in quanto gli altri agenti accedono solo alle informazioni ad esso correlate.
-\begin{figure}[ht]
+\begin{figure}[!ht]\centering
     \includegraphics[width=\textwidth]{section/design/figure/ontology/ontology-abstractions.png}
     \caption{Schema relazionale delle entità fisiche e concettuali rappresentate nel sistema.}
     \label{fig:ontology_abstractions}
@@ -66,7 +66,7 @@ L'ontologia rappresentante le operazioni definisce invece le azioni che possono 
 \subsubsection{Admin}
 L'agente admin \`e colui che si occupa di permettere l'interazione dell'amministratore col sistema. Condividendo alcuni tratti con l'agente user, si \'e deciso di raccogliere le caratteristiche comuni di queste due entit\'a tramite la definizione di un agente astratto dedito alla comunicazione col sistema (in esso, \'e denominato \textit{Communicator}; vedasi Figura \ref{fig:class_diagram_admin_agent}).\\
 Le funzionalit\'a principali dell'agente admin sono relative alla gestione del magazzino e all'esecuzione di comandi nel sistema. Ricercando una separazione dei privilegi, questo non \'e in grado di effettuare ordini.
-\begin{figure}[ht]
+\begin{figure}[!ht]\centering
     \includegraphics[width=\textwidth]{section/design/figure/admin/class_diagram.png}
     \caption{Diagramma delle classi dell'agente utilizzato per la comunicazione admin-sistema.}
     \label{fig:class_diagram_admin_agent}
@@ -75,7 +75,7 @@ Le funzionalit\'a principali dell'agente admin sono relative alla gestione del m
 \subsubsection{User}
 L'agente user si occupa di permettere l'interazione degli utenti/acquirenti col sistema. Come gi\'a accennato, condivide alcuni tratti con l'agente admin: questi sono accomunati dall'estensione dell'agente \textit{Communicator} (vedasi Figura \ref{fig:class_diagram_user_agent}).\\
 Le funzionalit\'a principali dell'agente user consistono nella possibilit\'a di effettuare ordini e vederne lo stato (TODO). Non \'e invece dotato della capacit\'a di 'modificare' direttamente il magazzino, in quanto si tratta di una capacit\'a disponibile al solo amministratore.
-\begin{figure}[ht]
+\begin{figure}[!ht]\centering
     \includegraphics[width=\textwidth]{section/design/figure/user/class_diagram.png}
     \caption{Diagramma delle classi dell'agente utilizzato per la comunicazione user/client-sistema.}
     \label{fig:class_diagram_user_agent}
@@ -100,7 +100,7 @@ Di seguito verranno descritti i behaviour e la logica di ogni agente del sistema
 Quest'entità parziale permette una gestione delle possibili failure della rete. In pratica, questa si occupa del reinvio dei messaggi in caso non si riceva risposta.\\
 L'alternaza dei behaviours \'e visibile nella Figura \ref{fig:communicator_state_diagrams} e rappresenta i comportamenti necessari alla risoluzione dell'errore.\\
 Si evidenzia inoltre come, in alternativa a questa forma `\textit{reliable}' di comunicazione, sia sempre possibile utilizzarne una `\textit{unreliable}' senza il reinvio dei messaggi.
-\begin{figure}[ht]
+\begin{figure}[!ht]\centering
     \includegraphics[width=\textwidth]{section/design/figure/agent/communicator_states.png}
     \caption{Diagramma degli stati del \textit{Communicator.} Gli stati diversi da \textit{idle} sono rappresentanti di behaviours dell'agente.}
     \label{fig:communicator_state_diagrams}
@@ -120,7 +120,7 @@ Anche l'agente user assume un atteggiamento agnostico riguardo i formati delle c
 Il comportamento dell'agente gestore dei punti di raccolta degli ordini \'e relativamente semplice nella sua comprensione e pu\'o essere schematizzato dal diagramma degli stati visibile in Figura \ref{fig:state-diagram-cpm}. Questo mostra chiaramente come l'agente permetta un'assegnazione di un punto di raccolta per uno specifico ordine quando si trovi in uno stato che ne presenti almeno uno non occupato. L'operazione di \textit{free} si occupa invece di liberarne uno riservato ad un ordine gi\'a completato.%TODO puo essere interessante dire come non posssa risolvere problemi di failure di un order manager in quanto il punto potrebbe gia esser stato occupato?
 \parag
 Relativamente al diagramma a stati, si ritiene infine importante sottolineare come, trattandosi di un agente BDI, questo non implementi un behaviour per ogni stato in maniera esplicita (TODO check) ma, piuttosto, questo schema comportamentale emerga dall'insieme delle `credenze', `desideri' e `intenzioni' dell'agente stesso.
-\begin{figure}
+\begin{figure}[!ht]\centering
     \includegraphics[width=\textwidth]{section/design/figure/collection_point_manager/state_diagram.png}
     \caption{Diagramma a stati schematizzante il comportamento di massima dell'agente \textit{Collection Point Manager}.}
     \label{fig:state-diagram-cpm}
@@ -135,8 +135,9 @@ Questo \'e probabilmente l'agente BDI pi\'u complesso del sistema insieme al \te
 Volendone sintetizzare la logica, questa passa dalla ricezione dell'ordine, alla richiesta di ottenimento dei prodotti, passando quindi per la richiesta di un punto di recupero per terminare infine con la raccolta degli oggetti.\\
 \'E importante sottolineare come la gestione di un ordine non precluda una sottomissione e un completamento contemporaneo di un maggior numero di questi. Essi sono infatti indipendenti gli uni dagli altri nel processo.
 \begin{figure}[!ht]\centering
-    \includegraphics[height=.9\textheight]{section/design/figure/order_manager/activity_diagram.png}
-    \caption{Diagramma delle attivit\'a relativo alle operazioni necessarie per la chiusura di un ordine. Si sottolinea la possibilit\'a per l'agente di gestire pi\'u ordini contemporaneamente senza problemi di sorta.}
+    \includegraphics[width=.45\textwidth]{section/design/figure/order_manager/activity_diagram-1.png}
+    \includegraphics[width=.45\textwidth]{section/design/figure/order_manager/activity_diagram-2.png}
+    \caption{Diagramma delle attivit\'a relativo alle operazioni necessarie per la chiusura di un ordine. Si sottolinea la possibilit\'a per l'agente di gestire pi\'u ordini contemporaneamente senza problemi di sorta. Il diagramma \'e spezzato per questioni di leggibilit\'a: la colonna sinistra continua in quella di destra.}
     \label{fig:order-managet-activity-diagram}
 \end{figure}
 
@@ -171,7 +172,7 @@ Di seguito, le interazioni disponibili ed effettuate dai vari agenti saranno des
 Abbiamo gi\'a detto come questo agente si occupi del reivio di messaggi in caso di un supposto failure di rete. Dato che non \'e possibile diagnosticare un errore di questo tipo in maniera certa, questa caratteristica richiede che ogni messaggio inviato abbia un codice di conversazione univoco. Ci\'o permette di identificare messaggi a cui si sia gi\'a precedentemente risposto e che quindi richiedano soltanto un nuovo invio della risposta.\\
 Questa tattica \'e presente per la maggior parte delle trasmissioni del sistema; l'agente \textit{Communicator} \'e tuttavia utilizzato soltanto per gli agenti JADE lato client.\\
 Un esempio di gestione di failure \'e visibile in Figura \ref{fig:communicator_sequence_diagram}.
-\begin{figure}[ht]\centering
+\begin{figure}[!ht]\centering
     \includegraphics[width=.5\textwidth]{section/design/figure/agent/communicator_interaction.png}
     \caption{Esempio di gestione di failure di rete dell'agente \textit{Communicator}. Come precedentemente detto, per evitare una doppia 'risoluzione' della richiesta, \'e necessario che ogni messaggio abbia un identificativo che ne permetta il riconoscimento da parte (nell'esempio) di \textit{OtherAgent}.}
     \label{fig:communicator_sequence_diagram}
@@ -179,15 +180,41 @@ Un esempio di gestione di failure \'e visibile in Figura \ref{fig:communicator_s
 
 \subsubsection{Admin}
 Questo agente permette l'utilizzo delle funzionalit\'a di amministratore. A questo proposito, esso necessita di interagire con pi\'u entità del sistema, fra cui: \textit{WarehouseMapper} per lo storing e la rimozione degli elementi dal magazzino; \textit{CommandManager} per tutte le funzionalit\'a relative ai comandi. Inoltre, può potenzialmente dialogare con tutti gli agenti allo scopo di lanciare l'esecuzione dei comandi.\\
-Un esempio relativo all'interazione necessaria all'esecuzione dei comandi \'e visibile in Figura \ref{fig:command_execution}
+Un esempio relativo all'interazione necessaria all'esecuzione dei comandi \'e visibile in Figura \ref{fig:command_execution-sequence_diagram}
+\begin{figure}[!ht]\centering
+    \includegraphics[width=\textwidth]{section/design/figure/command_execution-sequence_diagram.png}
+    \caption{Diagramma di sequenza di una richiesta di esecuzione di un comando da parte dell'admin. In questo, si ignorano failure case per non complicare la descrizione, inoltre si assume che l'admin conosca in anticipo l'ID del comando da eseguire.}
+    \label{fig:command_execution-sequence_diagram}
+\end{figure}
 
 \subsubsection{User}
-Come gi\'a detto il compito dell'user agent \'e relativo alla gestione degli ordini. A causa di ci\'o, la principale interazione di questo \'e con l'agente gestore degli ordini \textit{OrderManager} e con quello incaricato della gestione del magazzino, \textit{WarehouseMapper}, per la visualizzazione degli articoli disponibili.
+Come gi\'a detto il compito dell'user agent \'e relativo alla gestione degli ordini. A causa di ci\'o, la principale interazione di questo \'e con l'agente gestore degli ordini \textit{OrderManager} e con quello incaricato della gestione del magazzino, \textit{WarehouseMapper}, per la visualizzazione degli articoli disponibili (vedasi Figura \ref{fig:order_management-sequence_diagram}).
+\begin{figure}[!ht]\centering
+    \includegraphics[width=\textwidth]{section/design/figure/order_management-sequence_diagram.png}
+    \caption{Diagramma di sequenza di una gestione di un ordine. In questo, si ignorano i failure case per non complicare la descrizione, inoltre si assume che l'user conosca in anticipo i prodotti presenti all'interno di un magazzino e che siano quindi ordinabili.}
+    \label{fig:order_management-sequence_diagram}
+\end{figure}
 
 \subsubsection{Collection Point Manager}
+L'interazione col \textit{collection point manager} avviene solo con l'\textit{order manager}, il quale comincia l'interazione con lo scopo di acquisire un punto di raccolta per gli ordini (vedasi Figura \ref{fig:order_management-sequence_diagram}). Questa richiesta pu\'o sia andare a buon fine, sia fallire in caso non ci siano points disponibili. In questo caso \'e dunque compito dell'order manager inviare una richiesta successiva per farsi assegnare uno dei punti di raggruppamento.
+
 \subsubsection{Command Manager}
+Questo agente interagisce potenzialmente con qualunque altro nel sistema, in quanto repository comune di piani (vedasi Figura \ref{fig:command_execution-sequence_diagram}). Allo stato attuale tuttavia, l'unico agente disponibile per l'esecuzione di comandi risulta essere il \textit{robot picker}, il che implica che esso sia il solo a richiedere al \textit{command manager} gli script da eseguire. Al di fuori del magazzino comunque, il repository dialoga con l'agente admin, permettendo a quest'ultimo di ottenere l'elenco dei piani disponibili.
+
 \subsubsection{Order Manager}
+L'order manager \'e uno dei punti nevralgici del sistema. Questo si occupa invero di organizzare tutte le procedure necessarie al completamento degli ordini (vedasi Figura \ref{fig:order_management-sequence_diagram}). Accetta innanzitutto le richieste di ordini dai clienti e le inoltra quindi al \textit{warehouse manager} per la conferma di presenza dei prodotti. Si occupa poi di concordare col \textit{collection point manager} un punto di raccolta per i componenti dell'ordine. A questo punto gestisce l'organizzazione dei \textit{robot picker} per il raggruppamento dei prodotti. Infine, esso permette il salvataggio dello storico ordini e la visualizzazione dello stato di completamento di questi (vedasi Figura \ref{fig:order-state_diagram}).
+\begin{figure}[!ht]\centering
+    \includegraphics[width=.75\textwidth]{section/design/figure/order-state_diagram.png}
+    \caption{Diagramma dei possibili stati che un ordine pu\'o assumere.}% TODO forse sposta in design
+    \label{fig:order-state_diagram}
+\end{figure}
+
 \subsubsection{Robot Picker}
+Come gi\'a anticipato, il robot picker ha due tipologie di funzionamento diverse: la raccolta di oggetti; l'esecuzione di comandi. Ognuna di queste due modalità richiede la comunicazione con agenti diversi del sistema.\\
+La prima di queste accetta le richieste dall'agente gestore degli ordini e permette al robot di far parte del processo di completamento di uno di essi (vedasi Figura \ref{fig:order_management-sequence_diagram}). In questa casistica il \textit{robot picker} comunica col solo agente \textit{order manager}.\\
+Nella seconda modalità il robot dialogher\'a con due tipologie di agenti differenti: l'\textit{admin} e il \textit{command manager}. Dal primo otterr\'a infatti la richiesta di esecuzione, mentre dal secondo otterr\'a lo script ad essa necessario.
+\ref{fig:command_execution-sequence_diagram}
+
 \subsubsection{Warehouse Mapper}
 
 \subsection{Considerazioni sul design scelto}
