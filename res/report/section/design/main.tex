@@ -216,6 +216,8 @@ Nella seconda modalità il robot dialogher\'a con due tipologie di agenti differ
 \ref{fig:command_execution-sequence_diagram}
 
 \subsubsection{Warehouse Mapper}
+L'interazione di questo agente consiste sia in una componente informativa sia in una di esecuzione di task.\\ La prima di queste entra banalmente in gioco quando l'\textit{user} richiede al gestore del magazzino le informazioni riguardo i prodotti disponibili. Allo stesso modo, questa interazione informativa ha luogo quando l'\textit{admin} richiede le informazioni riguardo la distribuzione dei prodotti nelle varie scaffalature.\\
+Il secondo tipo di interazione \'e invece relativo alla richiesta di verifica di disponibilit\'a e posizione di prodotti per la loro raccolta. In questa circostanza, il gestore del magazzino comunica invece col gestore ordini (vedasi Figura \ref{fig:order_management-sequence_diagram}).
 
 \subsection{Considerazioni sul design scelto}
 In questa sezione si ritiene interessante analizzare alcune scelte di design e le loro conseguenze. Nello specifico, si descriveranno alcuni approcci inizialmente intrapresi ma poi scartati o modificati nel corso del progetto. Inoltre, si descriveranno alcuni ragionamenti successivi allo sviluppo.
