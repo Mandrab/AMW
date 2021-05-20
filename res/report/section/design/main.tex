@@ -141,10 +141,24 @@ Volendone sintetizzare la logica, questa passa dalla ricezione dell'ordine, alla
 \end{figure}
 
 \subsubsection{Robot Picker}
+La descrizione del comportamento di quest'entit\'a, che si occupa del raccoglimento dei prodotti e dell'esecuzione dei comandi, si pu\'o rivelare di diversa complessit\'a a seconda del livello di accuratezza richiesto. Se infatti lo schema base prevede un esecuzione dei due task indipendente, la capacit\'a di eseguire comandi causa una possibile esplosione del numero di stati, tendenti all'infinito. Ogni comando potrebbe infatti essere definito da uno script complesso, avente a sua volta un suo diagramma a stati interno. A questo scopo si \'e quindi deciso di rappresentare la sola alternanza dei due task di raccoglimento ordini ed esecuzione di comandi (vedasi Figura \ref{fig:rp-state-diagram}).
+\begin{figure}[!ht]\centering
+    \includegraphics[width=\textwidth]{section/design/figure/robot_picker/state_diagram.png}
+    \caption{Diagramma degli stati di base dell'agente \textit{RobotPicker}. Data la sua capacit\'a di esecuzione di comandi esterni, il diagramma degli stati varia a seconda del comando in esecuzione.}
+    \label{fig:rp-state-diagram}
+\end{figure}
+
 \subsubsection{Warehouse Mapper}
+Il comportamento di questo agente consiste nella gestione degli items nel magazzino. Esso ne mantiene la posizione, gestisce la rimozione e la loro aggiunta.\\
+A livello di comportamento si tratta di un agente molto semplice in quanto, nella casistica pi\'u complicata di rimozione, si limita a controllare che le quantit\'a di items siano corrette e ottenere le posizioni da cui essi devono essere recuperati (vedasi Figura \ref{fig:wm-activity_diagrams}). Leggermente pi\'u semplice \'e invece la ricerca del primo slot contenente un item dello stesso tipo o, in caso un prodotto non sia ancora in magazzino, del primo slot disponibile per il suo storing (vedasi Figura \ref{fig:wm-activity_diagrams}). La funzionalit\'a che permette di fornire informazioni relativamente al magazzino consiste invece in una semplice lettura del `database' interno, rappresentato invero dall'agente.
+\begin{figure}[!ht]\centering
+    \includegraphics[width=.45\textwidth]{section/design/figure/warehouse_mapper/activity_diagram-add.png}
+    \includegraphics[width=.45\textwidth]{section/design/figure/warehouse_mapper/activity_diagram-remove.png}
+    \caption{Diagrammi delle attivit\'a di aggiunta e rimozione dei prodotti dal magazzino.}
+    \label{fig:wm-activity_diagrams}
+\end{figure}
 
 \subsection{Interazione}
-
 % How should entities interact with each other?
 % %
 % (UML Sequence Diagram)
