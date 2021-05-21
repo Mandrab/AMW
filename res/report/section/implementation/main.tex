@@ -1,5 +1,4 @@
 \section{Dettagli Implementativi}
-
 % Just report interesting / non-trivial / non-obvious implementation details.
 
 % This section is expected to be short in case some documentation (e.g. Javadoc or Swagger Spec) has been produced for the software artefacts.
@@ -19,3 +18,9 @@ Come gi\'a descritto, \'e stata definita una ontologia del sistema per la corret
 
 \subsection{Reinvio dei messaggi}
 Come gi\'a detto, il sistema permette un reinvio dei messaggi in caso di un possibile errore di rete. Allo scopo di ottenere questa caratteristica \'e stato creato un behaviour (all'interno dell'agente di utility Communicator) che periodicamente si occupa di reinviare i messaggi per cui non si sia ricevuta risposta. Questa funzionalit\'a richiede quindi di salvare i messaggi di cui si sia tentato l'invio, insieme al loro timestamp, per permetterne un reinvio in caso una risposta non giunga entro il tempo limite. Il sistema si occupa dunque di considerare il parametro `in-reply-to' per validare la ricezione della risposta ad un messaggio.
+
+\subsection{Formato degli script}
+Il sistema prevede l'esistenza di un repository di piani/comandi utilizzabili dagli agenti a richiesta. Questi sono, come gi\'a detto, definiti da script che contengono \textit{beliefs}, \textit{desires} e \textit{intentions} degli stessi. Relativamente all'implementazione di questo meccanismo di utilizzo di conoscenza procedurale, si sono dovuti tuttavia prendere alcuni accorgimenti. I piani aggiunti tramite gli script necessitano infatti di un processo di `\textit{labeling}' allo scopo di permettere la loro rimozione al completamento del task. Questa etichettatura non avviene in maniera automatica (in quanto alcuni piani negli script potrebbero gi\'a avere delle label assegnate) ma richiede la loro aggiunta da parte del programmatore (o admin, in questo contesto). Risulta quindi necessario aggiungere una label nel formato \texttt{@lN}, con \texttt{N} incrementale e $\in [0, \inf]$, ad ogni piano definito nello script. Se ci\'o non dovesse essere fatto, lo script verrebbe eseguito correttamente ma i piani non verrebbero rimossi alla terminazione dell'esecuzione, potendo causare problemi in futuro. 
+
+\subsection{Raccolta oggetti}
+Un ordine prevede il raggruppamento di prodotti in un collection point. Questo task viene eseguito dal \textit{robot picker} sotto richiesta dell'\textit{order manager}. Si ritiene importante sottolineare per\'o come questo task di recupero sia invero solo simulato. Una sua effettiva implementazione richiederebbe infatti di conoscere una struttura hardware del sistema in esame e dei trasduttori da esso posseduti. Si ritiene che questa conoscenza esuli dal focus dell'esame ed \'e quindi stata data per conosciuta.
