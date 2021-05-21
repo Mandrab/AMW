@@ -13,8 +13,8 @@ plugins {
     id "com.bmuschko.docker-remote-api" version "6.7.0"     // docker plugin
     id "com.github.psxpaul.execfork" version "0.1.13"       // plugin for background executions
     id "de.undercouch.download" version "1.2"               // downloads plugin
-    id "org.jetbrains.kotlin.jvm" version "1.4.10"          // provides language support
-    id "java"
+    id "org.jetbrains.kotlin.jvm" version "1.4.10"          // provides kotlin language support
+    id "java"                                               // provides java language support
 }
 
 /** set repositories used */
@@ -41,12 +41,12 @@ dependencies {
 group = "dev.mandrab.university.master.distributedsystems.amw"
 version = "1.0"
 
-// constants
+// constants variables
 def FOLDER = [
         DOCKER: [
                 CONTEXT: "build/docker",                    // docker context folder
-                HOME: "/home/agent",                        // set HOME environmental variable
-                RESOURCES: "res/docker"                     // folder where to put docker needed files
+                HOME: "/home/agent",                        // `user' HOME in image
+                RESOURCES: "res/docker"                     // folder where to put docker needed files during build
         ],
         JASON: "jason-2.4",                                 // jason folder name
         ASL: [
@@ -55,7 +55,7 @@ def FOLDER = [
         ]
 ]
 def MAIN_CONTAINER = new TaskTarget("main")
-def AGENTS = [
+def AGENTS = [                                              // system agents
         1: "collection_point_manager",
         2: "command_manager",
         3: "order_manager",
@@ -157,31 +157,6 @@ AGENTS.collect { TaskTarget target ->                       // create tasks for 
     }
 }
 
-/** Build images of all the agents */
-task build_images(type: DefaultTask) {
-    AGENTS.forEach { dependsOn it.build.image }             // depends on the build of each agent
-}
-
-/** Create a container for each agent */
-task create_containers(type: DefaultTask) {
-    AGENTS.forEach { dependsOn it.create.container }        // depends on the start of each agent
-}
-
-/** Start all agents containers */
-task start_agents(type: DefaultTask) {
-    AGENTS.forEach { dependsOn it.start.agent }             // depends on the start of each agent
-}
-
-/** Display logs of all the agents in background */
-task show_logs(type: DefaultTask) { // TODO test
-    AGENTS.forEach { dependsOn it.background.log.agent }    // depends on the start of each agent
-}
-
-/** Remove all the agents containers */
-task remove_containers(type: DefaultTask) { // TODO test
-    AGENTS.forEach { dependsOn it.remove.container }        // depends on the removal of each container
-}
-
 /**************************************************************************************************
  * OTHER TASKS
  *************************************************************************************************/
@@ -203,15 +178,8 @@ task unzip(type: Copy) {
     into file(outputDir)
 }
 
-/** Start jade main container */
-define JavaExec, MAIN_CONTAINER.start.foreground.container, {
-    classpath = sourceSets.main.runtimeClasspath
-    main = "jade.Boot"
-    args = [ "-gui" ]
-}
-
-/** Start background jade main container in background */
-define JavaExecFork, MAIN_CONTAINER.start.background.container, {
+/** Start jade main container in background */
+define JavaExecFork, MAIN_CONTAINER.start.container, {
     classpath = sourceSets.main.runtimeClasspath
     main = "jade.Boot"
     args = [ "-gui" ]
@@ -219,35 +187,25 @@ define JavaExecFork, MAIN_CONTAINER.start.background.container, {
     waitForOutput = "is ready"
 }
 
-/** Start agent specifying path, file and name */
-task start_agent(type: JavaExec) {
-    if (!project.hasProperty("f")) { return logger.error("The agent name must be passed!") }
-
-    String path = project.properties.getOrDefault("p", ".")
-    String file = project.properties["f"]
-    String name = project.properties.getOrDefault("n", file.substring(0, file.lastIndexOf('.')))
-
-    group = "jason"
-
+/** Start admin client */
+task start_client(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
-    standardInput = System.in
-    main "jade.Boot"
-    args "-container"
-    args "$name${new Random().nextDouble()}:jason.infra.jade.JadeAgArch($path/$file)"
+    main = "MainKt"
+    if (project.hasProperty("admin"))
+        args = [ "admin" ]
 }
 
 /** Start main container and agents of the system */
 task start_system(type: DefaultTask) {
-    dependsOn MAIN_CONTAINER.start.background.container
+    dependsOn MAIN_CONTAINER.start.container
 
-    AGENTS.findAll { it != AGENTS.last() }
-            .forEach { dependsOn it.background.log.agent }
+    AGENTS.forEach { dependsOn it.background.log.agent }
 
-    dependsOn AGENTS.last().foreground.log.agent
+    dependsOn start_client
 }
 
-/** Tests run depends on complete start of the system */
-test.dependsOn MAIN_CONTAINER.start.background.container
+/** Tests run depends on start of the main container */
+test.dependsOn MAIN_CONTAINER.start.container
 
 /**************************************************************************************************
  * UTILITY FUNCTIONS & CLASSES
@@ -260,9 +218,6 @@ private <T extends Task> T define(Class<T> type, String name, Closure action) {
 
 /** Only used as syntactic sugar for task search */
 private Task find(Object seed) { return tasks.getByName(seed.toString()) }
-
-private static String bf(String seed) { return "\033[1m$seed\033[0m" }
-private static String title(String seed) { return bf("### $seed") }
 
 private static String os(Object seed) { return OperatingSystem.current().isWindows() ? seed + ".bat" : seed }
 
