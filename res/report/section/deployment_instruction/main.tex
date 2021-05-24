@@ -8,6 +8,13 @@
 % Gradle and Docker may be useful here to ensure the deployment and launch processes to be easy.
 
 La procedura di deployment utilizza sia il tool di automazione \textit{gradle} che quello di creazione ed esecuzione di immagini \textit{docker}. Se per il primo non \'e richiesta installazione, il secondo necessita invece di essere presente sul computer di avvio.\\
-Gradle \'e stato scelto per la sua comodit\'a di utilizzo, necessitando solo di un comando per eseguire il sistema. Docker \'e stato scelto sia per la possibilit\'a di dividere logicamente le entit\'a del sistema durante il testing su di una macchina, sia con lo scopo di creare un immagine che, teoricamente, possa semplicemente essere eseguita per aggiungere un nuovo agente al sistema.
+Gradle \'e stato scelto per la sua comodit\'a di utilizzo, necessitando solo di pochi comandi per eseguire il sistema. Docker \'e stato scelto sia per la possibilit\'a di dividere logicamente le entit\'a del sistema durante il testing su di una macchina, sia con lo scopo di creare un immagine che, teoricamente, possa semplicemente essere eseguita per aggiungere un nuovo agente al sistema.
+
 \parag
 Per ogni agente del magazzino viene prodotta un'immagine, la quale viene quindi eseguita per poi connettersi al container principale del sistema. In questa struttura, solo il main container JADE e il client di sistema non posseggono immagini specifiche. Per il primo, ci\'o \'e dovuto alla inutilit\'a di creare un container docker per lanciare un jar. Per il secondo, la scelta \'e dovuta alla complessit\'a di creazione di un'immagine di un applicazione GUI.
+
+\parag
+Si ritiene inoltre importante sottolineare come il sistema non sia stato testato approfonditamente su macchine Windows. L'ambiente in cui \'e stato sviluppato \'e stato infatti un sistema Linux con la presenza di Java e Docker. Seppur i plugin utilizzati siano teoricamente funzionanti anche su Windows, non si da garanzia di ci\'o.
+
+\parag
+Infine, per quanto riguarda il processo di build e avvio degli artefatti, si rimanda al README del progetto. In questo sono invero descritti tutti i comandi e le funzionalit\'a pi\'u utili del sistema.
