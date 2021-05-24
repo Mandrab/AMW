@@ -1,9 +1,13 @@
-\section{Deployment Instructions}
+\section{Istruzioni per il deployment}
+% Explain here how to install and launch the produced software artefacts.
+% %
+% Assume the softaware must be installed on a totally virgin environment.
+% %
+% So, report \textbf{any} configuration step.
 
-Explain here how to install and launch the produced software artefacts.
-%
-Assume the softaware must be installed on a totally virgin environment.
-%
-So, report \textbf{any} configuration step.
+% Gradle and Docker may be useful here to ensure the deployment and launch processes to be easy.
 
-Gradle and Docker may be useful here to ensure the deployment and launch processes to be easy.
+La procedura di deployment utilizza sia il tool di automazione \textit{gradle} che quello di creazione ed esecuzione di immagini \textit{docker}. Se per il primo non \'e richiesta installazione, il secondo necessita invece di essere presente sul computer di avvio.\\
+Gradle \'e stato scelto per la sua comodit\'a di utilizzo, necessitando solo di un comando per eseguire il sistema. Docker \'e stato scelto sia per la possibilit\'a di dividere logicamente le entit\'a del sistema durante il testing su di una macchina, sia con lo scopo di creare un immagine che, teoricamente, possa semplicemente essere eseguita per aggiungere un nuovo agente al sistema.
+\parag
+Per ogni agente del magazzino viene prodotta un'immagine, la quale viene quindi eseguita per poi connettersi al container principale del sistema. In questa struttura, solo il main container JADE e il client di sistema non posseggono immagini specifiche. Per il primo, ci\'o \'e dovuto alla inutilit\'a di creare un container docker per lanciare un jar. Per il secondo, la scelta \'e dovuta alla complessit\'a di creazione di un'immagine di un applicazione GUI.
