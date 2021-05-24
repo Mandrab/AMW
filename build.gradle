@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /** specify used plugins */
 plugins {
     id "com.bmuschko.docker-remote-api" version "6.7.0"     // docker plugin
-    id "com.github.psxpaul.execfork" version "0.1.13"       // plugin for background executions
+    id "com.github.psxpaul.execfork" version "0.1.15"       // plugin for background executions
     id "de.undercouch.download" version "1.2"               // downloads plugin
     id "org.jetbrains.kotlin.jvm" version "1.4.10"          // provides kotlin language support
     id "java"                                               // provides java language support
@@ -22,6 +22,7 @@ repositories {
     mavenCentral()
     maven {
         url "http://jacamo.sourceforge.net/maven2/"         // jacamo repository
+        allowInsecureProtocol = true
     }
 }
 
