@@ -5,7 +5,7 @@
 
 +!kqml_received(Sender, achieve, retrieve(P, PID)[mid(MID)], _)     // request of item picking
     <-  .println("[ROBOT PICKER] request for item retrieval");
-        !set_pick(P, PID, Sender, MID);
+        !set_pick(P, PID, Sender, MID);                             // set pick task
         !pick.                                                      // start picking
 
 //////////////////////////////////////////////////// UTILITY PLANS /////////////////////////////////////////////////////
