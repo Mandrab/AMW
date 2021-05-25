@@ -8,6 +8,6 @@ ResendMessages --> Idle             : block(timeout)
 
 Idle            : agent is not doing anything
 CheckMessages   : check incomming messages to find\nresponses to sent ones
-ResendMessages : resend messages that haven't\nreceived any response
+ResendMessages  : resend messages that haven't\nreceived any response
 
 @enduml
