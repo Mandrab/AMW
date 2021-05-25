@@ -23,31 +23,55 @@ import common.ontology.dsl.operation.Order.order
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
 import controller.agent.communication.translation.`in`.LiteralParser.asList
 
+/**
+ * Groups parsing functionalities for incoming messages
+ * It define the expected format for each incoming message
+ *
+ * @author Paolo Baldini
+ */
 object OperationTerms {
 
-    fun AddCommand.Companion.parse(string: String): AddCommand = string.parse("""add\((.*)\)""")
-            .run { add(Command.parse(next())) }
+    fun AddCommand.Companion.parse(string: String): AddCommand = string.parse(
+        """add\((.*)\)"""
+    ).run {
+        add(Command.parse(next()))
+    }
 
-    fun AddItem.Companion.parse(string: String): AddItem = string.parse("""add\((.*)\)""")
-            .run { add(WarehouseItem.parse(next())) }
+    fun AddItem.Companion.parse(string: String): AddItem = string.parse(
+        """add\((.*)\)"""
+    ).run {
+        add(WarehouseItem.parse(next()))
+    }
 
-    fun ExecuteCommand.Companion.parse(string: String): ExecuteCommand = string.parse("""execute\((.*)\)""")
-            .run { execute(ID.parse(next())) }
+    fun ExecuteCommand.Companion.parse(string: String): ExecuteCommand = string.parse(
+        """execute\((.*)\)"""
+    ).run {
+        execute(ID.parse(next()))
+    }
 
-    fun PlaceOrder.Companion.parse(string: String): PlaceOrder =
-            string.parse("""order\(client\((.*)\), ?email\((.*)\), ?address\((.*)\)\)\[(.*)]""")
-                    .run { order(client(next()), email(next()), address(next()))[
-                            next().asList().map { QuantityItem.parse(it) }
-                    ] }
+    fun PlaceOrder.Companion.parse(string: String): PlaceOrder = string.parse(
+        """order\(client\((.*)\), ?email\((.*)\), ?address\((.*)\)\)\[(.*)]"""
+    ).run {
+        order(client(next()), email(next()), address(next()))[next().asList().map { QuantityItem.parse(it) }]
+    }
 
-    fun InfoOrder.Companion.parse(string: String): InfoOrder =
-            string.parse("""order\(id\((.*)\), ?(.*)\)""").run { info(id(next()), Status.parse(next())) }
+    fun InfoOrder.Companion.parse(string: String): InfoOrder = string.parse(
+        """order\(id\((.*)\), ?(.*)\)"""
+    ).run {
+        info(id(next()), Status.parse(next()))
+    }
 
-    fun InfoOrders.Companion.parse(string: String): InfoOrders =
-            string.parse("""info\(client\((.*)\), ?email\((.*)\)\)""").run { info(client(next()), email(next())) }
+    fun InfoOrders.Companion.parse(string: String): InfoOrders = string.parse(
+        """info\(client\((.*)\), ?email\((.*)\)\)"""
+    ).run {
+        info(client(next()), email(next()))
+    }
 
-    fun RemoveItem.Companion.parse(string: String): RemoveItem = string.parse("""remove\((.*)\)""")
-            .run { remove(QuantityItem.parse(next())) }
+    fun RemoveItem.Companion.parse(string: String): RemoveItem = string.parse(
+        """remove\((.*)\)"""
+    ).run {
+        remove(QuantityItem.parse(next()))
+    }
 
     private fun String.parse(pattern: String) = pattern.toRegex().find(trim())!!.groupValues.drop(1).iterator()
 }

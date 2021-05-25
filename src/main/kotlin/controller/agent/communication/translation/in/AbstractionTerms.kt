@@ -18,6 +18,12 @@ import common.ontology.dsl.abstraction.Status.States.*
 import common.ontology.dsl.abstraction.Shelf.shelf
 import controller.agent.communication.translation.`in`.LiteralParser.asList
 
+/**
+ * Groups parsing functionalities for incoming messages
+ * It define the expected format for each incoming message
+ *
+ * @author Paolo Baldini
+ */
 object AbstractionTerms {
 
     fun Address.parse(string: String): Address.Address = string.parse(

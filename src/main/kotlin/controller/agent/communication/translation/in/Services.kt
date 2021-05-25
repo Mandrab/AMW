@@ -8,6 +8,12 @@ import controller.agent.communication.translation.`in`.LiteralParser.asList
 import controller.agent.communication.translation.`in`.OperationTerms.parse
 import jade.lang.acl.ACLMessage
 
+/**
+ * Groups parsing functionalities for incoming messages
+ * It translate the received message to the expected format
+ *
+ * @author Paolo Baldini
+ */
 object Services {
 
     interface Service<T> {
