@@ -25,6 +25,12 @@ import jade.lang.acl.ACLMessage.REQUEST
 import jade.lang.acl.ACLMessage.INFORM
 import jason.asSyntax.*
 
+/**
+ * Groups parsing functionalities for outgoing messages
+ * It translate the outgoing message to the expected format
+ *
+ * @author Paolo Baldini
+ */
 object Services {
 
     abstract class Service constructor(

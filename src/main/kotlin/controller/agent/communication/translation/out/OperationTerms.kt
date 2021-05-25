@@ -13,6 +13,12 @@ import controller.agent.communication.translation.out.Literals.invoke
 import controller.agent.communication.translation.out.Literals.toTerm
 import jason.asSyntax.Literal
 
+/**
+ * Groups parsing functionalities for outgoing messages
+ * It define the expected format for each outgoing message
+ *
+ * @author Paolo Baldini
+ */
 object OperationTerms {
 
     fun AddCommand.term(): Literal = "add"(command.term())

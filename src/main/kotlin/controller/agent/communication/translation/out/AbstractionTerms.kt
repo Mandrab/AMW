@@ -22,6 +22,12 @@ import controller.agent.communication.translation.out.Literals.toStringTerm
 import controller.agent.communication.translation.out.Literals.toTerm
 import jason.asSyntax.Literal
 
+/**
+ * Groups parsing functionalities for outgoing messages
+ * It define the expected format for each outgoing message
+ *
+ * @author Paolo Baldini
+ */
 object AbstractionTerms {
 
     fun Address.term(): Literal = "address"(address.toStringTerm())
