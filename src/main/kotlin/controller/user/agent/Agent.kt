@@ -29,8 +29,14 @@ class Agent: Communicator() {
         (arguments[0] as AgentProxy<Agent>).setAgent(this)
     }
 
+    /**
+     * Shutdown the agent
+     */
     fun shutdown() = takeDown()
 
+    /**
+     * Require warehouse items
+     */
     fun shopItems(): Future<Collection<QuantityItem>> = sendMessage(InfoWarehouseOut.build().message(this)) {
         InfoWarehouseIn.parse(it).map { item ->
             item(item.id, quantity(item.positions.sumOf { pos -> pos.quantity.value }))
@@ -42,6 +48,9 @@ class Agent: Communicator() {
      */
     fun placeOrder(user: User, items: Collection<QuantityItem>) = send(AcceptOrder.build(user, items).message(this))
 
+    /**
+     * Require orders information
+     */
     fun orders(user: User): Future<Collection<InfoOrder>> =
         sendMessage(InfoOrdersOut.build(user).message(this), true, InfoOrdersIn.parse)
 }

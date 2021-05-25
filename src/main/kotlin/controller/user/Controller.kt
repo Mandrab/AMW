@@ -20,7 +20,6 @@ import view.View
  */
 class Controller(retryConnection: Boolean = true): Controller.User {
     private val user = user(client("user"), email("user@email"), address("address"))
-
     private val proxy = Proxy()
 
     init {
@@ -28,11 +27,23 @@ class Controller(retryConnection: Boolean = true): Controller.User {
         View(this)
     }
 
+    /**
+     * Require warehouse items
+     */
     override fun shopItems() = proxy.shopItems()
 
+    /**
+     * Allows to place an order with submitted elements
+     */
     override fun placeOrder(items: Collection<QuantityItem>) = proxy.placeOrder(user, items)
 
+    /**
+     * Require orders information
+     */
     override fun orders() = proxy.orders(user)
 
+    /**
+     * Shutdown the agent
+     */
     override fun stopSystem() = proxy.shutdown()
 }
