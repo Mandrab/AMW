@@ -9,6 +9,11 @@ import jade.lang.acl.ACLMessage
 import java.io.Serializable
 import java.util.*
 
+/**
+ * Utilities for more clean message sending
+ *
+ * @author Paolo Baldini
+ */
 object Messages {
 
     class Message {
