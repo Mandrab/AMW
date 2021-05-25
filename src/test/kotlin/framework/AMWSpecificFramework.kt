@@ -4,6 +4,11 @@ import common.ontology.Services.ServiceType.*
 import common.ontology.Services.ServiceSupplier.*
 import jade.core.Agent
 
+/**
+ * Collection of testing utilities strictly related to AMW system
+ *
+ * @author Paolo Baldini
+ */
 object AMWSpecificFramework {
     const val waitingTime = 500L                                            // reasonable time for message delivery
     const val retryTime = 2000L                                             // time between message resend

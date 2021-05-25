@@ -5,6 +5,11 @@ import jade.domain.DFService
 import jade.domain.FIPAAgentManagement.DFAgentDescription
 import jade.domain.FIPAAgentManagement.ServiceDescription
 
+/**
+ * Utilities for the start of a jade agent from it's main class
+ *
+ * @author Paolo Baldini
+ */
 class JADEAgent: Agent() {
     private var registered = false
 

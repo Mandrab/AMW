@@ -14,7 +14,6 @@ import controller.agent.communication.translation.out.OperationTerms.term
 import framework.AMWSpecificFramework.JADE
 import framework.AMWSpecificFramework.ASL
 import framework.AMWSpecificFramework.oid
-import framework.Messaging
 import framework.Messaging.compareTo
 import framework.Messaging.lastMatches
 import framework.Messaging.plus

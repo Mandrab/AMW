@@ -7,6 +7,11 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
+/**
+ * Utilities for the start of an asl agent from it's main file
+ *
+ * @author Paolo Baldini
+ */
 class ASLAgent: JadeAgArch() {
 
     override fun setup() {

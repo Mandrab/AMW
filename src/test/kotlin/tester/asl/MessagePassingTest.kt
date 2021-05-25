@@ -24,6 +24,12 @@ import framework.Messaging.rangeTo
 import jade.lang.acl.ACLMessage.*
 import org.junit.Test
 
+/**
+ * Test class for messages sequence in the system
+ * It tests in an empirical way the system by looking at the communication sequence
+ *
+ * @author Paolo Baldini
+ */
 class MessagePassingTest {
     private val defaultOrder = order(client("x"), email("y"), address("z"))[
             item(ID.id("Item 1"), quantity(3)),

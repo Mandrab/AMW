@@ -21,13 +21,10 @@ import framework.Messaging.compareTo
 import framework.Messaging.lastMatches
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
-import jade.core.Agent
-import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
 import jason.asSyntax.Literal
 import org.junit.Assert
-import java.util.jar.JarEntry
 
 /**
  * Test class for OrderManager's accept order request

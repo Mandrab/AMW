@@ -8,6 +8,11 @@ import java.io.PrintStream
 import java.lang.Exception
 import kotlin.random.Random.Default.nextDouble
 
+/**
+ * Utilities for the testing of the agents behaviour
+ *
+ * @author Paolo Baldini
+ */
 object Framework {
     private val caughtLogs = mutableListOf<String>()
     private val expectedLogs = mutableListOf<String>()

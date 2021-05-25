@@ -5,6 +5,11 @@ import jade.core.Runtime
 import jade.util.ExtendedProperties
 import kotlin.random.Random
 
+/**
+ * Utilities for the start of an asl agent from it's main file
+ *
+ * @author Paolo Baldini
+ */
 object ASLAgents {
 
     fun start(agentName: String): ASLAgent = agentName.unique().let { name ->

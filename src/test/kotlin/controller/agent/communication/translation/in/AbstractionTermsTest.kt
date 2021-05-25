@@ -25,6 +25,11 @@ import common.ontology.dsl.abstraction.User.user
 import controller.agent.communication.translation.`in`.AbstractionTerms.parse
 import org.junit.Test
 
+/**
+ * Test for incoming message translation
+ *
+ * @author Paolo Baldini
+ */
 class AbstractionTermsTest {
 
     @Test fun testAddressParse() =

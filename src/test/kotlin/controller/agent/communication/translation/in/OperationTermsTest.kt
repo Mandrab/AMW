@@ -28,6 +28,11 @@ import common.ontology.dsl.operation.Item.remove
 import controller.agent.communication.translation.`in`.OperationTerms.parse
 import org.junit.Test
 
+/**
+ * Test for incoming message translation
+ *
+ * @author Paolo Baldini
+ */
 class OperationTermsTest {
 
     @Test fun testAddCommandParse() =
