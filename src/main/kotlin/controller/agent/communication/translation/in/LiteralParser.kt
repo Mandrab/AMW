@@ -64,7 +64,7 @@ object LiteralParser {
      *      RETURN = Pair(elem(values), queues)
      */
     fun splitStructAndList(literal: String): Pair<String, String> {
-        // a simple list TODO forse si può rimuovere... non so se substring(0,0) lanci eccezione
+        // a simple list
         if (literal.startsWith("[")) return Pair(String(), literal.removeSurrounding("[", "]"))
 
         var openedParenthesis = 0

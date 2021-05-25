@@ -48,6 +48,6 @@ object View {
                 addActionListener { updateTabs() }
             }, BorderLayout.NORTH)
         } }
-        setBounds(0, 0, 700, 700)   // TODO
+        setBounds(0, 0, 700, 700)
     }
 }

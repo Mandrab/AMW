@@ -16,7 +16,7 @@ object View {
         contentPane = LoadingPanel { startLoading, stopLoading -> layer {
             val tabs = tabs {
                 add("Shop", Shop { controller.placeOrder(it) })
-                add("History", History())   // TODO make smarter
+                add("History", History())
             }
             add(tabs, CENTER)
 
@@ -38,6 +38,6 @@ object View {
                 addActionListener { updateTabs() }
             }, NORTH)
         } }
-        setBounds(0, 0, 700, 700)   // TODO
+        setBounds(0, 0, 700, 700)
     }
 }

@@ -30,7 +30,7 @@ object LoadingPanel {
         val panel = mainPanel({ moveToFront(loadingLayer) }, { moveToBack(loadingLayer) })
         add(panel, JLayeredPane.DEFAULT_LAYER, 0)
 
-        panel.setBounds(0, 0, 700, 700) // TODO
+        panel.setBounds(0, 0, 700, 700)
     }
 
     fun <T> loading(startLoading: () -> Unit, stopLoading: () -> Unit, operation: () -> T) {
