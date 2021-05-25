@@ -2,12 +2,12 @@
  Communication Utils
 ***********************************************************************************************************************/
 
-messageID(0).
+messageID(0).                                                       // message number counter
 
 @new_mID[atomic]
 +!new_ID(OT)
-    <-  -messageID(N);
-        .concat(mid, N+1, O);
+    <-  -messageID(N);                                              // get actual id
+        .concat(mid, N+1, O);                                       // create message id
         .term2string(OT, O);
         +messageID(N+1).
 

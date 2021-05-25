@@ -3,7 +3,6 @@
  **********************************************************************************************************************/
 
 { include("utility/cache.asl") }
-{ include("utility/literal.asl") }                                  // include utilities for works on literals
 { include("command_manager/action/add.asl") }
 { include("command_manager/action/info.asl") }
 { include("command_manager/state/commands.asl") }
