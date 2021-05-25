@@ -11,7 +11,7 @@ import jade.core.Agent
 interface AgentProxy<T: Agent> {
 
 	/**
-	 * Set agent to be the proxy
+	 * Set agent to be the proxy of
 	 */
 	fun setAgent(agent: T)
 

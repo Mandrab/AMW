@@ -9,7 +9,6 @@ import controller.admin.agent.Agent
 import controller.agent.Agents
 import controller.admin.agent.Proxy
 import view.View
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
 /**
@@ -27,17 +26,38 @@ class Controller(retryConnection: Boolean = true): Admin {
         View(this)
     }
 
+    /**
+     * Add a command in the repository
+     */
     override fun addCommand(command: Command) = proxy.addCommand(command)
 
+    /**
+     * Add an item in the warehouse
+     */
     override fun addItem(item: WarehouseItem) = proxy.addItem(item)
 
+    /**
+     * Require list of commands from repository
+     */
     override fun commandsList(): Future<Collection<Command>> = proxy.commandsList()
 
+    /**
+     * Ask for command execution
+     */
     override fun executeCommand(id: ID) = proxy.executeCommand(id)
 
+    /**
+     * Remove an item from the warehouse
+     */
     override fun removeItem(item: QuantityItem) = proxy.removeItem(item)
 
+    /**
+     * Require warehouse state from warehouse manager
+     */
     override fun warehouseState() = proxy.warehouseState()
 
+    /**
+     * Shutdown the agent
+     */
     override fun stopSystem() = proxy.shutdown()
 }

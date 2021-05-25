@@ -34,17 +34,35 @@ class Agent: Communicator() {
 
     fun shutdown() = super.takeDown()
 
+    /**
+     * Add a command in the repository
+     */
     fun addCommand(command: Command) { sendMessage(AddCommand.build(command).message(this)) }
 
+    /**
+     * Add an item in the warehouse
+     */
     fun addItem(item: WarehouseItem) { sendMessage(StoreItemOut.build(item).message(this)) }
 
+    /**
+     * Require list of commands from repository
+     */
     fun commandsList(): Future<Collection<Command>> =
         sendMessage(InfoCommandsOut.build().message(this), true, InfoCommandsIn.parse)
 
-    fun removeItem(item: QuantityItem) { sendMessage(RemoveItemOut.build(item).message(this)) }
-
+    /**
+     * Ask for command execution
+     */
     fun executeCommand(id: ID) { sendMessage(ExecuteCommand.build(id).message(this)) }
 
+    /**
+     * Remove an item from the warehouse
+     */
+    fun removeItem(item: QuantityItem) { sendMessage(RemoveItemOut.build(item).message(this)) }
+
+    /**
+     * Require warehouse state from warehouse manager
+     */
     fun warehouseState(): Future<Collection<Product>> =
             sendMessage(InfoWarehouseOut.build().message(this), true, InfoWarehouseIn.parse)
 }
