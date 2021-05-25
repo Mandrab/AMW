@@ -5,6 +5,13 @@ import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Name.Name
 import common.ontology.dsl.abstraction.Script.Script
 
+/**
+ * Represents 'command' abstraction in the system
+ * Other abstractions can relate to it
+ * The function(s) is(are) intended to create a DSL for the system
+ *
+ * @author Paolo Baldini
+ */
 object Command {
 
     data class Command(

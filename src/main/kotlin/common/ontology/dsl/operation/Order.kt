@@ -7,8 +7,20 @@ import common.ontology.dsl.abstraction.ID.ID
 import common.ontology.dsl.abstraction.Item.QuantityItem
 import common.ontology.dsl.abstraction.Status.Status
 
+/**
+ * Represents 'order' operation(s) in the system
+ * It refer to ontology abstractions
+ * The function(s) is(are) intended to create a DSL for the system
+ *
+ * @author Paolo Baldini
+ */
 object Order {
 
+    /**
+     * Represents a request for order placement
+     *
+     * @author Paolo Baldini
+     */
     data class PlaceOrder(
         val client: Client,
         val email: Email,
@@ -24,8 +36,18 @@ object Order {
         companion object
     }
 
+    /**
+     * Represents a response for orders information
+     *
+     * @author Paolo Baldini
+     */
     data class InfoOrder(val id: ID, val status: Status) { companion object }
 
+    /**
+     * Represents a request for orders information
+     *
+     * @author Paolo Baldini
+     */
     data class InfoOrders(val client: Client, val email: Email) { companion object }
 
     fun order(client: Client, email: Email, address: Address) = PlaceOrder(client, email, address)

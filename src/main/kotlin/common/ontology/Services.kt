@@ -1,5 +1,10 @@
 package common.ontology
 
+/**
+ * Represents possible services offered by the agents of the system
+ *
+ * @author Paolo Baldini
+ */
 object Services {
 
     /**
