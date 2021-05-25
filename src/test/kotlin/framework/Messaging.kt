@@ -60,9 +60,10 @@ object Messaging {
         return 0
     }
 
-    private fun reverseRegex(string: String) = listOf("*", "+", "?", ".", "^", "[", "]", "(", ")", "$", "&", "|")
-        .foldRight(string) { symbol: String, accumulator: String ->
-            accumulator.replace(symbol, """\$symbol""")             // abc?def --> abc\?def
-                .replace("""\\$symbol""", symbol)                   // abc\\?def --> abc?def
-        }
+    private fun reverseRegex(string: String) =
+        listOf("*", "+", "?", ".", "^", "[", "]", "(", ")", "$", "&", "|", "{", "}")
+            .foldRight(string) { symbol: String, accumulator: String ->
+                accumulator.replace(symbol, """\$symbol""")         // abc?def --> abc\?def
+                    .replace("""\\$symbol""", symbol)               // abc\\?def --> abc?def
+            }
 }

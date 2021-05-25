@@ -14,17 +14,14 @@ import framework.AMWSpecificFramework.ASL.commandManager
 import framework.AMWSpecificFramework.ASL.orderManager
 import framework.AMWSpecificFramework.ASL.robotPicker
 import framework.AMWSpecificFramework.ASL.warehouseMapper
-import framework.AMWSpecificFramework.waitingTime
+import framework.AMWSpecificFramework.oid
 import framework.Framework.Utility.agent
 import framework.Framework.test
-import framework.Messaging
 import framework.Messaging.compareTo
 import framework.Messaging.minus
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
-import jade.core.Agent
 import jade.lang.acl.ACLMessage.*
-import org.junit.Assert
 import org.junit.Test
 
 class MessagePassingTest {
@@ -60,10 +57,10 @@ class MessagePassingTest {
 
         agent <= CONFIRM + defaultOrder
         agent .. REQUEST + "info(warehouse)" > warehouseMapper
-        agent <= INFORM + "position(rack(1),shelf(1),quantity(2))"
+        agent <= INFORM + """\.\*position(rack(1),shelf(1),quantity(2))\.\*"""
 
         agent .. REQUEST + info(client("x"), email("y")).term() > orderManager
-        agent <= INFORM + "[order(id(odr1),status(completed))]"
+        agent <= INFORM + """\.\*[order(id(${oid(1)}),status(completed))]"""
     }
 
     @Test fun commandPropagation() = test(filterLogs = true) {
@@ -83,12 +80,5 @@ class MessagePassingTest {
         recordLogs = false
 
         agent <= CONFIRM + """command(id("Command1"))"""
-    }
-
-    private operator fun Agent.compareTo(message: Messaging.Message) = 0.apply {
-        val result = blockingReceive(waitingTime)
-        Assert.assertNotNull(result)
-        Assert.assertEquals(message.performative, result.performative)
-        Assert.assertTrue(result.content.contains(message.content))
     }
 }
