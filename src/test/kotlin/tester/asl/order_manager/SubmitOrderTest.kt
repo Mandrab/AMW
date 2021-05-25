@@ -16,7 +16,6 @@ import common.ontology.dsl.operation.Order.order
 import controller.agent.communication.translation.out.OperationTerms.term
 import framework.AMWSpecificFramework.mid
 import framework.AMWSpecificFramework.retryTime
-import framework.Messaging
 import framework.Messaging.compareTo
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
@@ -24,8 +23,7 @@ import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import org.junit.Test
 import jade.lang.acl.ACLMessage.*
-import jade.lang.acl.UnreadableException
-import org.hamcrest.CoreMatchers
+import jason.asSyntax.Literal
 import org.junit.Assert
 
 /**
@@ -49,6 +47,8 @@ class SubmitOrderTest {
     private fun pointResponse(mid : Int) = "point(odr1, pid, x, y)[${mid(mid)}]"
     private fun orderStatus(status: String) = "[order(id(odr1),status($status))]"
     private fun position(i: Int) = "position(x$i,y$i,z$i)"
+    private fun error_(t: Literal) = "error($t)"
+    private fun unknown_(t: String) = "unknown($t)"
     private val defaultOrder = order(client("x"), email("y"), address("z"))[
             item(id("a"), quantity(1)),
             item(id("b"), quantity(2))
@@ -60,11 +60,11 @@ class SubmitOrderTest {
         val order = order(client("x"), email("y"), address("z")).term()
 
         agent .. REQUEST + order > ASL.orderManager
-        agent < FAILURE + "unknown(${order.toString().removeSuffix("[]").trim()})"
+        agent < FAILURE + unknown_(order.toString().removeSuffix("[]").trim())
     }
 
     @Test fun submittedOrderRequestShouldFailIfNoWarehouseAgentExists() = test {
-        placeOrder() < FAILURE + defaultOrder
+        placeOrder() <= FAILURE + error_(defaultOrder)
     }
 
     @Test fun orderSubmissionShouldCauseRequestToWarehouseManager() = test { JADE.warehouseMapper
@@ -113,7 +113,7 @@ class SubmitOrderTest {
         placeOrder().blockingReceive(waitingTime)
         waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
 
-        JADE.collectionPointManager < REQUEST + "point(pid(p1), x, y)[mid(m1)]"
+        JADE.collectionPointManager < REQUEST + "point(odr1)[mid(mid2)]"
     }
 
     @Test fun agentShouldKeepAskIfNoAnswerFromCollectionPointManager() = test {
@@ -140,6 +140,18 @@ class SubmitOrderTest {
         Thread.sleep(retryTime)
 
         JADE.collectionPointManager < REQUEST + pointRequest(2)
+    }
+
+    @Test fun confirmFromCollectionPointManagerCauseStopOfRequest() = test {
+        JADE.warehouseMapper; JADE.collectionPointManager; JADE.robotPicker
+
+        placeOrder().blockingReceive(waitingTime)
+
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+
+        val result = JADE.collectionPointManager.blockingReceive(retryTime + waitingTime)
+        Assert.assertNull(result)
     }
 
     @Test fun confirmFromCollectionPointManagerCauseStartOfItemsPick() = test {
@@ -183,6 +195,48 @@ class SubmitOrderTest {
         JADE.robotPicker .. CONFIRM + retrieveItemMessage(2, 4) > ASL.orderManager
 
         ordersInfo() < INFORM + orderStatus("completed")
+    }
+
+    @Test fun freeOfCollectionPointShouldRepeatedlySentAfterLastElementIsRetrieved() = test {
+        JADE.warehouseMapper; JADE.collectionPointManager; JADE.robotPicker
+
+        placeOrder().blockingReceive(waitingTime)
+
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
+
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(1, 3) > ASL.orderManager
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(2, 4) > ASL.orderManager
+
+        JADE.collectionPointManager <= INFORM + "free(odr1)[mid(mid5)]"
+
+        Thread.sleep(retryTime)
+
+        JADE.collectionPointManager <= INFORM + "free(odr1)[mid(mid5)]"
+    }
+
+    @Test fun freeOfCollectionPointInformShouldStopAfterConfirmation() = test {
+        JADE.warehouseMapper; JADE.collectionPointManager; JADE.robotPicker
+
+        placeOrder().blockingReceive(waitingTime)
+
+        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
+
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(1, 3) > ASL.orderManager
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(2, 4) > ASL.orderManager
+
+        JADE.collectionPointManager <= INFORM + "free(odr1)[mid(mid5)]"
+        JADE.collectionPointManager .. CONFIRM + "free(odr1)[mid(mid5)]" > ASL.orderManager
+
+        val result = JADE.collectionPointManager.blockingReceive(retryTime + waitingTime)
+        Assert.assertNull(result)
     }
 
     @Test fun agentShouldKeepAskIfNoAnswerFromRobotPicker() = test {
@@ -233,18 +287,5 @@ class SubmitOrderTest {
             addReceiver(result.sender)
             content = message ?: result.content
         })
-    }
-
-    private operator fun Agent.compareTo(message: Messaging.Message) = 0.apply {
-        val result = blockingReceive(waitingTime)
-        Assert.assertNotNull(result)
-        Assert.assertEquals(message.performative, result.performative)
-
-        val content = message.content ?: message.contentObject.toString()
-        Assert.assertThat("Content differs from expectations", content.trim(), CoreMatchers.anyOf(
-            CoreMatchers.containsString(result.content.trim()),
-            CoreMatchers.containsString(try { result.contentObject.toString().trim() } catch (_: UnreadableException) { "" })
-        ))
-        message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
     }
 }

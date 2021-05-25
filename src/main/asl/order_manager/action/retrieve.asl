@@ -2,6 +2,7 @@
 
 +!retrieve_items([], _).
 +!retrieve_items([H|T], PID): H = position(_, _, _) <- !retrieve(H, PID); !retrieve_items(T, PID).
++!retrieve_items(_, _).                                             // ignores possibly source(self) annotation
 
 +!retrieve(P, PID)
     <-  !ensure_send(
@@ -37,9 +38,9 @@
         !ensure_send(
             description("management(items)", "info(collection_points)"),
             tell, free(OID)
-        ).// TODO TEST
+        ).
 
-+!kqml_received(Sender, confirm, free(OID)[mid(MID)], _) <- !response_received(MID).// TODO TEST
++!kqml_received(Sender, confirm, free(OID)[mid(MID)], _) <- !response_received(MID).
 
 // A failure should happen only if the robot is busy. To simplify logic, let's retry until it is available.
 +!kqml_received(Sender, failure, retrieve(P, point(PID)), OID) <- .println("[ORDER MANAGER] robot refused retrieval").
