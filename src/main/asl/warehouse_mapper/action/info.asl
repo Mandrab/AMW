@@ -3,5 +3,5 @@
 @info_items[atomic]
 +!kqml_received(Sender, achieve, info(warehouse), MID)              // send the warehouse state (items info & position)
     <-  .println("[WAREHOUSE MAPPER] required warehouse info");
-        .findall(item(X)[H|T], item(X)[source(self)|[H|T]], Items);
+        .findall(item(X)[H|T], item(X)[source(self)|[H|T]], Items); // find items and positions in the warehouse
         .send(Sender, tell, Items, MID).

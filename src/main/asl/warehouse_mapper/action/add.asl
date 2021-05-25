@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////// ITEMS ADDITION ////////////////////////////////////////////////////
 
 @addItem[atomic]
-+!kqml_received(Sender, achieve, add(Item), MID)
++!kqml_received(Sender, achieve, add(Item), MID)                    // request item addition
     <-  .println("[WAREHOUSE MAPPER] request for item addition");
         !feasible_slot(Item);                                       // succeed if slot can contain this kind of item
         !add(Item);                                                 // add the item in that position

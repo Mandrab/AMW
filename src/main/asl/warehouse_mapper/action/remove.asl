@@ -1,32 +1,33 @@
 ////////////////////////////////////////////////////// REMOVE ITEM /////////////////////////////////////////////////////
 
 @removeItem[atomic]
-+!kqml_received(Sender, achieve, remove(Item), MID)
++!kqml_received(Sender, achieve, remove(Item), MID)                 // request item removal
     :   Item = item(ID, quantity(Q))
     <-  .println("[WAREHOUSE MAPPER] required item removal");
-        !is_sufficient(ID, Q);
-        !remove(ID, Q, [OH|OT]);
+        !is_sufficient(ID, Q);                                      // check if item quantity is sufficient
+        !remove(ID, Q, [OH|OT]);                                    // set item as removed from specific positions
         !cached_response(
             Sender,
             in(achieve, remove(Item), MID),
-            out(confirm, remove(Item)[OH|OT], MID)
+            out(confirm, remove(Item)[OH|OT], MID)                  // send item removal confirmation and positions
         ).                                                          // cache the response and send it
 
 @removeItems[atomic]
-+!kqml_received(Sender, achieve, remove(items, OID)[mid(MID)|[H|T]], _)
++!kqml_received(Sender, achieve, remove(items, OID)[mid(MID)|[H|T]], _) // request items removal
     <-  .println("[WAREHOUSE MAPPER] required items removal");
-        !are_sufficient([H|T]);
-        !remove_all([H|T], [OH|OT]);
+        !are_sufficient([H|T]);                                     // check if items quantity is sufficient
+        !remove_all([H|T], [OH|OT]);                                // set items as removed from specific positions
         !cached_response(
             Sender,
             in(tell, remove(items, OID)[mid(MID)|[H|T]]),
-            out(confirm, remove(items, OID)[mid(MID)|[OH|OT]])
+            out(confirm, remove(items, OID)[mid(MID)|[OH|OT]])      // send items removal confirmation and positions
         ).                                                          // cache the response and send it
 
 /***********************************************************************************************************************
  Utils
  **********************************************************************************************************************/
 
+// check if items in warehouse are sufficient for complete the order
 +!are_sufficient([]).
 +!are_sufficient([item(ID, quantity(Q))|T]) <- !is_sufficient(ID, Q); !are_sufficient(T).
 
@@ -35,6 +36,7 @@
 +!count([], 0).
 +!count([position(_, _, quantity(Q))|T], O) <- !count(T, O1); O = Q + O1.
 
+// get positions from which remove the items
 +!remove_all([], []).
 +!remove_all([item(ID, quantity(Q))|T], R) <- !remove(ID, Q, RH); !remove_all(T, RT); .concat(RH, RT, R).
 
