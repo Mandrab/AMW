@@ -1,6 +1,5 @@
 ///////////////////////////////////////////////////// ITEM PICKING /////////////////////////////////////////////////////
 
-// TODO implement confirmation (with caching) in order manager
 +!kqml_received(Sender, confirm, retrieve(P, PID)[mid(MID)], _)     // confirmation of message reception
     <-  !response_received(MID).
 
