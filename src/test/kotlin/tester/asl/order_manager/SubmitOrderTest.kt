@@ -15,8 +15,10 @@ import common.ontology.dsl.operation.Order.info
 import common.ontology.dsl.operation.Order.order
 import controller.agent.communication.translation.out.OperationTerms.term
 import framework.AMWSpecificFramework.mid
+import framework.AMWSpecificFramework.oid
 import framework.AMWSpecificFramework.retryTime
 import framework.Messaging.compareTo
+import framework.Messaging.lastMatches
 import framework.Messaging.plus
 import framework.Messaging.rangeTo
 import jade.core.Agent
@@ -25,6 +27,7 @@ import org.junit.Test
 import jade.lang.acl.ACLMessage.*
 import jason.asSyntax.Literal
 import org.junit.Assert
+import java.util.jar.JarEntry
 
 /**
  * Test class for OrderManager's accept order request
@@ -40,12 +43,13 @@ import org.junit.Assert
  */
 class SubmitOrderTest {
     private fun retrieveItemMessage(i: Int, mid: Int) = "retrieve(${position(i)},point(pid))[${mid(mid)}]"
-    private fun removeItemsRequest(mid: Int) = "remove(items,odr1)[" + """item(id("a"),quantity(1))""" +
+    private fun removeItemsRequest(mid: Int) = """remove(items,${oid(1)})[item(id("a"),quantity(1))""" +
             """,item(id("b"),quantity(2)),${mid(mid)}]"""
-    private fun removeItemsResponse(mid: Int) = "remove(items,odr1)[${position(mid)},${position(mid+1)},${mid(mid)}]"
-    private fun pointRequest(mid: Int) = "point(odr1)[${mid(mid)}]"
-    private fun pointResponse(mid : Int) = "point(odr1, pid, x, y)[${mid(mid)}]"
-    private fun orderStatus(status: String) = "[order(id(odr1),status($status))]"
+    private fun removeItemsResponse(mid: Int) =
+        "remove(items,${lastMatches.first()})[${position(mid)},${position(mid+1)},${mid(mid)}]"
+    private fun pointRequest(mid: Int) = """point(${oid(1)})[${mid(mid)}]"""
+    private fun pointResponse(mid : Int) = "point(${lastMatches.first()}, pid, x, y)[${mid(mid)}]"
+    private fun orderStatus(status: String) = "[order(id(${oid(1)}),status($status))]"
     private fun position(i: Int) = "position(x$i,y$i,z$i)"
     private fun error_(t: Literal) = "error($t)"
     private fun unknown_(t: String) = "unknown($t)"
@@ -101,7 +105,8 @@ class SubmitOrderTest {
     @Test fun orderGetStatusRetrievingIfTheWarehouseHasTheItems() = test { JADE.warehouseMapper
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        warehouseAcceptance()
+
         Thread.sleep(waitingTime)
 
         ordersInfo() < INFORM + orderStatus("retrieve")
@@ -111,9 +116,9 @@ class SubmitOrderTest {
         JADE.warehouseMapper; JADE.collectionPointManager
 
         placeOrder().blockingReceive(waitingTime)
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        warehouseAcceptance()
 
-        JADE.collectionPointManager < REQUEST + "point(odr1)[mid(mid2)]"
+        JADE.collectionPointManager < REQUEST + "point(${oid(1)})[mid(mid2)]"
     }
 
     @Test fun agentShouldKeepAskIfNoAnswerFromCollectionPointManager() = test {
@@ -121,7 +126,7 @@ class SubmitOrderTest {
 
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
+        warehouseAcceptance()
 
         Thread.sleep(retryTime)
 
@@ -134,8 +139,10 @@ class SubmitOrderTest {
 
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
-        waitAndReply(JADE.collectionPointManager, FAILURE)
+        warehouseAcceptance()
+
+        JADE.collectionPointManager <= REQUEST + pointRequest(2)
+        JADE.collectionPointManager .. FAILURE + pointResponse(2) > ASL.orderManager
 
         Thread.sleep(retryTime)
 
@@ -147,8 +154,9 @@ class SubmitOrderTest {
 
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
-        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+        warehouseAcceptance()
+
+        collectionPointManagerAcceptance()
 
         val result = JADE.collectionPointManager.blockingReceive(retryTime + waitingTime)
         Assert.assertNull(result)
@@ -159,8 +167,9 @@ class SubmitOrderTest {
 
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
-        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+        warehouseAcceptance()
+
+        collectionPointManagerAcceptance()
 
         JADE.robotPicker < REQUEST + retrieveItemMessage(1, 3)
         JADE.robotPicker < REQUEST + retrieveItemMessage(2, 4)
@@ -171,8 +180,9 @@ class SubmitOrderTest {
 
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
-        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+        warehouseAcceptance()
+
+        collectionPointManagerAcceptance()
 
         JADE.robotPicker < REQUEST + retrieveItemMessage(1, 3)
         JADE.robotPicker .. CONFIRM + retrieveItemMessage(1, 3) > ASL.orderManager
@@ -185,8 +195,9 @@ class SubmitOrderTest {
 
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
-        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+        warehouseAcceptance()
+
+        collectionPointManagerAcceptance()
 
         JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
         JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
@@ -202,8 +213,9 @@ class SubmitOrderTest {
 
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
-        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+        warehouseAcceptance()
+
+        collectionPointManagerAcceptance()
 
         JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
         JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
@@ -211,11 +223,11 @@ class SubmitOrderTest {
         JADE.robotPicker .. CONFIRM + retrieveItemMessage(1, 3) > ASL.orderManager
         JADE.robotPicker .. CONFIRM + retrieveItemMessage(2, 4) > ASL.orderManager
 
-        JADE.collectionPointManager <= INFORM + "free(odr1)[mid(mid5)]"
+        JADE.collectionPointManager <= INFORM + "free(${oid(1)})[mid(mid5)]"
 
         Thread.sleep(retryTime)
 
-        JADE.collectionPointManager <= INFORM + "free(odr1)[mid(mid5)]"
+        JADE.collectionPointManager <= INFORM + "free(${oid(1)})[mid(mid5)]"
     }
 
     @Test fun freeOfCollectionPointInformShouldStopAfterConfirmation() = test {
@@ -223,17 +235,20 @@ class SubmitOrderTest {
 
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
-        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+        warehouseAcceptance()
+
+        collectionPointManagerAcceptance()
 
         JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
-        JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
-
         JADE.robotPicker .. CONFIRM + retrieveItemMessage(1, 3) > ASL.orderManager
-        JADE.robotPicker .. CONFIRM + retrieveItemMessage(2, 4) > ASL.orderManager
+        JADE.robotPicker <= CONFIRM + retrieveItemMessage(1, 3)
 
-        JADE.collectionPointManager <= INFORM + "free(odr1)[mid(mid5)]"
-        JADE.collectionPointManager .. CONFIRM + "free(odr1)[mid(mid5)]" > ASL.orderManager
+        JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
+        JADE.robotPicker .. CONFIRM + retrieveItemMessage(2, 4) > ASL.orderManager
+        JADE.robotPicker <= CONFIRM + retrieveItemMessage(2, 4)
+
+        JADE.collectionPointManager <= INFORM + "free(${oid(1)})[mid(mid5)]"
+        JADE.collectionPointManager .. CONFIRM + "free(${lastMatches.first()})[mid(mid5)]" > ASL.orderManager
 
         val result = JADE.collectionPointManager.blockingReceive(retryTime + waitingTime)
         Assert.assertNull(result)
@@ -244,8 +259,9 @@ class SubmitOrderTest {
 
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
-        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+        warehouseAcceptance()
+
+        collectionPointManagerAcceptance()
 
         JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
         JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
@@ -259,8 +275,9 @@ class SubmitOrderTest {
         JADE.warehouseMapper; JADE.collectionPointManager; JADE.robotPicker
         placeOrder().blockingReceive(waitingTime)
 
-        waitAndReply(JADE.warehouseMapper, CONFIRM, removeItemsResponse(1))
-        waitAndReply(JADE.collectionPointManager, CONFIRM, pointResponse(2))
+        warehouseAcceptance()
+
+        collectionPointManagerAcceptance()
 
         JADE.robotPicker <= REQUEST + retrieveItemMessage(1, 3)
         JADE.robotPicker <= REQUEST + retrieveItemMessage(2, 4)
@@ -281,11 +298,13 @@ class SubmitOrderTest {
         this .. REQUEST + info(client("x"), email("y")).term() > ASL.orderManager
     }
 
-    private fun waitAndReply(agent: Agent, performative: Int = CONFIRM, message: String? = null) {
-        val result = agent.blockingReceive(waitingTime)
-        agent.send(ACLMessage(performative).apply {
-            addReceiver(result.sender)
-            content = message ?: result.content
-        })
+    private fun warehouseAcceptance() {
+        JADE.warehouseMapper <= REQUEST + removeItemsRequest(1)
+        JADE.warehouseMapper .. CONFIRM + removeItemsResponse(1) > ASL.orderManager
+    }
+
+    private fun collectionPointManagerAcceptance() {
+        JADE.collectionPointManager <= REQUEST + pointRequest(2)
+        JADE.collectionPointManager .. CONFIRM + pointResponse(2) > ASL.orderManager
     }
 }

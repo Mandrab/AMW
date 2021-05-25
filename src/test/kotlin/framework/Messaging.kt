@@ -3,7 +3,6 @@ package framework
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
 import jade.lang.acl.UnreadableException
-import org.hamcrest.CoreMatchers
 import org.junit.Assert
 
 /**
@@ -20,8 +19,11 @@ import org.junit.Assert
 object Messaging {
     private const val waitingTime = 500L
 
+    var lastMatches = listOf<String>()
+
     class Message(performative: Int): ACLMessage(performative) {
         lateinit var senderAgent: Agent
+        lateinit var objectContent: Any
     }
 
     operator fun Agent.rangeTo(message: Message) = message.apply { senderAgent = this@rangeTo; sender = aid }
@@ -31,15 +33,24 @@ object Messaging {
         Assert.assertNotNull("An expected message has not arrived", result)
         Assert.assertEquals("Performative differs from expectations", message.performative, result.performative)
 
-        val content = message.content ?: message.contentObject.toString()
-        Assert.assertThat("Content differs from expectations", content.trim(), CoreMatchers.anyOf(
-            CoreMatchers.`is`(result.content.trim()),
-            CoreMatchers.`is`(try { result.contentObject.toString().trim() } catch (_: UnreadableException) { "" })
-        ))
+        val regex = reverseRegex(message.content ?: message.contentObject.toString().trim())
+        val content1 = result.content.trim()
+        val content2 = try { result.contentObject.toString().trim() } catch (_: UnreadableException) { "" }
+        Assert.assertTrue(
+            "Content differs from expectations:\nExpected: $regex\nBut was: ${result.content}",
+            content1.matches(regex.toRegex()) || content2.matches(regex.toRegex())
+        )
+        lastMatches = regex.toRegex().find(content1)?.groupValues?.drop(1)
+            ?: regex.toRegex().find(content2)?.groupValues?.drop(1)
+            ?: emptyList()
+
         message.replyWith ?.let { Assert.assertEquals(it, result.inReplyTo) }
     }
 
-    operator fun Int.plus(message: Any) = Message(this).apply { content = message.toString() }
+    operator fun Int.plus(message: Any) = Message(this).apply {
+        objectContent = message
+        content = message.toString()
+    }
 
     operator fun Message.minus(code: String) = this.apply { replyWith = code }
 
@@ -48,4 +59,10 @@ object Messaging {
         senderAgent.send(this)
         return 0
     }
+
+    private fun reverseRegex(string: String) = listOf("*", "+", "?", ".", "^", "[", "]", "(", ")", "$", "&", "|")
+        .foldRight(string) { symbol: String, accumulator: String ->
+            accumulator.replace(symbol, """\$symbol""")             // abc?def --> abc\?def
+                .replace("""\\$symbol""", symbol)                   // abc\\?def --> abc?def
+        }
 }

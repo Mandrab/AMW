@@ -8,6 +8,7 @@ object AMWSpecificFramework {
     const val waitingTime = 500L                                            // reasonable time for message delivery
     const val retryTime = 2000L                                             // time between message resend
 
+    fun oid(i: Int) = """\(\[a-z\|0-9\|\.\|_\]\*odr$i\)"""
     fun mid(i: Int) = "mid(mid$i)"
 
     object Test {
