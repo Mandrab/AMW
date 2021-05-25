@@ -17,6 +17,11 @@ import view.utilities.swing.Swing.button
 import java.awt.GridBagLayout
 import javax.swing.JPanel
 
+/**
+ * Define the section of the view used for shop visualization
+ *
+ * @author Paolo Baldini
+ */
 class Shop(
     private val placeOrder: (items: Collection<QuantityItem>) -> Unit
 ): JPanel() {

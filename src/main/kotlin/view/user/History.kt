@@ -9,6 +9,11 @@ import view.utilities.swing.List.render
 import java.awt.GridBagLayout
 import javax.swing.JPanel
 
+/**
+ * Define the section of the view used for order history visualization
+ *
+ * @author Paolo Baldini
+ */
 class History: JPanel() {
     private val orders: List<InfoOrder>
     private val orderInfo = label { text = "Nothing here. You can try to refresh the view" }

@@ -17,6 +17,11 @@ import java.awt.GridBagLayout
 import javax.swing.BoxLayout
 import javax.swing.JPanel
 
+/**
+ * Define the section of the view used for commands visualization
+ *
+ * @author Paolo Baldini
+ */
 class Command(
     private val commandsSupplier: () -> Collection<Command>,
     private val addCommand: (command: Command) -> Unit,

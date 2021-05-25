@@ -10,6 +10,12 @@ import view.utilities.swing.Tab.tabs
 import java.awt.BorderLayout.*
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
+/**
+ * Define the user view in the system
+ * This is composed by specific sections relative to specific functionalities
+ *
+ * @author Paolo Baldini
+ */
 object View {
 
     operator fun invoke(controller: User) = frame {

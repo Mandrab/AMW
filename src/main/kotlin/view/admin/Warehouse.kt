@@ -19,6 +19,11 @@ import java.lang.StringBuilder
 import javax.swing.JPanel
 import javax.swing.JTextArea
 
+/**
+ * Define the section of the view used for warehouse inspection
+ *
+ * @author Paolo Baldini
+ */
 class Warehouse(
     private val xLanesCount: Int,
     private val yLanesCount: Int,

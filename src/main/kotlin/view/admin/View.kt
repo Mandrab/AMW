@@ -9,6 +9,12 @@ import view.utilities.swing.Swing.frame
 import java.awt.BorderLayout
 import java.util.concurrent.TimeUnit
 
+/**
+ * Define the admin view in the system
+ * This is composed by specific sections relative to specific functionalities
+ *
+ * @author Paolo Baldini
+ */
 object View {
 
     operator fun invoke(controller: Admin) = frame {
