@@ -1,17 +1,19 @@
 \section{Autovalutazione / Validazione}
-
 % Choose a criterion for the evaluation of the produced software and \textbf{its compliance to the requirements above}.
 
 % Pseudo-formal or formal criteria are preferred.
 
 % In case of a test-driven development, describe tests here and possibly report the amount of passing tests, the total amount of tests and, possibly, the test coverage.
 
-Per la validazione del progetto non sono stati utilizzati specifici criteri formali, bens\'i un’insieme di test automatizzati e in grado di coprire una vasta quantit\'a di casistiche. Ci\'o \'e stato principalmente dovuto alla modalit\'a di sviluppo scelta, seguente l'approccio \textbf{test driven}.\\
-I test sviluppati mirano a valutare sia il funzionameto dei singoli agenti e delle loro funzionalit\'a di base, sia il funzionamento del sistema nel suo complesso. Lo sviluppo di questi \'e cominciato a seguito della definizione della logica di interazione del sistema ed ha quindi guidato lo sviluppo e la validazione di ogni singola entit\'a.\\
-Volendo fornire qualche valore quantitativo riguardo ad i test effettuati, possiamo dire che sono stati creati ed eseguiti \textbf{113 test} (TODO), con una \textbf{coverage vicina al 100\%} per gli agenti e le classi fondamentali (non sono ad esempio state testate le view e classi di scarsa importanza ai fini del progetto) e con \textbf{passing rate del 100\%}. Essendo tuttavia gli agenti eseguiti su flussi di controllo diversi e non volendo bloccare il sistema a tempo indeterminato, \'e teoricamente possibile che alcuni test non passino. Ci\'o non \'e per\'o dovuto ad un mancato funzionamento del sistema quanto ad una scelta implementativa. Questa possibilit\'a, seppur da tenere in considerazione, non si \'e comunque mai manifestata nello svolgimento dei test.
+Per la validazione del progetto non sono stati utilizzati specifici criteri formali, bens\'i un’insieme di test automatizzati e in grado di coprire una vasta quantit\'a di casistiche. Ci\'o \'e stato principalmente dovuto alla modalit\'a di sviluppo scelta, seguente l'approccio \textbf{test driven}.
+
+I test sviluppati mirano a valutare sia il funzionameto dei singoli agenti e delle loro funzionalit\'a di base, sia il funzionamento del sistema nel suo complesso. Lo sviluppo di questi \'e cominciato a seguito della definizione della logica di interazione del sistema ed ha quindi guidato lo sviluppo e la validazione di ogni singola entit\'a.
+
+Volendo fornire qualche valore quantitativo riguardo ad i test effettuati, possiamo dire che sono stati creati ed eseguiti \textbf{113 test} (TODO), con una \textbf{coverage vicina al 100\%} per gli agenti e le classi fondamentali (non sono ad esempio state testate le view e classi di scarsa importanza ai fini del progetto) e con \textbf{passing rate del 100\%}. Essendo tuttavia gli agenti eseguiti su flussi di controllo diversi e non volendo bloccare il sistema a tempo indeterminato, \'e teoricamente possibile che alcuni test non passino. Ci\'o non \'e per\'o dovuto ad un mancato funzionamento del sistema quanto ad una scelta implementativa del test. Questa possibilit\'a, seppur da tenere in considerazione, non si \'e comunque mai manifestata nel processo di validazione.
 
 \subsection{Il framework di testing}
-A causa della difficolt\'a di testing diretta degli agenti \textit{Jason}, \'e stato necessario effettuarne una validazione `a scatola chiusa', considerandoli come \textit{black box} e valutandone il behaviour percepito esternamente e il cambio di stato tramite comunicazione. Ci\'o \'e stato possibile grazie alla creazione di un piccolo framework di testing in grado di valutare il funzionamento sia tramite lo scambio dei messaggi (vedasi Listing \ref{listing:communication-testing}), sia tramite i log prodotti ed attesi dagli agenti (vedasi Listing \ref{listing:logging-testing}).\\
+A causa della difficolt\'a di testing diretta degli agenti \textit{Jason}, \'e stato necessario effettuarne una validazione `a scatola chiusa', considerandoli come \textit{black box} e valutandone il behaviour percepito esternamente e il cambio di stato tramite comunicazione. Ci\'o \'e stato possibile grazie alla creazione di un piccolo framework di testing in grado di valutare il funzionamento sia tramite lo scambio dei messaggi (vedasi Listing \ref{listing:communication-testing}), sia tramite i log prodotti ed attesi dagli agenti (vedasi Listing \ref{listing:logging-testing}).
+
 Lo sviluppo di questo \'e stato invero arduo, in quanto ha richiesto sia uno studio accurato dell'architettura JADE e Jason, sia un processo di \textit{reverse engineering}. Il testing di un agente comprende infatti la comunicazione e non \'e quindi possibile testarne il funzionamento se esso non \'e il solo che possa manifestare comportamenti inattesi. A causa di ci\'o \'e dunque ovviamente necessario che tutte le altre entit\'a coinvolte nel testing abbiano un comportamento deterministico. Ci\'o \'e stato ottenuto tramite l'avvio dell'agente testato come agente \textit{Jason} e la simulazione degli altri agenti coinvolti. La capacit\'a di far ci\'o ha per\'o richiesto un \textit{reverse engineering} del sistema in modo da sfruttare le classi e le funzionalit\'a non normalmente intese per l'utilizzo da parte degli utenti.
 
 \begin{lstlisting}[language=Kotlin, caption=Esempio di test `basato sulla comunicazione' permesso dall'utilizzo del framework, label=listing:communication-testing]
@@ -49,4 +51,3 @@ Lo sviluppo di questo \'e stato invero arduo, in quanto ha richiesto sia uno stu
     agent <= CONFIRM + """command(id("Command1"))"""
 }
 \end{lstlisting}
-
