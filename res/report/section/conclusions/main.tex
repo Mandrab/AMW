@@ -33,7 +33,7 @@ L'apprendimento del modello di programmazione BDI \'e stato senza dubbio uno dei
 \subsubsection{Comunicazione}
 Come gi\'a annunciato, lo sviluppo del progetto ha permesso una migliore comprensione delle differenze, dei vantaggi e degli svantaggi delle metodologie di comunicazione basate su scambi di messaggi e su spazi di tuple. Si \'e infatti notato come per alcuni task questi metodi possano risultare pi\'u o meno indicati. Si sono quindi chiarite le casistiche in cui la scelta di un approccio rispetto all'altro possa portare a comunicazioni pi\'u efficaci.
 
-\parag % TODO
+\parag
 Sempre relativamente alla comunicazione, si \'e direttamente sperimentato il problema dell'imposibilit\'a di garantire contemporaneamente disponibilit\'a e coerenza in caso di partizionamento del sistema (CAP thorem). A questo riguardo \'e stato necessario effettuare una scelta. Il sistema si impegna dunque a garantire in primo luogo la coerenza dei dati a discapito della loro disponibilit\'a.
 
 Con l'obiettivo di garantire comunque un certo grado di disponibilit\'a di servizio anche in caso di failure di qualche entit\'a del sistema, si \'e deciso di fare in modo che alcuni agenti gestissero solo sottosezioni di questo. Un esempio \'e dato dal \textit{collection point manager}. Da design infatti, la duplicazione di questo richiede che esso gestisca solo un sottoinsieme dei punti di raccolta (non gestiti da altri agenti). Questo permette di garantire coerenza (nessun punto pu\'o essere assegnato a pi\'u ordini) e un certo grado di disponibilit\'a (se un agente o la rete fallisce, il servizio pu\'o continuare a funzionare, seppur senza la possibilit\'a di assegnamento dei punti dell'agente fallito). Altri agenti seguono lo stesso principio logico.
