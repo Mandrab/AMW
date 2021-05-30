@@ -1,0 +1,19 @@
+@startuml state_diagram
+left to right direction
+
+[*] --> Idle
+
+Idle --> PickItem                   : retrieve(item) / confirm
+Idle --> ExecuteCommand             : execute(command) / confirm
+
+PickItem --> PickItem               : retrieve(item), execute(command) / refuse
+PickItem --> Idle
+
+ExecuteCommand --> ExecuteCommand   : retrieve(item), execute(command) / refuse
+ExecuteCommand --> Idle
+
+Idle                                : wait task
+PickItem                            : action / retrieve item
+ExecuteCommand                      : action / execute command
+
+@enduml

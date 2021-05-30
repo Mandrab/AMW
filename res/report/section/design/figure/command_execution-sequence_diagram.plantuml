@@ -1,0 +1,11 @@
+@startuml command_execution-sequence_diagram
+
+Admin --> DF                            : search command executor
+DF --> Admin                            : `Executor' AID
+Admin --> Executor                      : request command execution
+Executor --> CommandManager             : request command script
+CommandManager --> Executor             : script
+Executor --> Executor                   : execute script
+Executor --> Admin                      : confirm command execution
+
+@enduml

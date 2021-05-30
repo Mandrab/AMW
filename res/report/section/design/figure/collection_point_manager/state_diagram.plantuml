@@ -1,0 +1,21 @@
+@startuml state_diagram
+
+
+[*] --> FreeSlots
+
+FreeSlots --> DecreaseSlots             : reserve(slot) / confirm
+FreeSlots --> IncreaseSlots             : free(slot) *  occupied slot / confirm
+FreeSlots --> FreeSlots                 : free(slot) * not occupied slot / failure
+
+DecreaseSlots --> FreeSlots             : free slots > 0
+DecreaseSlots --> NoFreeSlots           : free slots = 0
+
+IncreaseSlots --> FreeSlots
+
+NoFreeSlots --> IncreaseSlots           : free(slot) / confirm
+NoFreeSlots --> NoFreeSlots             : reserve(slot) / failure
+
+DecreaseSlots                           : entry / decrease number of free slots
+IncreaseSlots                           : entry / increase number of free slots
+
+@enduml

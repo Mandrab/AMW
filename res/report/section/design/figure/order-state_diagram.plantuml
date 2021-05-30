@@ -1,0 +1,11 @@
+@startuml order-state_diagram
+
+[*]         -->         check
+check       -->         refused     : no enough items
+check       -->         retrieve    : warehouse confirm
+retrieve    -->         retrieve    : item retrieved
+retrieve    -->         completed   : no more items\nto retrieve
+
+refused -left[hidden]-> retrieve    /' alignment arrow '/
+
+@enduml

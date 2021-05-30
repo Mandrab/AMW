@@ -1,0 +1,17 @@
+@startuml activity_diagram-2
+
+repeat
+    : Require collection point;
+repeat while (point available?) is (no)
+-> yes;
+: Save returned information;
+repeat
+    : Require item retrieval;
+repeat while (any items to retrieve?) is (yes)
+-> no;
+: Update order status;
+: Free collection point;
+
+stop
+
+@enduml

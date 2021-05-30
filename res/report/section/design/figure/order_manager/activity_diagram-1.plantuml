@@ -1,0 +1,15 @@
+@startuml activity_diagram-1
+start
+
+: Wait order;
+: Generate order ID and save its information;
+: Confirm order reception;
+: Require items availability check;
+if (items available?) then (no)
+    : Order cannot be completed: set status;
+    end
+else (yes)
+endif
+: Save returned information;
+
+@enduml

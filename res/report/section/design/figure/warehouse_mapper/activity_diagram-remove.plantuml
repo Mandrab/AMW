@@ -1,0 +1,17 @@
+@startuml activity_diagram-remove
+
+start
+
+: Remotion request;
+: Check items availability;
+if (items < required(items)) then (yes)
+    : Refuse request;
+    end
+else (no)
+endif
+: Set items as removed and\nobtain thei positions;
+: Send remotion confirmation with positions;
+
+stop
+
+@enduml

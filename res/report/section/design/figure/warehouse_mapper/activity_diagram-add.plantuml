@@ -1,0 +1,17 @@
+@startuml activity_diagram-add
+
+start
+
+: Add request;
+: Check if item already in warehouse;
+if (items in warehouse) then (true)
+    : Find item slot;
+else (false)
+    : Find first free slot;
+endif
+: Add quantity to slot;
+: Send addition confirmation;
+
+stop
+
+@enduml
