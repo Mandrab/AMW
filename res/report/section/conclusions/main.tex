@@ -1,19 +1,23 @@
 \section{Conclusioni}
 %Recap what you did
-% TODO
+
 La realizzazione del progetto si \'e focalizzata sul raggiungimento degli obiettivi inizialmente definiti. Dato lo stato del sistema al momento della consegna, questi si ritengono interamente completati. Con riferimento al progetto, il sentimento \'e dunque di generale soddisfazione. Seppur con qualche imperfezione infatti, il raggiungimento totale degli obiettivi posti e la tutto sommato buona qualit\'a del sistema prodotto (seppur con tutte le sue semplificazioni) mi portano ad esprimere un sentimento positivo sul lavoro svolto. L'unico lato veramente negativo del processo \'e stato relativo alla realizzazione, che ha richiesto un ammontare di tempo ben superiore a quello previsto. Ci\'o \'e stato dovuto da una moltitudine di fattori, sia organizzativi ma soprattutto collegati a documentazioni non sempre esaustive e meccanismi di testing non ortodossi, che hanno spesso richiesto implementazioni ad-hoc e processi di reverse engeneering sui framework utilizzati.
 
 \parag
-La realizzazione del sistema ha comunque richiesto una notevole quantit\'a di lavoro. Questo \'e iniziato con un processo logico per identificare le entit\'a del sistema e capire come dovessero comportarsi e come dovessero logicamente interagire. Ci\'o non \'e stato facile in quanto ha richiesto uno studio del dominio.\\
-Il secondo punto dell'implementazione \'e consistito nello studio delle funzionalit\'a dei sistemi JADE e Jason su `tests giocattolo' e documentazioni. Ci\'o \'e servito per ottenere una corretta comprensione delle caratteristiche di questi. In questo processo ricade anche lo studio del paradigma BDI e di quello di programmazione logica, effettivamente mai visti prima dell'inizio del progetto.\\
-Si \'e quindi passati allo sviluppo delle prime entit\'a del sistema che avevano gi\'a uno schema logico chiaro e definito. In parallelo a questo processo si \'e dunque iniziato a definire alcune metodologie di testing. Queste sono invero state una delle parti di implementazione pi\'u onerose (a livello di tempo) di tutto il sistema. Non si sono infatti trovate tecnologie adatte alla validazione delle entit\'a prodotte e, essendo lo sviluppo seguente il modello `test driven', \'e stato necessario che queste fossero implementate in autonomia, in quanto fondamentali. Il processo di definizione dei test ha dunque richiesto un processo di reverse engeneering sui due framework (specialmente Jason) per riuscire a creare un interfaccia di testing quanto meno utilizzabile. Questo si \'e concretizzato nella creazione del `framework di testing'.\\
-A seguito di ci\'o si \'e proseguito nell'implementazione del sistema e nella definizione della modalit\'a di deployment. Questa ha richiesto l'analisi e lo studio di diverse tecnologie (principalmente Gradle e Docker) e l'analisi di diverse possibilit\'a allo scopo di trovare una soluzione che fornisse una buona facilit\'a di utilizzo. Anche questa fase si \'e rivelata pi\'u `time consuming' del previsto.\\
+La realizzazione del sistema ha comunque richiesto una notevole quantit\'a di lavoro. Questo \'e iniziato con un processo logico per identificare le entit\'a del sistema e capire come dovessero comportarsi e come dovessero logicamente interagire. Ci\'o non \'e stato facile in quanto ha richiesto uno studio approfondito del dominio.
+
+Il secondo punto dell'implementazione \'e consistito nello studio delle funzionalit\'a dei sistemi JADE e Jason su `tests giocattolo' e documentazioni. Ci\'o \'e servito per ottenere una corretta comprensione delle caratteristiche di questi. In questo processo ricade anche lo studio del paradigma BDI e di quello di programmazione logica, effettivamente mai visti prima dell'inizio del progetto.
+
+Si \'e quindi passati allo sviluppo delle prime entit\'a del sistema che avevano gi\'a uno schema logico chiaro e definito. In parallelo a questo processo si \'e dunque iniziato a definire alcune metodologie di testing. Queste sono invero state una delle parti di implementazione pi\'u onerose (a livello di tempo) di tutto il sistema. Non si sono infatti trovate tecnologie adatte alla validazione delle entit\'a prodotte e, essendo lo sviluppo seguente il modello `test driven', \'e stato necessario che queste fossero implementate in autonomia, in quanto fondamentali. Il processo di definizione dei test ha dunque richiesto un processo di reverse engeneering sui due framework (specialmente Jason) per riuscire a creare un interfaccia di testing quanto meno utilizzabile. Questo si \'e concretizzato nella creazione del `framework di testing'.
+
+A seguito di ci\'o si \'e proseguito nell'implementazione del sistema e nella definizione della modalit\'a di deployment. Questa ha richiesto l'analisi e lo studio di diverse tecnologie (principalmente Gradle e Docker) e l'analisi di diverse possibilit\'a allo scopo di trovare una soluzione che fornisse una buona facilit\'a di utilizzo. Anche questa fase si \'e rivelata pi\'u `time consuming' del previsto.
+
 L'ultima parte dello sviluppo \'e stata quindi orientata ad una risoluzione delle criticit\'a e debolezze che ancora caratterizzavano alcune parti del sistema.
 
 \subsection{Lavori futuri}
 %Recap what you did \emph{not}
 
-Fin dal principio, questo progetto si \'e delineato come un sistema simulato, intenzionalmente crato con alcune semplificazioni allo scopo di focalizzarsi sulle caratteristiche dei sistemi ad agenti per cui si era mostrato interesse. A causa di ci\'o futuri lavori sul progetto non sono attualmente previsti.
+Fin dal principio, questo progetto si \'e delineato come un sistema simulato, intenzionalmente crato con alcune semplificazioni allo scopo di focalizzarsi sulle caratteristiche dei sistemi ad agenti per cui si era mostrato interesse. A causa di ci\'o, futuri lavori sul progetto non sono attualmente previsti.
 
 \parag
 Tuttavia, possibili punti di interesse per futuri lavori esistono. Nello specifico, l'analisi della funzionalit\'a di ottenimento di conoscenza da un repository remoto risulta, in mia opinione, interessante. Come gi\'a annunciato infatti, la complessit\'a del sistema ha richiesto una sua semplificazione in corso d'opera. Il piano iniziale risulta tuttavia comunque interessante e di possibile interesse per studi sulla capacit\'a di agenti di inferire autonomamente le conoscenze necessarie (e quindi possibilmente ad ottenerle) per lo svolgimento di compiti non inizialmente definiti dal programmatore. Un esempio basilare di ci\'o potrebbe essere il riuscire ad inferire le necessit\'a di riuscire a muoversi e di `afferrare' per un compito di trasporto oggetti. Il raggiungimento di capacit\'a di questo tipo sarebbe senza dubbio un notevole passo in avanti nelle potenzialit\'a del progetto.
@@ -29,9 +33,12 @@ L'apprendimento del modello di programmazione BDI \'e stato senza dubbio uno dei
 \subsubsection{Comunicazione}
 Come gi\'a annunciato, lo sviluppo del progetto ha permesso una migliore comprensione delle differenze, dei vantaggi e degli svantaggi delle metodologie di comunicazione basate su scambi di messaggi e su spazi di tuple. Si \'e infatti notato come per alcuni task questi metodi possano risultare pi\'u o meno indicati. Si sono quindi chiarite le casistiche in cui la scelta di un approccio rispetto all'altro possa portare a comunicazioni pi\'u efficaci.
 
-\parag
-Sempre relativamente alla comunicazione, si \'e direttamente sperimentato il problema dell'imposibilit\'a di garantire contemporaneamente disponibilit\'a, coerenza e partizionamento dei dati nel sistema (CAP thorem todo). A questo riguardo \'e stato necessario effettuare una scelta. Il sistema si impegna dunque a garantire in primo luogo la coerenza dei dati. Questo cerca quindi di garantire una funzionalit\'a del sistema anche in caso di failure parziali fornendo la possibilit\'a di aggiungere un maggior numero di agenti. Tuttavia, questo non garantisce che tutti i dati possano essere in qualsiasi momento acceduti.
-La presenza di riferimenti ad entit\'a ed agenti fisici nel sistema porta comunque alcuni problemi riguardo queste ultime due propriet\'a. Ad esempio, la possibilit\'a di aggiunta di nuovi agenti robotici \'e limitata, causando una possibile inabilit\'a del sistema anche in caso di partitioning. Questa si \'e rivelata una debolezza del sistema stesso che non \'e stato possibile risolvere.
+\parag % TODO
+Sempre relativamente alla comunicazione, si \'e direttamente sperimentato il problema dell'imposibilit\'a di garantire contemporaneamente disponibilit\'a e coerenza in caso di partizionamento del sistema (CAP thorem). A questo riguardo \'e stato necessario effettuare una scelta. Il sistema si impegna dunque a garantire in primo luogo la coerenza dei dati a discapito della loro disponibilit\'a.
+
+Con l'obiettivo di garantire comunque un certo grado di disponibilit\'a di servizio anche in caso di failure di qualche entit\'a del sistema, si \'e deciso di fare in modo che alcuni agenti gestissero solo sottosezioni di questo. Un esempio \'e dato dal \textit{collection point manager}. Da design infatti, la duplicazione di questo richiede che esso gestisca solo un sottoinsieme dei punti di raccolta (non gestiti da altri agenti). Questo permette di garantire coerenza (nessun punto pu\'o essere assegnato a pi\'u ordini) e un certo grado di disponibilit\'a (se un agente o la rete fallisce, il servizio pu\'o continuare a funzionare, seppur senza la possibilit\'a di assegnamento dei punti dell'agente fallito). Altri agenti seguono lo stesso principio logico.
+
+La presenza di riferimenti ad entit\'a ed agenti fisici nel sistema porta comunque alcuni problemi. La possibilit\'a di aggiunta di nuovi agenti \'e infatti talvolta limitata (si pensi ai \textit{robot picker} o ad i \textit{collection point manager}), causando una possibile inabilit\'a del sistema in caso nessuno di questi risulti raggiungibile. Questa si \'e rivelata una debolezza del sistema stesso che non \'e stato possibile risolvere.
 
 \subsubsection{I framework JADE e Jason}
 Ovviamente le conoscenze acquisite riguardo questi due framework sono state notevoli. Anche se molte funzionalit\'a non sono state necessarie (e quindi non utilizzate) per lo sviluppo del sistema, il suo design ha richiesto uno studio approfondito di queste due tecnologie. Si ritiene dunque di poter dire, grazie a questo progetto, di aver acquisito una buona esperienza e conoscenza riguardo entrambe. 
@@ -40,14 +47,12 @@ Ovviamente le conoscenze acquisite riguardo questi due framework sono state note
 Lo sviluppo del sistema ha anche richiesto lo studio delle ontologie. Non essendo mai state viste nel percorso di studi e data la loro indubbia utilit\'a nella rappresentazione della conoscenza, si ritiene l'abilit\'a acquisita riguardo ad esse ed al loro design molto utile e di valore. Queste rappresentano invero una conoscenza importante a prescindere dal sistema che ci si approccia ad implementare, non essendo infatti legate ad una specifica tecnologia.
 
 \subsubsection{Conoscenze generali sui sistemi ad agenti}
-Da un punto di vista pi\'u generale, si ritiene di aver esteso ed acquisito competenze riguardo ai sistemi ad agenti. Ci\'o risulta importante in quanto si ritengono questi una componente fondamentale dei sistemi informativi del futuro, se non addirittura attuali.\\
-In sintesi, grazie a questo progetto ci \'e stato possibile approfondire e comprendere appieno gli aspetti trattati nel corso con riferimento a questo nuovo paradigma
+Da un punto di vista pi\'u generale, si ritiene di aver esteso ed acquisito competenze riguardo ai sistemi ad agenti. Ci\'o risulta importante in quanto si ritengono questi una componente fondamentale dei sistemi informativi del futuro, se non addirittura attuali.
+
+In sintesi, grazie a questo progetto \'e stato possibile approfondire e comprendere appieno gli aspetti trattati nel corso, con riferimento a questo nuovo paradigma
 di programmazione.
 
-% todo
-% problematiche relative alla consistenza (parzialmente risolte grazie al msg id : clock logico)
-% reliability (garantita nel caso di failure di rete ma non degli agenti stessi : non replicabilit\'a degli stessi)
-% come rendere un sistema flessibile (a livello di logica ok ma manca una vera e propria implementazione in alcune parti : eg per vedere gli stati degli ordini broadcast anziche single message)
+% todo manca una vera e propria implementazione in alcune parti: eg per vedere gli stati degli ordini broadcast anziche single message
 
 % TODO
 % - problem consistency in the overall system BAD
