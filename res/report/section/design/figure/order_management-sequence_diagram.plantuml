@@ -1,0 +1,16 @@
+@startuml order_management-sequence_diagram
+
+user.Agent              --> OrderManager            : submit order
+OrderManager            --> WarehouseManager        : reserve items
+OrderManager            --> user.Agent              : confirm order reception
+WarehouseManager        --> OrderManager            : confirm reservation
+OrderManager            --> CollectionPointManager  : require collection point
+CollectionPointManager  --> OrderManager            : confirm collection point
+loop foreach agent
+    OrderManager        --> RobotPicker             : require item pick
+    RobotPicker         --> OrderManager            : confirm item pick
+end
+OrderManager            --> CollectionPointManager  : free collection point request
+CollectionPointManager  --> OrderManager            : free collection point confirmation
+
+@enduml
