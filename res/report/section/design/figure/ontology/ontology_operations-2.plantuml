@@ -1,13 +1,13 @@
-@startuml ontology-operations-2
+@startuml ontology_operations-2
 skinparam componentStyle rectangle
 left to right direction
 
-[RESERVE] --> [OID]                 : for
-[RESERVE] -- [COLLECTION POINT]     : require
+[RESERVE] --> [OID]
+[RESERVE] <.. [COLLECTION POINT]
 note left of [RESERVE]: request for a collection\npoint for order:\nachieve, point(order_id)
 
-[FREE] --> [OID]                    : assigned to
-[FREE] -- [COLLECTION POINT]        : what to free
+[FREE] --> [OID]
+[FREE] .. [COLLECTION POINT]
 note left of [FREE]: request for free a collection\npoint assigned to order:\ntell, free(order_id)
 
 [INFO] as CINFO
