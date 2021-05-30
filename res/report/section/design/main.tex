@@ -89,19 +89,19 @@ Le funzionalit\'a principali dell'agente user consistono nella possibilit\'a di 
 \end{figure}
 
 \subsubsection{Collection Point Manager}
-La struttura dell'agente gestore dei punti di raccolta \'e, come per molti altri agenti BDI del sistema, suddivisa pi\'u in maniera logica che fisica. Escludendo il file principale dell'agente in cui si gestiscono import e registrazione al servizio di \textit{Directory Facilitator}, i file che compongono la struttura dell'agente sono quelli che definiscono lo stato di conoscenza iniziale riguardo i punti di raccolta e quello che definsce le intenzioni per la gestione degli stessi e delle richieste entranti.% TODO schema
+La struttura dell'agente gestore dei punti di raccolta \'e, come per molti altri agenti BDI del sistema, suddivisa pi\'u in maniera logica che fisica. Escludendo il file principale dell'agente in cui si gestiscono import e registrazione al servizio di \textit{Directory Facilitator}, i file che compongono la struttura dell'agente sono quelli che definiscono lo stato di conoscenza iniziale riguardo i punti di raccolta e quello che definsce le intenzioni per la gestione degli stessi e delle richieste entranti.
 
 \subsubsection{Command Manager}
-La struttura del command manager segue la stessa logica di quella del \textit{collection point manager}. Esso \'e infatti suddiviso in un file che ne definisce le `credenze' iniziali (soprattutto utile in fase di testing) e in altri che raggruppano le funzionalit\'a da esso fornite: aggiunta di comandi e ottenimento di informazioni su di essi.% TODO schema
+La struttura del command manager segue la stessa logica di quella del \textit{collection point manager}. Esso \'e infatti suddiviso in un file che ne definisce le `credenze' iniziali (soprattutto utile in fase di testing) e in altri che raggruppano le funzionalit\'a da esso fornite: aggiunta di comandi e ottenimento di informazioni su di essi.
 
 \subsubsection{Order Manager}
-La struttura dell'order manager \'e simile alle precedenti, senza per\'o essere inizializzato con uno stato. I file comprendenti le funzionalit\'a del seguente agente, sono quelli utilizzati per la generazione degli ID degli ordini; per la gestione delle richieste di informazioni sui loro stati; per quelle di piazzamento dell'ordine stesso e, infine, per la gestione della procedura di raggruppamento, che risulta invero pi\'u complicata delle altre ed \'e stata valutata essere pi\'u comprensibile in un file separato.% TODO schema
+La struttura dell'order manager \'e simile alle precedenti, senza per\'o essere inizializzato con uno stato. I file comprendenti le funzionalit\'a del seguente agente, sono quelli utilizzati per la generazione degli ID degli ordini; per la gestione delle richieste di informazioni sui loro stati; per quelle di piazzamento dell'ordine stesso e, infine, per la gestione della procedura di raggruppamento, che risulta invero pi\'u complicata delle altre ed \'e stata valutata essere pi\'u comprensibile in un file separato.
 
 \subsubsection{Robot Picker}
-Il robot picker \'e organizzato cercando di separare le funzionalit\'a di raccolta oggetti e quelle di esecuzione comandi. Le due funzionalit\'a sono invero collegate (non \'e ad esempio possibile un'esecuzione di un comando mentre \'e in corso il trasporto di un prodotto), ma una esigenza di chiarezza e pulizia del codice ha portato alla decisione di una loro separazione a livello di file.% TODO schema
+Il robot picker \'e organizzato cercando di separare le funzionalit\'a di raccolta oggetti e quelle di esecuzione comandi. Le due funzionalit\'a sono invero collegate (non \'e ad esempio possibile un'esecuzione di un comando mentre \'e in corso il trasporto di un prodotto), ma una esigenza di chiarezza e pulizia del codice ha portato alla decisione di una loro separazione a livello di file.
 
 \subsubsection{Warehouse Mapper}
-Il gestore del magazzino prevede una struttura molto simile a quella del \textit{collection point manager}: \'e infatti presente, in aggiunta a quelli di funzionalit\'a, un file che definisce lo stato iniziale. Oltre a questo, la logica dell'agente \'e suddivisa in files che determinano rispettivamente la funzionalit\'a di aggiunta e rimozione di prodotti dal magazzino, e quella di ottenimento di informazioni riguardo lo stato dello stesso.% TODO schema
+Il gestore del magazzino prevede una struttura molto simile a quella del \textit{collection point manager}: \'e infatti presente, in aggiunta a quelli di funzionalit\'a, un file che definisce lo stato iniziale. Oltre a questo, la logica dell'agente \'e suddivisa in files che determinano rispettivamente la funzionalit\'a di aggiunta e rimozione di prodotti dal magazzino, e quella di ottenimento di informazioni riguardo lo stato dello stesso.
 
 \subsection{Comportamento}
 % How should each entity behave?
@@ -115,7 +115,7 @@ Di seguito verranno descritti i behaviour e la logica di ogni agente del sistema
 \subsubsection{Communicator}
 Quest'entità parziale permette una gestione delle possibili failure della rete. In pratica, questa si occupa del reinvio dei messaggi in caso non si riceva risposta.
 
-L'alternaza dei behaviours \'e visibile nella Figura \ref{fig:communicator_state_diagrams} e rappresenta i comportamenti necessari alla risoluzione dell'errore.
+L'alternaza dei behaviours \'e visibile nella Figura \ref{fig:communicator_state_diagrams} e rappresenta i comportamenti necessari alla risoluzione di un possibile errore.
 
 Si evidenzia inoltre come, in alternativa a questa forma `\textit{reliable}' di comunicazione, sia sempre possibile utilizzarne una `\textit{unreliable}' senza il reinvio dei messaggi.
 \begin{figure}[!ht]\centering
@@ -130,8 +130,9 @@ L'agente admin non ha particolari behaviour aggiuntivi rispetto a quelli di cont
 Per chiarezza, intendiamo sottolineare come il suo compito sia la traduzione dei messaggi e delle risposte relativi alle sole funzionalit\'a disponibili all'amministratore. Quest'agente non risulta dunque in grado di comprendere le azioni e le entit\'a dell'ontologia utilizzate dal solo utente user.
 
 \subsubsection{User}
-Come per l'entit\'a admin, anche l'user non ha particolari comportamenti aggiuntivi. Il suo compito \'e infatti anch'esso riconducibile alla sola traduzione dei messaggi in ingresso ed in uscita.\\
-Anche l'agente user assume un atteggiamento agnostico riguardo i formati delle comunicazioni dell'admin. Esso \'e infatti in grado di comprendere e tradurre le sole componenti dell'ontologia ad esso utili, e non \'e quindi pensato per la comprensione dei messaggi relativi all'amministratore. Questa scelta \'e frutto di una scelta di separazione dei privilegi.
+Come per l'entit\'a admin, anche l'user non ha particolari comportamenti aggiuntivi. Il suo compito \'e infatti anch'esso riconducibile alla sola traduzione dei messaggi in ingresso ed in uscita.
+
+Anche l'agente user assume un atteggiamento agnostico riguardo i formati delle comunicazioni dell'admin. Esso \'e infatti in grado di comprendere e tradurre le sole componenti dell'ontologia ad esso utili, e non \'e quindi pensato per la comprensione dei messaggi relativi all'amministratore. Questa scelta \'e frutto di una politica di separazione dei privilegi.
 
 \subsubsection{Collection Point Manager}
 Il comportamento dell'agente gestore dei punti di raccolta degli ordini \'e relativamente semplice nella sua comprensione e pu\'o essere schematizzato dal diagramma degli stati visibile in Figura \ref{fig:state-diagram-cpm}. Questo mostra chiaramente come l'agente permetta un'assegnazione di un punto di raccolta per uno specifico ordine quando si trovi in uno stato che ne presenti almeno uno non occupato. L'operazione di \textit{free} si occupa invece di liberarne uno riservato ad un ordine gi\'a completato.
@@ -150,7 +151,7 @@ Il comportamento dell'entit\'a del sistema relativa alla gestione del repository
 In sintesi, si pu\'o in un certo modo dire che questo agente si comporti come un repository/database remoto.
 
 \subsubsection{Order Manager}
-Questo \'e probabilmente l'agente BDI pi\'u complesso del sistema insieme al \textit{RobotPicker}. A causa di ci\'o, il suo comportamento \'e difficilmente rappresentabile tramite un insieme di stati. Un modello pi\'u semplice e rappresentativo \'e quindi dato dalla descrizione delle attivit\'a che intercorrono dalla sottomissione dell'ordine al suo completamento (o rifiuto): queste sono visibili in Figura \ref{fig:order-managet-activity-diagram}.
+Questo \'e probabilmente l'agente BDI pi\'u complesso del sistema insieme al \textit{robot picker}. A causa di ci\'o, il suo comportamento \'e difficilmente rappresentabile tramite un insieme di stati. Un modello pi\'u semplice e rappresentativo \'e quindi dato dalla descrizione delle attivit\'a che intercorrono dalla sottomissione dell'ordine al suo completamento (o rifiuto): queste sono visibili in Figura \ref{fig:order-managet-activity-diagram}.
 
 Volendone sintetizzare la logica, questa passa dalla ricezione dell'ordine, alla richiesta di ottenimento dei prodotti, passando quindi per la richiesta di un punto di recupero per terminare infine con la raccolta degli oggetti.
 
@@ -163,10 +164,10 @@ Volendone sintetizzare la logica, questa passa dalla ricezione dell'ordine, alla
 \end{figure}
 
 \subsubsection{Robot Picker}
-La descrizione del comportamento di quest'entit\'a, che si occupa del raccoglimento dei prodotti e dell'esecuzione dei comandi, si pu\'o rivelare di diversa complessit\'a a seconda del livello di accuratezza richiesto. Se infatti lo schema base prevede un esecuzione dei due task indipendente, la capacit\'a di eseguire comandi causa una possibile esplosione del numero di stati, tendenti all'infinito. Ogni comando potrebbe infatti essere definito da uno script complesso, avente a sua volta un suo diagramma a stati interno. A questo scopo si \'e quindi deciso di rappresentare la sola alternanza dei due task di raccoglimento ordini ed esecuzione di comandi (vedasi Figura \ref{fig:rp-state-diagram}).
+La descrizione del comportamento di quest'entit\'a, che si occupa del raccoglimento dei prodotti e dell'esecuzione dei comandi, si pu\'o rivelare di diversa complessit\'a a seconda del livello di accuratezza richiesto. Se infatti lo schema base prevede un esecuzione dei due task indipendente, la capacit\'a di eseguire comandi causa una possibile esplosione del numero di stati all'infinito. Ogni comando potrebbe infatti essere definito da uno script complesso, avente a sua volta un suo diagramma a stati interno. A questo scopo si \'e quindi deciso di rappresentare la sola alternanza dei due task di raccoglimento ordini ed esecuzione di comandi (vedasi Figura \ref{fig:rp-state-diagram}).
 \begin{figure}[!ht]\centering
     \includegraphics[width=\textwidth]{section/design/figure/robot_picker/state_diagram.png}
-    \caption{Diagramma degli stati di base dell'agente \textit{RobotPicker}. Data la sua capacit\'a di esecuzione di comandi esterni, il diagramma degli stati varia a seconda del comando in esecuzione.}
+    \caption{Diagramma degli stati di base dell'agente \textit{robot picker}. Data la sua capacit\'a di esecuzione di comandi esterni, il diagramma degli stati varia a seconda del comando in esecuzione.}
     \label{fig:rp-state-diagram}
 \end{figure}
 
@@ -203,7 +204,7 @@ Un esempio di gestione di failure \'e visibile in Figura \ref{fig:communicator_s
 \end{figure}
 
 \subsubsection{Admin}
-Questo agente permette l'utilizzo delle funzionalit\'a di amministratore. A questo proposito, esso necessita di interagire con pi\'u entità del sistema, fra cui: \textit{WarehouseMapper} per lo storing e la rimozione degli elementi dal magazzino; \textit{CommandManager} per tutte le funzionalit\'a relative ai comandi. Inoltre, può potenzialmente dialogare con tutti gli agenti allo scopo di lanciare l'esecuzione dei comandi.
+Questo agente permette l'utilizzo delle funzionalit\'a di amministratore. A questo proposito, esso necessita di interagire con pi\'u entità del sistema, fra cui: \textit{warehouse mapper} per lo storing e la rimozione degli elementi dal magazzino; \textit{command manager} per tutte le funzionalit\'a relative ai comandi. Inoltre, può potenzialmente dialogare con tutti gli agenti allo scopo di lanciare l'esecuzione dei comandi.
 
 Un esempio relativo all'interazione necessaria all'esecuzione dei comandi \'e visibile in Figura \ref{fig:command_execution-sequence_diagram}.
 \begin{figure}[!ht]\centering
@@ -213,7 +214,7 @@ Un esempio relativo all'interazione necessaria all'esecuzione dei comandi \'e vi
 \end{figure}
 
 \subsubsection{User}
-Come gi\'a detto il compito dell'user agent \'e relativo alla gestione degli ordini (vedasi Figura \ref{fig:order_management-sequence_diagram}). A causa di ci\'o, la principale interazione di questo \'e con l'agente gestore degli ordini \textit{OrderManager} e con quello incaricato della gestione del magazzino, \textit{WarehouseMapper}, per la visualizzazione degli articoli disponibili.
+Come gi\'a detto il compito dell'user agent \'e relativo alla gestione degli ordini (vedasi Figura \ref{fig:order_management-sequence_diagram}). A causa di ci\'o, la principale interazione di questo \'e con l'agente gestore degli ordini \textit{order manager} e con quello incaricato della gestione del magazzino, \textit{warehouse mapper}, per la visualizzazione degli articoli disponibili.
 \begin{figure}[!ht]\centering
     \includegraphics[width=\textwidth]{section/design/figure/order_management-sequence_diagram.png}
     \caption{Diagramma di sequenza di una gestione di un ordine. In questo, si ignorano i failure case per non complicare la descrizione, inoltre si assume che l'user conosca in anticipo i prodotti presenti all'interno di un magazzino e che siano quindi ordinabili.}
@@ -221,13 +222,13 @@ Come gi\'a detto il compito dell'user agent \'e relativo alla gestione degli ord
 \end{figure}
 
 \subsubsection{Collection Point Manager}
-L'interazione del \textit{collection point manager} avviene solo con l'\textit{order manager}, il quale comincia l'interazione con lo scopo di acquisire un punto di raccolta per gli ordini (vedasi Figura \ref{fig:order_management-sequence_diagram}). Questa richiesta pu\'o sia andare a buon fine, sia fallire in caso non ci siano points disponibili. In questo caso \'e dunque compito dell'order manager inviare una richiesta successiva per farsi assegnare uno dei punti di raggruppamento.
+L'interazione del \textit{collection point manager} avviene solo con l'\textit{order manager}, il quale comincia la comunicazione con lo scopo di acquisire un punto di raccolta per gli ordini (vedasi Figura \ref{fig:order_management-sequence_diagram}). Questa richiesta pu\'o sia andare a buon fine, sia fallire in caso non ci siano points disponibili. In questo caso \'e dunque compito dell'order manager inviare una richiesta successiva per farsi assegnare uno dei punti di raggruppamento.
 
 \subsubsection{Command Manager}
 Questo agente interagisce potenzialmente con qualunque altro nel sistema, in quanto repository comune di piani (vedasi Figura \ref{fig:command_execution-sequence_diagram}). Allo stato attuale tuttavia, l'unico agente disponibile per l'esecuzione di comandi risulta essere il \textit{robot picker}, il che implica che esso sia il solo a richiedere al \textit{command manager} gli script da eseguire. Al di fuori del magazzino comunque, il repository dialoga con l'agente admin, permettendo a quest'ultimo di ottenere l'elenco dei piani disponibili.
 
 \subsubsection{Order Manager}
-L'order manager \'e uno dei punti nevralgici del sistema. Questo si occupa invero di organizzare tutte le procedure necessarie al completamento degli ordini (vedasi Figura \ref{fig:order_management-sequence_diagram}). Accetta innanzitutto le richieste di ordini dai clienti e le inoltra quindi al \textit{warehouse manager} per la conferma di presenza dei prodotti. Si occupa poi di concordare col \textit{collection point manager} un punto di raccolta per i componenti dell'ordine. A questo punto gestisce l'organizzazione dei \textit{robot picker} per il raggruppamento dei prodotti. Infine, esso permette il salvataggio dello storico ordini e la visualizzazione dello stato di completamento di questi (vedasi Figura \ref{fig:order-state_diagram}).
+L'\textit{order manager} \'e uno dei punti nevralgici del sistema. Questo si occupa invero di organizzare tutte le procedure necessarie al completamento degli ordini (vedasi Figura \ref{fig:order_management-sequence_diagram}). Accetta innanzitutto le richieste di ordini dai clienti e le inoltra quindi al \textit{warehouse manager} per la conferma di presenza dei prodotti. Si occupa poi di concordare col \textit{collection point manager} un punto di raccolta per i componenti dell'ordine. A questo punto gestisce l'organizzazione dei \textit{robot picker} per il raggruppamento dei prodotti. Infine, esso permette il salvataggio dello storico ordini e la visualizzazione dello stato di completamento di questi (vedasi Figura \ref{fig:order-state_diagram}).
 \begin{figure}[!ht]\centering
     \includegraphics[width=.75\textwidth]{section/design/figure/order-state_diagram.png}
     \caption{Diagramma dei possibili stati che un ordine pu\'o assumere.}% TODO forse sposta in design
@@ -235,7 +236,7 @@ L'order manager \'e uno dei punti nevralgici del sistema. Questo si occupa inver
 \end{figure}
 
 \subsubsection{Robot Picker}
-Come gi\'a anticipato, il robot picker ha due tipologie di funzionamento diverse: la raccolta di oggetti; l'esecuzione di comandi. Ognuna di queste due modalità richiede la comunicazione con agenti diversi del sistema.
+Come gi\'a anticipato, il \textit{robot picker} ha due tipologie di funzionamento diverse: la raccolta di oggetti; l'esecuzione di comandi. Ognuna di queste due modalità richiede la comunicazione con agenti diversi del sistema.
 
 La prima di queste accetta le richieste dall'agente gestore degli ordini e permette al robot di far parte del processo di completamento di uno di essi (vedasi Figura \ref{fig:order_management-sequence_diagram}). In questa casistica il \textit{robot picker} comunica col solo agente \textit{order manager}.
 

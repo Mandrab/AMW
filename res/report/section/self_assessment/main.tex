@@ -12,11 +12,11 @@ I test sviluppati mirano a valutare sia il funzionameto dei singoli agenti e del
 Volendo fornire qualche valore quantitativo riguardo ad i test effettuati, possiamo dire che sono stati creati ed eseguiti \textbf{116 test}, con una \textbf{coverage vicina al 100\%} per gli agenti e le classi fondamentali (non sono ad esempio state testate le view e classi di scarsa importanza ai fini del progetto) e con \textbf{passing rate del 100\%}. Essendo tuttavia gli agenti eseguiti su flussi di controllo diversi e non volendo bloccare il sistema a tempo indeterminato, \'e teoricamente possibile che alcuni test non passino. Ci\'o non \'e per\'o dovuto ad un mancato funzionamento del sistema quanto ad una scelta implementativa del test. Questa possibilit\'a, seppur da tenere in considerazione, non si \'e comunque mai manifestata nel processo di validazione.
 
 \subsection{Il framework di testing}
-A causa della difficolt\'a di testing diretta degli agenti \textit{Jason}, \'e stato necessario effettuarne una validazione `a scatola chiusa', considerandoli come \textit{black box} e valutandone il behaviour percepito esternamente e il cambio di stato tramite comunicazione. Ci\'o \'e stato possibile grazie alla creazione di un piccolo framework di testing in grado di valutare il funzionamento sia tramite lo scambio dei messaggi (vedasi Listing \ref{listing:communication-testing}), sia tramite i log prodotti ed attesi dagli agenti (vedasi Listing \ref{listing:logging-testing}).
+A causa della difficolt\'a di testing diretta degli agenti Jason, \'e stato necessario effettuarne una validazione `a scatola chiusa', considerandoli come \textit{black box} e valutandone il behaviour percepito esternamente e il cambio di stato tramite comunicazione. Ci\'o \'e stato possibile grazie alla creazione di un piccolo framework di testing in grado di valutare il funzionamento sia tramite lo scambio dei messaggi (vedasi Listing \ref{listing:communication-testing}), sia tramite i log prodotti ed attesi dagli agenti (vedasi Listing \ref{listing:logging-testing}).
 
-Lo sviluppo di questo \'e stato invero arduo, in quanto ha richiesto sia uno studio accurato dell'architettura JADE e Jason, sia un processo di \textit{reverse engineering}. Il testing di un agente comprende infatti la comunicazione e non \'e quindi possibile testarne il funzionamento se esso non \'e il solo che possa manifestare comportamenti inattesi. A causa di ci\'o \'e dunque ovviamente necessario che tutte le altre entit\'a coinvolte nel testing abbiano un comportamento deterministico. Ci\'o \'e stato ottenuto tramite l'avvio dell'agente testato come agente \textit{Jason} e la simulazione degli altri agenti coinvolti. La capacit\'a di far ci\'o ha per\'o richiesto un \textit{reverse engineering} del sistema in modo da sfruttare le classi e le funzionalit\'a non normalmente intese per l'utilizzo da parte degli utenti.
+Lo sviluppo di questo \'e stato invero arduo, in quanto ha richiesto sia uno studio accurato dell'architettura JADE e Jason, sia un processo di \textit{reverse engineering}. Il testing di un agente comprende infatti la comunicazione e non \'e quindi possibile testarne il funzionamento se esso non \'e il solo che possa manifestare comportamenti inattesi. A causa di ci\'o \'e dunque ovviamente necessario che tutte le altre entit\'a coinvolte nel testing abbiano un comportamento deterministico. Ci\'o \'e stato ottenuto tramite l'avvio dell'agente testato come agente Jason e la simulazione degli altri agenti coinvolti. La capacit\'a di far ci\'o ha per\'o richiesto un \textit{reverse engineering} del sistema in modo da sfruttare le classi e le funzionalit\'a non normalmente intese per l'utilizzo da parte degli utenti.
 
-\begin{lstlisting}[language=Kotlin, caption=Esempio di test `basato sulla comunicazione' permesso dall'utilizzo del framework, label=listing:communication-testing]
+\begin{lstlisting}[language=Kotlin, caption=Esempio di test `basato sulla comunicazione' permesso dall'utilizzo del framework., label=listing:communication-testing]
 @Test fun executionRequestShouldCauseARequestToCommandManager() = 
     test {
         JADE.commandManager  // initialization of simulation agent
@@ -29,7 +29,7 @@ Lo sviluppo di questo \'e stato invero arduo, in quanto ha richiesto sia uno stu
     }
 \end{lstlisting}
 
-\begin{lstlisting}[language=Kotlin, caption=Esempio di test `basato sul logging' permesso dall'utilizzo del framework, label=listing:logging-testing]
+\begin{lstlisting}[language=Kotlin, caption=Esempio di test `basato sul logging' permesso dall'utilizzo del framework., label=listing:logging-testing]
 @Test fun commandPropagation() = test(filterLogs = true) {
     robotPicker; commandManager
 

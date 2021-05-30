@@ -1,28 +1,27 @@
 \section{Obiettivi e requisiti}
-% % TODO
-% % - detailed description of the project goals, 
-% % - requirements,
-% % - expected outcomes.
-% %
-% % Use case Diagrams, examples, or Q/A simulations are welcome.
+% - detailed description of the project goals, 
+% - requirements,
+% - expected outcomes.
+%
+% Use case Diagrams, examples, or Q/A simulations are welcome.
 
-Il progetto mira allo sviluppo di un sistema simulato di controllo di un magazzino, il quale sarà gestito da agenti software e robotici. La scelta dell’implementazione simulata del sistema è dovuta alla mancanza di controllori fisici atti a rappresentare gli agenti robotici. Oltre a questo, la scelta permette di mettere in secondo piano le complicazioni
-hardware, che non rappresentano invero il focus del progetto.
+Il progetto mira allo sviluppo di un sistema simulato di controllo di un magazzino, il quale sarà gestito da agenti software e robotici. La scelta dell’implementazione simulata del sistema è dovuta alla mancanza di controllori fisici atti a rappresentare gli agenti robotici. Oltre a questo, la scelta permette di mettere in secondo piano le complicazioni hardware, che non rappresentano invero il focus del progetto.
 
 \parag
-Nel sistema si prevederà la possibilità di sottoporre un ordine. I prodotti che lo compongono saranno quindi raggruppati dagli agenti robotici incaricati. La suddivisione dei compiti di recupero delle parti dell'ordine sarà diretta invece da un agente `coordinatore'.\newline
-Oltre al normale funzionamento di un magazzino, si desidera inoltre permettere agli agenti di eseguire task non precedentemente conosciuti. Lo sviluppo di questa caratteristica si delinea nella creazione di un repository di piani (i.e. abilità) a cui i vari agenti possano collegarsi per ottenere la capacità richiesta.
+Nel sistema si prevederà la possibilità di sottoporre un ordine. I prodotti che lo compongono saranno quindi raggruppati dagli agenti robotici incaricati. La suddivisione dei compiti di recupero delle parti dell'ordine sarà diretta invece da un agente `coordinatore'.
+
+Oltre al normale funzionamento di un magazzino, si desidera inoltre permettere agli agenti di eseguire task non precedentemente conosciuti. Lo sviluppo di questa caratteristica si delinea nella creazione di un repository di piani/abilità a cui i vari agenti possano collegarsi per ottenere la capacità richiesta.
 
 \parag
-A livello tecnologico, il progetto prevede lo sviluppo di agenti JADE e Jason (questi ultimi, programmati quindi nella versione estesa di AgentSpeak(L)). Gli agenti funzioneranno su di un infrastruttura distribuita JADE.
+A livello tecnologico, il progetto prevede lo sviluppo di agenti JADE\cite{ref:jade} e Jason\cite{ref:jason} (questi ultimi, programmati quindi nella versione estesa di AgentSpeak(L)). Gli agenti funzioneranno su di un infrastruttura distribuita JADE.
 Allo scopo di sviluppare la capacità di scaricamento dei piani, si ritiene infine utile la definizione di ontologie atte a descrivere il dominio del magazzino.
 
 \parag
 Come obiettivi di apprendimento, ci si pongono quelli di acquisire conoscenza relativamente al modello BDI\footnote{Beliefs, Desires, Intentions}, approfondire aspetti più avanzati di JADE e per quanto
-possibile, valutare l'utilizzo e l'impatto della rappresentazione di un dominio mediante ontologie in un sistema distribuito. Si valuta infine la possibilità di apprendimento di docker per il deployment delle componenti del sistema.
+possibile, valutare l'utilizzo e l'impatto della rappresentazione di un dominio mediante ontologie in un sistema distribuito. Si valuta infine la possibilità di apprendimento di Docker\cite{ref:docker} per il deployment delle componenti del sistema.
 
 \parag
-Un elenco formale dei requirements del progetto sarà fornito di seguito.
+Un elenco formale dei requisiti del progetto sarà fornito di seguito.
 
 \subsection{Requisiti funzionali}
 \begin{itemize}
@@ -45,16 +44,16 @@ Il risultato atteso è un sistema simulante un magazzino. Questo dovrà accettar
 
 Si prevede la presenza di una interfaccia utente tramite la quale sia possibile sottomettere ordini, eseguire task e visualizzare lo stato del sistema. Quest'ultima caratteristica non sarà tuttavia considerata un elemento obbligatorio nella soluzione finale e ci si riserva la possibilità di cancellarne l'implementazione in caso di problemi o se i tempi di sviluppo dovessero estendersi troppo.
 
-Gli artefatti derivanti dallo sviluppo del progetto saranno immagini docker rappresentanti le entità del sistema ed un software client funzionante su JVM per l'interazione con esso.
+Gli artefatti derivanti dallo sviluppo del progetto saranno possibilmente immagini docker rappresentanti le entità del sistema; un software client funzionante su JVM per l'interazione con esso.
 
 \subsection{Scenari d'utilizzo}
 % Informal  description  of  the  ways  users  are  expected  to  interact  with  your  project. It should describe how and why a user should use / interact with the system
 
-Come gi\'a accennato, il sistema AMW \'e un sistema simulato. Questo impedisce un suo utilizzo diretto in un ambiente reale, ma pu\'o rappresentare un buon punto di partenza per l'identificazione delle possibili criticit\'a di un sistema di questo tipo.
+Come gi\'a accennato, il sistema AMW \'e simulato. Questo impedisce un suo utilizzo diretto in un ambiente reale, ma pu\'o rappresentare un buon punto di partenza per l'identificazione delle possibili criticit\'a di un sistema di questo tipo.
 
-Un sistema completo basato sulla struttura di AMW permetterebbe una gestione completa del magazzino. Non \'e inoltre necessariamente richiesta nessuna presenza umana nello stesso grazie alla flessibilit\'a offerta dall'esecuzione di task personalizzabili da parte degli agenti robotici. Questo determina un vantaggio notevole nella gestione di magazzini `particolari' in cui sia necessario mantenere valori ambientali estremi. Un esempio potrebbe essere l'immagazzinamento di elementi particolari che richiedano temperature molto basse.
+Un sistema completo basato sulla struttura di AMW permetterebbe una gestione completa del magazzino. Non \'e inoltre necessariamente richiesta nessuna presenza umana nello stesso, grazie alla flessibilit\'a offerta dall'esecuzione di task personalizzati da parte degli agenti robotici. Questo determina un vantaggio notevole nella gestione di magazzini `particolari' in cui sia necessario mantenere valori ambientali estremi. Un esempio potrebbe essere l'immagazzinamento di elementi particolari che richiedano temperature molto basse a cui gli umani non possono lavorare.
 
-Gli altri vantaggi forniti dal sistema sono sostanzialmente relativi alla riduzione dei lavoratori umani in questi (che potrebbero essere quindi sostituiti dagli agenti) e la resilienza a rotture parziali. La rottura di alcuni macchinari causa infatti, in molte realt\'a industriali, un fermo della produzione. Un sistema come AMW ridurrebbe invece la produttivit\'a, senza tuttavia bloccarla del tutto. Questo risulterebbe quindi in grado di continuare a funzionare, seppur a velocit\'a ridotta.
+Gli altri vantaggi forniti dal sistema sono sostanzialmente relativi alla riduzione dei lavoratori umani (che potrebbero essere quindi sostituiti dagli agenti) e la resilienza a rotture parziali. La rottura di alcuni macchinari causa infatti, in molte realt\'a industriali, un fermo della produzione. Un sistema come AMW ridurrebbe invece la produttivit\'a, senza tuttavia bloccarla del tutto. Questo risulterebbe quindi in grado di continuare a funzionare, seppur a velocit\'a ridotta.
 
 \parag
 Per quanto riguarda una definizione pi\'u pratica di uno scenario di utilizzo, questo comprende la possibilit\'a per gli utenti di visualizzare i prodotti disponibili, effettuare ordini e vederne lo stato di completamento. Gli amministratori possono invece visualizzare lo stato del magazzino, aggiungere prodotti in una scaffalatura e richiedere l'esecuzione di task agli agenti dello stesso.

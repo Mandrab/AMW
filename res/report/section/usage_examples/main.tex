@@ -3,7 +3,7 @@
 
 % Ideally, there should be at least one example for each scenario proposed above.
 
-Come gi\'a descritto, il sistema permette l'utilizzo di due tipologie di utenti: User e Admin. In quanto non richiesto e non importante ai fini dell'esame, l'avvio del client nelle due modalit\'a \'e effettuato semplicemente tramite il passaggio o meno del flag "admin" alla funzione di avvio \textit{main}. Ci\'o \'e possibile sia tramite l'utilizzo di un ide, sia tramite il comando gradle \texttt{start\_client -Padmin} (richiede che il main container sia gi\'a in esecuzione).
+Come gi\'a descritto, il sistema permette l'utilizzo di due tipologie di utenti: User e Admin. In quanto non richiesto e non importante ai fini dell'esame, l'avvio del client nelle due modalit\'a \'e effettuato semplicemente tramite il passaggio o meno del flag `admin' alla funzione di avvio \texttt{main}. Ci\'o \'e possibile sia tramite l'utilizzo di un ide, sia tramite il comando Gradle \texttt{start\_client -Padmin} (richiede che il main container sia gi\'a in esecuzione).
 
 L'interfaccia grafica non \'e stata studiata per essere responsiva ed \'e possibile riscontrare blocchi in attesa, ad esempio, della ricerca degli agenti nel \textit{DirectoryFacilitator}. Inoltre, possibili failure come errori di rete sono visibili solo tramite l'analisi della riga di comando e dunque non visibili dall'interfaccia. Tutte queste semplificazioni alla GUI sono state effettuate in modo da concentrarsi principalmente sullo sviluppo dell'infrastruttura ad agenti senza perdere tempo nell'implementazione di funzionalit\'a grafiche di poco conto.
 
@@ -20,7 +20,7 @@ L'interfaccia si avvia sulla schermata dello shop, dalla quale \'e possibile sel
     \label{fig:application-shop}
 \end{figure}
 
-L'ordine \'e poi preso in carico dall'\textit{order\_manager}, il quale far\'a partire la procedura di completamento degli ordini. \'E possibile visualizzare lo stato di quest'ultima nella schermata dello storico ordini (vedasi Figura \ref{fig:application-history}).
+L'ordine \'e poi preso in carico dall'\textit{order manager}, il quale far\'a partire la procedura di completamento degli ordini. \'E possibile visualizzare lo stato di quest'ultima nella schermata dello storico ordini (vedasi Figura \ref{fig:application-history}).
 \begin{figure}[!ht]\centering
     \includegraphics[width=.75\textwidth]{section/usage_examples/figure/application-history.png}
     \caption{Interfaccia User per il controllo degli stati degli ordini.}
