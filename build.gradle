@@ -249,5 +249,5 @@ class TaskTarget {
     @Lazy def containerId = "amw:$name"
     @Lazy def mainFile = "src/main/asl/${name}.asl"
     @Lazy def sourceFiles = "src/main/asl/$name"
-    @Lazy def unique = "$name-${entitiesCounter.getAndIncrement()}"
+    @Lazy def unique = name + entitiesCounter.getAndIncrement()
 }
