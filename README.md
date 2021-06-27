@@ -13,8 +13,9 @@ This paragraph contains a list of commands used to run the demo via Gradle and D
 
 Initialization of the system:
 <ol>
-    <li>`./gradlew download_file` download auxiliary files</li>
-    <li>`./gradlew unzip` unzip auxiliary files</li>
+  <li>`./gradlew download_file` download auxiliary files</li>
+  <li>`./gradlew unzip` unzip auxiliary files</li>
+  <li>`docker pull openjdk:11-jre-slim` download the base image</li>
 </ol>
 
 To run the system: `./gradlew start_system [-Padmin]` to start main container, agents and user interface 
