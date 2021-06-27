@@ -1,11 +1,15 @@
 <h1>AMW - Agents-Managed Warehouse</h1>
 
-**AMW** project represent the implementation of the <i>distributed systems</i>'s exam project.</br>
-In this application some agents would cooperate to achieve the goal of manage a warehouse. Furthermore, we want the agents to be able to acquire some procedural knowledge from a remote repository of abilities.</br></br>
-Below are present a useful list of commands to run the system.
+**AMW** is the implemented project for the <i>distributed systems</i>' exam.</br>
+
+In this application, some agents cooperate to achieve the goal of manage a warehouse.</br>
+We want the agents to be also able to acquire some procedural knowledge from a remote repository of abilities.</br>
+
+Below, I present a useful list of commands to run the system.<br/>
+Those were mostly tested in a Linux environment: although they should run everywhere, that's not guaranteed.
 
 <h2>Docker commands</h2>
-This paragraph contains a list of commands used to run the demo via gradle and docker.<br/><br/>
+This paragraph contains a list of commands used to run the demo via Gradle and Docker.<br/>
 
 Initialization of the system:
 0. `./gradlew download_file` download auxiliary files
